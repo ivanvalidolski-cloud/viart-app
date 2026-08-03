@@ -45,9 +45,8 @@ const priceCategories = [
 
 const stats = [
   { value: '5+', label: 'лет работы' },
-  { value: '3 000+', label: 'клиентов' },
-  { value: '98%', label: 'рекомендуют' },
   { value: '30+', label: 'зон' },
+  { value: '5,0', label: 'на основании 119 оценок' },
 ];
 
 const promoCards = [
@@ -165,17 +164,12 @@ export default function Home() {
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 lg:grid-cols-[1fr_0.8fr] lg:px-10">
             <div className="animate-rise">
               <p className="section-kicker">О студии</p>
-              <h2 className="section-title">
-                Красота через <em className="text-[#e4cc89]">технологии</em>
-              </h2>
+              <h2 className="section-title">О студии ViART</h2>
               <p className="mt-6 max-w-2xl text-sm leading-relaxed text-[#b8a898] md:text-base">
-                Используем сертифицированный немецкий диодный лазер. Он точно работает с фолликулом и не перегревает кожу, а мощность настраивается под ваш тип кожи и цвет волос.
-              </p>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#b8a898] md:text-base">
-                Одноразовые расходники, защитные очки, тщательная стерилизация аппарата перед каждой процедурой. Результат заметен уже после первого визита.
+                ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь можно выбрать отдельную процедуру или комплекс и записаться онлайн в удобное время.
               </p>
 
-              <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {stats.map((stat) => (
                   <div key={stat.label} className="stat-card">
                     <div className="font-serif text-3xl text-[#e4cc89]">{stat.value}</div>
