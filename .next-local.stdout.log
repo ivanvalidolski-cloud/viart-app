@@ -1,0 +1,45 @@
+
+> viart-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.1:3000
+✓ Ready in 1263ms
+Creating turbopack project {
+  dir: 'C:\\Users\\user\\Desktop\\aura project\\viart-app',
+  testMode: true
+}
+
+ GET / 200 in 833ms (next.js: 514ms, application-code: 320ms)
+ GET /videos/viart-master-work.mp4 404 in 622ms (next.js: 92ms, application-code: 530ms)
+ GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 653ms (next.js: 283ms, application-code: 370ms)
+✓ Compiled in 426ms
+✓ Compiled in 654ms
+ GET / 200 in 504ms (next.js: 281ms, application-code: 223ms)
+✓ Compiled in 191ms
+✓ Compiled in 153ms
+ GET / 200 in 219ms (next.js: 9ms, application-code: 210ms)
+ GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 192ms (next.js: 41ms, application-code: 151ms)
+ GET /videos/viart-master-work.mp4 404 in 201ms (next.js: 103ms, application-code: 99ms)
+✓ Compiled in 212ms
+✓ Compiled in 308ms
+✓ Compiled in 277ms
+✓ Compiled in 157ms
+✓ Compiled in 233ms
+✓ Compiled in 198ms
+✓ Compiled in 255ms
+✓ Compiled in 200ms
+✓ Compiled in 419ms
+ GET / 200 in 174ms (next.js: 10ms, application-code: 165ms)
+ GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 2.8s (next.js: 591ms, application-code: 2.2s)
+ GET /videos/viart-master-work.mp4 404 in 2.8s (next.js: 1685ms, application-code: 1089ms)
+✓ Compiled in 371ms
+✓ Compiled in 148ms
+✓ Compiled in 115ms
+✓ Compiled in 165ms
+✓ Compiled in 205ms
+✓ Compiled in 232ms
+✓ Compiled in 218ms
+✓ Compiled in 450ms
+✓ Compiled in 228ms

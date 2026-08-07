@@ -1,0 +1,2 @@
+[browser] Image with src "/images/equipment/everlas/everlas-procedure.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading (file://C:/Users/user/Desktop/aura project/viart-app/.next/dev/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477:13)

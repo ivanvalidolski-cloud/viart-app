@@ -1,52 +1,189 @@
 'use client';
 
-import { useState } from 'react';
+import { type SyntheticEvent, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 
-const priceCategories = [
-  {
-    tab: 'Лазерная эпиляция',
-    items: [
-      { name: 'Верхняя губа', detail: '~10 мин', price: '800 ₽', promo: '400 ₽' },
-      { name: 'Подбородок', detail: '~10 мин', price: '900 ₽', promo: '450 ₽' },
-      { name: 'Подмышки', detail: '~15 мин', price: '1 500 ₽', promo: '750 ₽', popular: true },
-      { name: 'Бикини классическое', detail: '~20 мин', price: '2 200 ₽', promo: '1 100 ₽', popular: true },
-      { name: 'Глубокое бикини', detail: '~30 мин', price: '3 500 ₽', promo: '1 750 ₽', popular: true },
-      { name: 'Голени', detail: '~30 мин', price: '3 000 ₽', promo: '1 500 ₽' },
-      { name: 'Бёдра', detail: '~35 мин', price: '3 500 ₽', promo: '1 750 ₽' },
-      { name: 'Руки полностью', detail: '~35 мин', price: '3 800 ₽', promo: '1 900 ₽' },
-      { name: 'Спина', detail: '~40 мин', price: '4 500 ₽' },
-      { name: 'Ноги полностью', detail: '~60 мин', price: '6 000 ₽' },
-      { name: 'Тело полностью', detail: '~2 часа', price: '12 000 ₽' },
-    ],
-  },
-  {
-    tab: 'Массаж',
-    items: [
-      { name: 'Лимфодренажный', detail: '60 мин · разгон лимфы, снятие отёков', price: '3 500 ₽', promo: '1 750 ₽', popular: true },
-      { name: 'Антистресс', detail: '60 мин · глубокое расслабление', price: '3 200 ₽', promo: '1 600 ₽', popular: true },
-      { name: 'Скульптурирующий', detail: '90 мин · коррекция контура тела', price: '4 800 ₽', promo: '2 400 ₽' },
-      { name: 'Расслабляющий', detail: '60 мин · снятие мышечных зажимов', price: '2 900 ₽', promo: '1 450 ₽' },
-      { name: 'Массаж лица', detail: '45 мин · лифтинг + лимфодренаж', price: '2 500 ₽', promo: '1 250 ₽' },
-      { name: 'Спина и шея', detail: '45 мин · точечная проработка зажимов', price: '2 800 ₽' },
-    ],
-  },
-  {
-    tab: 'Премиум комплексы',
-    items: [
-      { name: '«Шелковое тело»', detail: 'Эпиляция подмышек + бикини + лимфодренаж 60 мин', price: '7 200 ₽', promo: '5 500 ₽', popular: true },
-      { name: '«Полное преображение»', detail: 'Эпиляция тела полностью + антистресс 90 мин', price: '17 200 ₽', promo: '14 500 ₽' },
-      { name: '«Лёгкость лета»', detail: 'Эпиляция ног + скульптурирующий массаж бёдер', price: '9 300 ₽', promo: '7 500 ₽', popular: true },
-      { name: '«Лицо и тело»', detail: 'Эпиляция верхней губы + подбородка + массаж лица', price: '4 200 ₽', promo: '3 200 ₽' },
-    ],
-  },
+const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
+
+type PriceGender = 'women' | 'men';
+
+const laserPrices: Record<PriceGender, Array<{ title: string; items: Array<{ name: string; price: string }> }>> = {
+  women: [
+    {
+      title: 'Лицо и шея',
+      items: [
+        { name: 'Верхняя губа', price: '700 ₽' },
+        { name: 'Подбородок', price: '700 ₽' },
+        { name: 'Щёки', price: '800 ₽' },
+        { name: 'Бакенбарды', price: '700 ₽' },
+        { name: 'Лицо полностью', price: '2 500 ₽' },
+      ],
+    },
+    {
+      title: 'Руки и тело',
+      items: [
+        { name: 'Подмышки', price: '1 100 ₽' },
+        { name: 'Руки до локтя', price: '1 300 ₽' },
+        { name: 'Руки полностью', price: '2 500 ₽' },
+        { name: 'Плечи', price: '1 500 ₽' },
+        { name: 'Живот', price: '1 200 ₽' },
+        { name: 'Спина — верх или низ', price: '1 300 ₽' },
+        { name: 'Спина полностью', price: '2 500 ₽' },
+        { name: 'Грудь', price: '600 ₽' },
+      ],
+    },
+    {
+      title: 'Интимные зоны',
+      items: [
+        { name: 'Бикини классик', price: '2 500 ₽' },
+        { name: 'Глубокое бикини', price: '3 500 ₽' },
+        { name: 'Бразильское бикини', price: '4 300 ₽' },
+        { name: 'Бикини + ягодицы', price: '4 900 ₽' },
+      ],
+    },
+    {
+      title: 'Ноги',
+      items: [
+        { name: 'Голень', price: '2 000 ₽' },
+        { name: 'Бёдра', price: '2 000 ₽' },
+        { name: 'Ноги до колена', price: '2 500 ₽' },
+        { name: 'Ноги полностью', price: '3 500 ₽' },
+      ],
+    },
+  ],
+  men: [
+    {
+      title: 'Голова и шея',
+      items: [{ name: 'Борода / шея', price: '2 500 ₽' }],
+    },
+    {
+      title: 'Торс, руки и спина',
+      items: [
+        { name: 'Спина полностью', price: '3 300 ₽' },
+        { name: 'Грудь + живот', price: '3 500 ₽' },
+        { name: 'Плечи', price: '1 500 ₽' },
+      ],
+    },
+    { title: 'Интимные зоны', items: [] },
+    { title: 'Ноги', items: [] },
+  ],
+};
+
+const epilationComplexes: Record<PriceGender, Array<{ name: string; detail: string; price: string; firstVisitPrice: string }>> = {
+  women: [
+    { name: '«Начальный»', detail: 'Тотальное бикини + подмышки', price: '3 300 ₽', firstVisitPrice: '2 310 ₽' },
+    { name: '«Супер»', detail: 'Тотальное бикини + подмышки + голени + колени', price: '4 800 ₽', firstVisitPrice: '3 360 ₽' },
+    { name: '«Популярный»', detail: 'Тотальное бикини + подмышки + ноги полностью', price: '5 900 ₽', firstVisitPrice: '4 130 ₽' },
+    { name: '«Основной»', detail: 'Тотальное бикини + подмышки + ноги полностью + руки до локтя', price: '6 900 ₽', firstVisitPrice: '4 830 ₽' },
+  ],
+  men: [
+    { name: '«Начальный»', detail: 'Лицо + подмышки', price: '4 800 ₽', firstVisitPrice: '3 360 ₽' },
+    { name: '«Популярный»', detail: 'Пах полностью + подмышки', price: '5 000 ₽', firstVisitPrice: '3 500 ₽' },
+    { name: '«Супер»', detail: 'Спина полностью + грудь или живот + подмышки', price: '6 500 ₽', firstVisitPrice: '4 550 ₽' },
+    { name: '«Основной»', detail: 'Спина полностью + пах полностью + подмышки', price: '7 300 ₽', firstVisitPrice: '5 110 ₽' },
+  ],
+};
+
+const massagePrices = [
+  { name: 'Вибромассаж TURBO G8 „Коррекция фигуры“', price: 'Первое посещение — 1500 ₽ / далее — 2500 ₽' },
+  { name: 'Комплекс „Упругие ягодицы“', price: '2 500 ₽' },
+  { name: 'Комплекс „Плоский живот“', price: '2 500 ₽' },
+  { name: 'Вибромассаж Turbosculpt, 2 зоны', price: '2 500 ₽' },
 ];
 
-const stats = [
-  { value: '5+', label: 'лет работы' },
-  { value: '30+', label: 'зон' },
-  { value: '5,0', label: 'на основании 119 оценок' },
+const groupLaserItemsByPrice = (items: Array<{ name: string; price: string }>) =>
+  items.reduce<Array<{ names: string[]; price: string }>>((groups, item) => {
+    const matchingGroup = groups.find((group) => group.price === item.price);
+
+    if (matchingGroup) {
+      matchingGroup.names.push(item.name);
+    } else {
+      groups.push({ names: [item.name], price: item.price });
+    }
+
+    return groups;
+  }, []);
+
+const formatGroupedServiceNames = (names: string[]) =>
+  names
+    .map((name, index) => {
+      if (name === 'Спина (верх / низ)') return 'спина — верх или низ';
+      return index === 0 ? name : `${name.charAt(0).toLocaleLowerCase('ru-RU')}${name.slice(1)}`;
+    })
+    .join(' · ');
+
+type Review = {
+  name: string;
+  rating: number;
+  text: string;
+  date?: string;
+};
+
+// Добавляйте сюда только отзывы, предоставленные владельцем ViART.
+const reviews: Review[] = [
+  {
+    name: 'Аделина К.',
+    rating: 5,
+    date: '26 июля 2025',
+    text: 'Осталась в восторге от посещения этого салона! Персонал очень дружелюбный, вежливый и профессиональный — мастер подробно объяснила процедуру, дала рекомендации по уходу за кожей и сделала всё аккуратно и безболезненно. Чувствуется, что здесь работают...',
+  },
+  {
+    name: 'Lilia Kristyan',
+    rating: 5,
+    date: '25 марта 2025',
+    text: 'Была на лазерное процедуру к мастеру Анна хочу сказать очень внимательная приятная девушка знает свою работу процедура прошла успешно безболезненно благодарю её большое. 🌸 записалась повторно теперь только сюда всем советую ещё хочу сказать что девушка на...',
+  },
+  {
+    name: 'Любовь Найденова',
+    rating: 5,
+    date: '10 июня 2025',
+    text: 'Роскошный мастер Анна! Пришла на лазерную эпиляцию, переживала, что будет чувствительно. Анна меня успокоила, подобрала комфортный режим и мы просто час проболтали нон-стоп! Берегите свои кадры, такие чудесные мастера – это навес золота! Очень рекомендую этот салон! Спасибо, что открылись в моем доме🥰',
+  },
+  {
+    name: 'Natahabaklakov',
+    rating: 5,
+    date: '11 марта 2025',
+    text: 'Не просто хорошее место, а очень хорошее место! Невероятно приветливые и профессиональные девочки, которые встречают и провожают вас с улыбкой) мастера профессионалы своего дела, которое они делают с любовью к вам, к вашему здоровью! Дают советы и...',
+  },
+  {
+    name: 'Алина Б.',
+    rating: 5,
+    date: '25 апреля 2025',
+    text: 'Прекрасная студия эпиляции!Очень приветливые сотрудники, обязательно выйдете из этого места с замечательным настроением! Мастер профессионал своего дела, все подробно объяснила и рассказала по поводу процедуры...',
+  },
+  {
+    name: 'Лиза Алексеева',
+    rating: 5,
+    date: '3 декабря 2024',
+    text: 'Добрый День! Хочу поделиться своими приятными впечатлениями о процедуре лазерной эпиляции всего тела ,которую проводила замечательный профессионал своего дела - специалист Анастасия) Очень давно хотела сделать эпиляцию, но не решалась, тк ошибочно думала,...',
+  },
+  {
+    name: 'Виктория Булавская',
+    rating: 5,
+    date: '22 февраля 2025',
+    text: 'Лучшая студия лазерной эпиляции. Мастер Виолетта и мастер Анна шикарные мастера. Результат есть, процедуры проходят в комфортной атмосфере, все очень доброжелательные и приятные.',
+  },
+  {
+    name: 'Людмила Иванова',
+    rating: 5,
+    date: '8 января 2025',
+    text: 'Я уже проходила курсы лазерной эпиляции и сегодня впервые посетила viart, хочу сказать что мне очень понравилось! Я рекомендую всем!) Во первых привлекла акция 30% на первую процедуру, но даже без акций цены демократичные. Во вторых там очень приветливые девушки...',
+  },
+];
+// Вставьте сюда только ссылку, предоставленную владельцем ViART.
+const yandexMapsUrl: string | undefined = undefined;
+const studioVideos = [
+  {
+    src: '/videos/viart-procedure-prep.mp4',
+  },
+  {
+    src: '/videos/publicvideosviart-studio-procedure.mp4.mp4',
+  },
+  {
+    src: '/videos/viart-master-work.mp4',
+  },
 ];
 
 const promoCards = [
@@ -71,6 +208,109 @@ const promoCards = [
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activePriceTab, setActivePriceTab] = useState(0);
+  const [priceGender, setPriceGender] = useState<PriceGender>('women');
+  const [activeVideoSrc, setActiveVideoSrc] = useState<string | null>(null);
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const reviewsViewportRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const modules = document.querySelectorAll<HTMLElement>('.equipment-module');
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      modules.forEach((module) => module.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16 });
+
+    modules.forEach((module) => observer.observe(module));
+    return () => observer.disconnect();
+  }, []);
+
+  const handleVideoPlay = (event: SyntheticEvent<HTMLVideoElement>) => {
+    document.querySelectorAll<HTMLVideoElement>('.viart-vertical-video').forEach((video) => {
+      if (video !== event.currentTarget) {
+        video.pause();
+      }
+    });
+    setActiveVideoSrc(event.currentTarget.getAttribute('src'));
+  };
+
+  const handleVideoStop = (event: SyntheticEvent<HTMLVideoElement>) => {
+    const videoSrc = event.currentTarget.getAttribute('src');
+
+    if (activeVideoSrc === videoSrc) {
+      setActiveVideoSrc(null);
+    }
+  };
+
+  const playStudioVideo = (index: number) => {
+    const video = videoRefs.current[index];
+
+    if (!video) return;
+
+    video.play().catch(() => {
+      setActiveVideoSrc(null);
+    });
+  };
+
+  const showVideoPreview = (event: SyntheticEvent<HTMLVideoElement>) => {
+    const video = event.currentTarget;
+
+    if (video.duration > 0 && video.currentTime === 0) {
+      video.currentTime = Math.min(0.1, video.duration / 2);
+    }
+  };
+
+  const handlePriceGenderChange = (gender: PriceGender) => {
+    setPriceGender(gender);
+
+    if (gender === 'men' && activePriceTab === 2) {
+      setActivePriceTab(0);
+    }
+  };
+
+  const openPriceTab = (tabIndex: number) => {
+    if (tabIndex === 2 && priceGender === 'men') {
+      setPriceGender('women');
+    }
+
+    setActivePriceTab(tabIndex);
+    requestAnimationFrame(() => {
+      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  const scrollReviews = (direction: -1 | 1) => {
+    const viewport = reviewsViewportRef.current;
+
+    if (!viewport) return;
+
+    const firstCard = viewport.querySelector<HTMLElement>('.review-card');
+    const track = viewport.querySelector<HTMLElement>('.reviews-track');
+    const gap = track ? Number.parseFloat(getComputedStyle(track).gap) || 0 : 0;
+    const distance = firstCard ? firstCard.getBoundingClientRect().width + gap : viewport.clientWidth * 0.84;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    viewport.scrollBy({ left: direction * distance, behavior: reduceMotion ? 'auto' : 'smooth' });
+  };
+
+  const toggleReview = (index: number) => {
+    setExpandedReviews((current) => {
+      const next = new Set(current);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#100905] text-[#f4ecd8] antialiased">
@@ -139,20 +379,18 @@ export default function Home() {
             <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-[#f4ecd8] md:mt-6 md:text-base">
               Скидка 30% на любой комплекс при первом посещении
             </p>
-            <div className="mt-6 flex w-full max-w-xl flex-col gap-3 sm:mt-8 sm:flex-row sm:items-start">
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <a
-                  href={bookingUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="gold-button w-full px-8 py-4 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8]"
-                >
-                  Выбрать услугу и записаться
-                </a>
-              </div>
+            <div className="mt-6 flex w-full max-w-xl flex-col gap-3 sm:mt-8 sm:flex-row">
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener"
+                className="gold-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+              >
+                Выбрать услугу и записаться
+              </a>
               <a
                 href="#pricing"
-                className="glass-button w-full flex-1 px-8 py-4 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="glass-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Услуги и цены
               </a>
@@ -169,14 +407,6 @@ export default function Home() {
                 ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь можно выбрать отдельную процедуру или комплекс и записаться онлайн в удобное время.
               </p>
 
-              <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {stats.map((stat) => (
-                  <div key={stat.label} className="stat-card">
-                    <div className="font-serif text-3xl text-[#e4cc89]">{stat.value}</div>
-                    <div className="mt-1 text-[10px] uppercase tracking-widest text-[#b8a898]">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
             </div>
 
             <div className="relative hidden items-center justify-center lg:flex">
@@ -186,18 +416,238 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mx-auto mt-14 max-w-7xl px-5 lg:px-10">
-            <div className="award-card">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fc3f1d] text-xl text-white shadow-lg shadow-[#fc3f1d]/20">
-                ★
-              </div>
-              <div>
-                <h3 className="font-serif text-xl text-[#f4ecd8]">«Хорошее место» от Яндекса</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#b8a898]">
-                  Знак качества, который Яндекс выдаёт бизнесам с высоким рейтингом. Это честная оценка нашей работы: клиенты отмечают качество услуг, чистоту и профессионализм мастеров.
-                </p>
+        </section>
+
+        <section className="section-shell border-t border-[#c9a84c]/10 bg-[#100905]">
+          <div className="mx-auto max-w-7xl px-5 lg:px-10">
+            <div className="mb-10 text-center">
+              <p className="section-kicker">ViART</p>
+              <h2 className="section-title">Атмосфера студии</h2>
+            </div>
+
+            <div
+              className="studio-video-reel"
+              aria-label="Атмосфера студии"
+            >
+              {studioVideos.map((video, index) => (
+                <article key={video.src} className="studio-video-card">
+                  <video
+                    ref={(element) => {
+                      videoRefs.current[index] = element;
+                    }}
+                    className="viart-vertical-video"
+                    src={video.src}
+                    muted
+                    playsInline
+                    preload="auto"
+                    onLoadedMetadata={showVideoPreview}
+                    onPlay={handleVideoPlay}
+                    onPause={handleVideoStop}
+                    onEnded={handleVideoStop}
+                    onClick={(event) => {
+                      if (event.currentTarget.paused) {
+                        playStudioVideo(index);
+                      } else {
+                        event.currentTarget.pause();
+                      }
+                    }}
+                    aria-label="Видео студии ViART"
+                  />
+                  {activeVideoSrc !== video.src && (
+                    <button
+                      type="button"
+                      className="studio-video-play"
+                      onClick={() => playStudioVideo(index)}
+                      aria-label="Воспроизвести видео"
+                    >
+                      <span />
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="pricing-section section-shell relative overflow-hidden border-y border-[#c9a84c]/10 bg-[#0d0704]">
+          <div className="absolute left-1/2 top-0 h-[420px] w-[900px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(201,168,76,0.12)_0%,transparent_65%)]" />
+          <div className="relative z-10 mx-auto max-w-5xl px-5 lg:px-10">
+            <div className="price-gender-switch-wrap">
+              <div className={`price-gender-switch ${priceGender === 'men' ? 'is-men' : ''}`} aria-label="Выбор пола для прайса">
+                {(['women', 'men'] as const).map((gender) => (
+                  <button
+                    key={gender}
+                    type="button"
+                    aria-pressed={priceGender === gender}
+                    onClick={() => handlePriceGenderChange(gender)}
+                    className={priceGender === gender ? 'is-active' : ''}
+                  >
+                    {gender === 'women' ? 'Для женщин' : 'Для мужчин'}
+                  </button>
+                ))}
               </div>
             </div>
+
+            <div
+              key={priceGender}
+              className={`price-tabs mb-6 ${priceGender === 'women' ? 'price-tabs-three' : 'price-tabs-two'}`}
+            >
+              {priceTabs.slice(0, priceGender === 'women' ? 3 : 2).map((tab, index) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActivePriceTab(index)}
+                  className={`price-tab ${
+                    activePriceTab === index
+                      ? 'bg-[#c9a84c] text-[#100905] shadow-[0_12px_30px_rgba(201,168,76,0.18)]'
+                      : 'text-[#b8a898] hover:bg-white/[0.04] hover:text-[#e4cc89]'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {activePriceTab === 0 && (
+              <div key={`${priceGender}-laser`} className="price-content space-y-5">
+                  {laserPrices[priceGender].filter((section) => section.items.length > 0).map((section) => (
+                    <section key={section.title}>
+                      <h3 className="price-category-title">{section.title}</h3>
+                      <div className="price-category-grid">
+                        {groupLaserItemsByPrice(section.items).map((group) => (
+                          <div key={`${section.title}-${group.price}`} className="price-row price-laser-row">
+                            <div className="price-service-list min-w-0 flex-1 font-medium text-[#f4ecd8]">
+                              <div className="price-service-name">{formatGroupedServiceNames(group.names)}</div>
+                            </div>
+                            <div className="price-row-actions">
+                              <span className="price-service-value whitespace-nowrap text-sm font-semibold text-[#f4ecd8] sm:text-base">
+                                {group.price}
+                              </span>
+                              <a href={bookingUrl} target="_blank" rel="noopener" className="price-book-button">Записаться</a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+              </div>
+            )}
+
+            {activePriceTab === 1 && (
+              <div key={`${priceGender}-complexes`} className="price-content">
+                <p className="mb-4 text-sm leading-relaxed text-[#b8a898]">
+                  Скидка 30% на любой комплекс лазерной эпиляции при первом посещении.
+                </p>
+
+                <div key={priceGender} className="space-y-2">
+                  {epilationComplexes[priceGender].map((item) => (
+                    <div key={item.name} className="price-row price-complex-row">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-[#f4ecd8]">{item.name}</div>
+                        <div className="mt-1 text-xs leading-relaxed text-[#9d8f82]">{item.detail}</div>
+                      </div>
+                      <div className="price-row-actions price-complex-actions">
+                        <div className="whitespace-nowrap text-sm font-semibold text-[#f4ecd8] sm:text-base">
+                          {item.price} <span className="text-[#9d8f82]">/</span> <span className="text-[#e4cc89]">{item.firstVisitPrice}</span>{' '}
+                          <span className="text-[10px] font-normal text-[#9d8f82]">при первом посещении</span>
+                        </div>
+                        <a href={bookingUrl} target="_blank" rel="noopener" className="price-book-button">Записаться</a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {priceGender === 'women' && activePriceTab === 2 && (
+              <div className="price-content price-category-grid">
+                {massagePrices.map((item) => (
+                  <div key={item.name} className={`price-row ${item.name.startsWith('Вибромассаж TURBO G8') ? 'price-massage-featured' : ''}`}>
+                    {item.name.startsWith('Вибромассаж TURBO G8') ? (
+                      <div className="price-service-copy min-w-0 flex-1">
+                        <div className="price-service-name font-medium text-[#f4ecd8]">{item.name}</div>
+                        <div className="mt-1 text-xs text-[#9d8f82]">{item.price}</div>
+                      </div>
+                    ) : (
+                      <span className="price-service-name min-w-0 flex-1 font-medium text-[#f4ecd8]">{item.name}</span>
+                    )}
+                    <div className="price-row-actions">
+                      {!item.name.startsWith('Вибромассаж TURBO G8') && (
+                        <span className="price-service-value whitespace-nowrap text-sm font-semibold text-[#f4ecd8] sm:text-base">{item.price}</span>
+                      )}
+                      <a href={bookingUrl} target="_blank" rel="noopener" className="price-book-button">Записаться</a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="equipment-section section-shell border-b border-[#c9a84c]/10 bg-[#120b07]">
+          <div className="mx-auto max-w-7xl space-y-6 px-5 lg:px-10">
+            <article className="equipment-module equipment-module-everlas">
+              <div className="equipment-media">
+                <Image
+                  src="/images/equipment/everlas/everlas-procedure-mirrored.png"
+                  alt="Процедура лазерной эпиляции на EVERLAS"
+                  className="equipment-image-everlas"
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 78vw, 998px"
+                  onError={(event) => {
+                    event.currentTarget.hidden = true;
+                  }}
+                />
+              </div>
+              <div className="equipment-copy">
+                <h2 className="equipment-title equipment-title-everlas">Лазерная эпиляция на EVERLAS</h2>
+                <p className="equipment-text">
+                  Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой. Перед началом мастер уточняет противопоказания, осматривает зону и настраивает аппарат.
+                </p>
+                <ul className="equipment-benefits">
+                  <li>Параметры подбирает мастер</li>
+                  <li>Перед процедурой уточняются противопоказания</li>
+                  <li>Во время процедуры используются защитные очки</li>
+                </ul>
+                <p className="equipment-note">
+                  Результат накапливается постепенно, поэтому требуется курс. Число процедур зависит от зоны, кожи и волос.
+                </p>
+                <button type="button" className="gold-button equipment-button" onClick={() => openPriceTab(0)}>
+                  Выбрать зону или комплекс
+                </button>
+              </div>
+            </article>
+
+            <article className="equipment-module equipment-module-reverse equipment-module-turbo">
+              <div className="equipment-media">
+                <Image
+                  src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg"
+                  alt="Процедура аппаратного массажа на TURBO G8"
+                  className="equipment-image-turbo"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 78vw, 998px"
+                  onError={(event) => {
+                    event.currentTarget.hidden = true;
+                  }}
+                />
+              </div>
+              <div className="equipment-copy">
+                <p className="equipment-kicker">Аппаратный массаж</p>
+                <h2 className="equipment-title">Аппаратный массаж на TURBO G8</h2>
+                <p className="equipment-text">
+                  Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.
+                </p>
+                <ul className="equipment-benefits">
+                  <li>Работа с выбранными зонами</li>
+                  <li>Регулируемая интенсивность</li>
+                  <li>Программы для живота, ягодиц и двух зон</li>
+                </ul>
+                <button type="button" className="gold-button equipment-button" onClick={() => openPriceTab(2)}>
+                  Посмотреть программы и цены
+                </button>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -208,59 +658,6 @@ export default function Home() {
                 <img src={`/images/gallery/${index + 1}.jpg`} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
               </div>
             ))}
-          </div>
-        </section>
-
-        <section id="pricing" className="section-shell relative overflow-hidden border-y border-[#c9a84c]/10 bg-[#0d0704]">
-          <div className="absolute left-1/2 top-0 h-[420px] w-[900px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(201,168,76,0.12)_0%,transparent_65%)]" />
-          <div className="relative z-10 mx-auto max-w-5xl px-5 lg:px-10">
-            <div className="mb-12 text-center">
-              <p className="section-kicker">Прайс-лист</p>
-              <h2 className="section-title">Прозрачные цены</h2>
-              <p className="mt-4 text-sm text-[#b8a898]">
-                * Специальная сниженная стоимость по акции применима для первого ознакомительного сеанса
-              </p>
-            </div>
-
-            <div className="mb-9 grid gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-1.5 sm:grid-cols-3">
-              {priceCategories.map((category, index) => (
-                <button
-                  key={category.tab}
-                  type="button"
-                  onClick={() => setActivePriceTab(index)}
-                  className={`rounded-xl px-3 py-3 text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
-                    activePriceTab === index
-                      ? 'bg-[#c9a84c] text-[#100905] shadow-[0_12px_30px_rgba(201,168,76,0.18)]'
-                      : 'text-[#b8a898] hover:bg-white/[0.04] hover:text-[#e4cc89]'
-                  }`}
-                >
-                  {category.tab}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              {priceCategories[activePriceTab].items.map((item) => (
-                <div key={item.name} className={`price-row ${item.popular ? 'price-row-popular' : ''}`}>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-[#f4ecd8]">{item.name}</span>
-                      {item.popular && <span className="hit-badge">Хит продаж</span>}
-                    </div>
-                    <div className="mt-1 text-xs text-[#7a6e62]">{item.detail}</div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-                    {item.promo && <span className="hidden text-xs font-medium text-[#7a6e62] line-through sm:block">{item.price}</span>}
-                    <span className={`whitespace-nowrap text-sm font-semibold sm:text-base ${item.promo ? 'text-[#e4cc89]' : 'text-[#f4ecd8]'}`}>
-                      {item.promo ?? item.price}
-                    </span>
-                    <a href={bookingUrl} target="_blank" rel="noopener" className="hidden rounded-sm border border-[#c9a84c]/30 px-4 py-1.5 text-[10px] uppercase tracking-wider text-[#c9a84c] transition-all hover:border-[#c9a84c] hover:bg-[#c9a84c]/10 sm:inline-flex">
-                      Записаться
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -283,6 +680,87 @@ export default function Home() {
                   </a>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="trust-section section-shell border-t border-[#c9a84c]/10 bg-[#100905]" aria-labelledby="trust-title">
+          <div className="mx-auto max-w-7xl px-5 lg:px-10">
+            <div className="trust-plaque">
+              <span className="trust-plaque-accent" aria-hidden="true" />
+              <div className="trust-header-grid">
+                <div className="trust-award-visual" role="img" aria-label="Награда Яндекс Карт «Хорошее место 2026»">
+                  <div className="trust-award-pin" aria-hidden="true">
+                    <span />
+                  </div>
+                  <div className="trust-award-name" aria-hidden="true">
+                    <span>❧</span>
+                    <strong>Хорошее<br />место</strong>
+                    <span>❧</span>
+                  </div>
+                  <span className="trust-award-year" aria-hidden="true">2026</span>
+                </div>
+
+                <div className="trust-header-copy trust-description-slot">
+                  <h2 id="trust-title" className="trust-title">Хорошее место — 2026</h2>
+                  <p>Награда Яндекс Карт для мест, которые пользователи высоко оценивают, хвалят в отзывах и рекомендуют.</p>
+                </div>
+
+                <div className="trust-award-panel">
+                  <div className="trust-rating-summary" aria-label="Рейтинг 5 из 5">
+                    <strong>5,0</strong>
+                    <span aria-hidden="true">★★★★★</span>
+                  </div>
+                  <p className="trust-counts">119 оценок · 98 отзывов</p>
+                  {yandexMapsUrl && (
+                    <a href={yandexMapsUrl} target="_blank" rel="noopener noreferrer" className="trust-map-link">
+                      Все отзывы в Яндекс Картах
+                    </a>
+                  )}
+                </div>
+              </div>
+
+            {reviews.length > 0 && (
+              <div className="reviews-block">
+                <div className="reviews-toolbar">
+                  <div className="reviews-controls" aria-label="Перелистывание отзывов">
+                    <button type="button" onClick={() => scrollReviews(-1)} aria-label="Предыдущие отзывы">←</button>
+                    <button type="button" onClick={() => scrollReviews(1)} aria-label="Следующие отзывы">→</button>
+                  </div>
+                </div>
+                <div ref={reviewsViewportRef} className="reviews-viewport">
+                  <div className="reviews-track">
+                    {reviews.map((review, index) => {
+                      const isExpanded = expandedReviews.has(index);
+                      const isLong = review.text.length > 220;
+
+                      return (
+                      <article key={`${review.name}-${index}`} className="review-card">
+                        <div className="review-card-top">
+                          <strong>{review.name}</strong>
+                          {review.date && <time>{review.date}</time>}
+                        </div>
+                        <div className="review-stars" aria-label={`Оценка ${review.rating} из 5`}>
+                          {Array.from({ length: 5 }).map((_, star) => (
+                            <span key={star} className={star < review.rating ? 'is-filled' : ''}>★</span>
+                          ))}
+                        </div>
+                        <p className={isExpanded ? 'is-expanded' : ''}>{review.text}</p>
+                        <div className="review-card-footer">
+                          {isLong ? (
+                            <button type="button" onClick={() => toggleReview(index)} aria-expanded={isExpanded}>
+                              {isExpanded ? 'Свернуть' : 'Читать полностью'}
+                            </button>
+                          ) : <span />}
+                          <span>Яндекс Карты</span>
+                        </div>
+                      </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
             </div>
           </div>
         </section>
