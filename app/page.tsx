@@ -213,6 +213,7 @@ export default function Home() {
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const reviewsViewportRef = useRef<HTMLDivElement | null>(null);
+  const reviewsHoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const modules = document.querySelectorAll<HTMLElement>('.equipment-module');
@@ -301,6 +302,31 @@ export default function Home() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     viewport.scrollBy({ left: direction * distance, behavior: reduceMotion ? 'auto' : 'smooth' });
+  };
+
+  const startReviewsHoverScroll = () => {
+    const viewport = reviewsViewportRef.current;
+    if (!viewport || reviewsHoverTimerRef.current !== null) return;
+
+    const advance = () => {
+      const isAtEnd = viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 4;
+
+      if (isAtEnd) {
+        viewport.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        scrollReviews(1);
+      }
+    };
+
+    advance();
+    reviewsHoverTimerRef.current = setInterval(advance, 1800);
+  };
+
+  const stopReviewsHoverScroll = () => {
+    if (reviewsHoverTimerRef.current !== null) {
+      clearInterval(reviewsHoverTimerRef.current);
+      reviewsHoverTimerRef.current = null;
+    }
   };
 
   const toggleReview = (index: number) => {
@@ -728,7 +754,12 @@ export default function Home() {
                     <button type="button" onClick={() => scrollReviews(1)} aria-label="Следующие отзывы">→</button>
                   </div>
                 </div>
-                <div ref={reviewsViewportRef} className="reviews-viewport">
+                <div
+                  ref={reviewsViewportRef}
+                  className="reviews-viewport"
+                  onMouseEnter={startReviewsHoverScroll}
+                  onMouseLeave={stopReviewsHoverScroll}
+                >
                   <div className="reviews-track">
                     {reviews.map((review, index) => {
                       const isExpanded = expandedReviews.has(index);
