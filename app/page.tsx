@@ -387,14 +387,10 @@ export default function Home() {
 
       <main>
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 pt-24 text-center">
-          <div className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center" />
-          <div className="absolute inset-0 bg-[#100905]/65" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(201,168,76,0.18)_0%,rgba(16,9,5,0.18)_38%,#100905_88%)]" />
+          <div className="hero-media absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center" />
+          <div className="hero-media-shade absolute inset-0" />
 
-          <div className="hero-glow hero-glow-one" />
-          <div className="hero-glow hero-glow-two" />
-
-          <div className="relative z-10 mx-auto flex max-w-4xl animate-rise flex-col items-center">
+          <div className="hero-copy relative z-10 mx-auto flex max-w-4xl flex-col items-center">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#e4cc89] md:mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-[#e4cc89] shadow-[0_0_16px_rgba(228,204,137,0.9)]" />
               ViART
@@ -410,13 +406,13 @@ export default function Home() {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener"
-                className="gold-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="gold-button hero-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Выбрать услугу и записаться
               </a>
               <a
                 href="#pricing"
-                className="glass-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="glass-button hero-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Услуги и цены
               </a>
@@ -716,15 +712,14 @@ export default function Home() {
               <span className="trust-plaque-accent" aria-hidden="true" />
               <div className="trust-header-grid">
                 <div className="trust-award-visual" role="img" aria-label="Награда Яндекс Карт «Хорошее место 2026»">
-                  <div className="trust-award-pin" aria-hidden="true">
-                    <span />
-                  </div>
-                  <div className="trust-award-name" aria-hidden="true">
-                    <span>❧</span>
-                    <strong>Хорошее<br />место</strong>
-                    <span>❧</span>
-                  </div>
-                  <span className="trust-award-year" aria-hidden="true">2026</span>
+                  <Image
+                    src="/images/awards/good-place-2026-source.png"
+                    alt=""
+                    className="trust-award-image"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 767px) 10.5rem, 12rem"
+                  />
                 </div>
 
                 <div className="trust-header-copy trust-description-slot">
