@@ -11,3 +11,10 @@ Creating turbopack project {
   testMode: true
 }
 
+ GET / 200 in 961ms (next.js: 694ms, application-code: 267ms)
+ GET / 200 in 123ms (next.js: 14ms, application-code: 110ms)
+ GET /videos/viart-master-work.mp4 404 in 392ms (next.js: 176ms, application-code: 216ms)
+ GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 414ms (next.js: 103ms, application-code: 310ms)
+ GET / 200 in 80ms (next.js: 9ms, application-code: 71ms)
+ GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 292ms (next.js: 46ms, application-code: 246ms)
+ GET /videos/viart-master-work.mp4 404 in 305ms (next.js: 144ms, application-code: 161ms)
