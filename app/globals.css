@@ -105,47 +105,35 @@ body {
 
 .hero-media-shade {
   background:
-    linear-gradient(90deg, rgba(16, 9, 5, 0.68) 0%, rgba(16, 9, 5, 0.52) 32%, rgba(16, 9, 5, 0.16) 62%, transparent 84%),
+    linear-gradient(90deg, rgba(16, 9, 5, 0.78) 0%, rgba(16, 9, 5, 0.66) 30%, rgba(16, 9, 5, 0.28) 50%, rgba(16, 9, 5, 0.06) 66%, transparent 76%),
     linear-gradient(180deg, rgba(16, 9, 5, 0.14) 0%, transparent 28%, transparent 78%, rgba(16, 9, 5, 0.24) 100%);
 }
 
 .hero-copy {
-  width: min(100%, 46rem);
+  width: min(100%, 43rem);
   margin-right: auto;
   margin-left: max(0px, calc((100vw - 80rem) / 2));
   animation: heroCopyIn 320ms ease-out 80ms both;
 }
 
-.hero-eyebrow {
-  border: 1px solid rgba(214, 186, 104, 0.32);
-  border-radius: 9999px;
-  padding: 0.45rem 0.8rem;
-  color: #eadba9;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .hero-title {
-  max-width: 46rem;
+  max-width: 43rem;
   color: #f5efdf;
-  font-size: clamp(2.55rem, 5.4vw, 5rem);
-  font-weight: 450;
-  letter-spacing: -0.035em;
-  line-height: 0.98;
+  font-size: clamp(3.35rem, 4.8vw, 4.35rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.96;
   text-wrap: balance;
 }
 
 .hero-promo {
-  color: rgba(245, 239, 223, 0.86);
-  font-size: clamp(0.92rem, 1.35vw, 1.05rem);
-  font-weight: 450;
-  line-height: 1.5;
+  color: rgba(250, 246, 235, 0.96);
+  font-size: clamp(1rem, 1.45vw, 1.16rem);
+  font-weight: 500;
+  line-height: 1.45;
 }
 
 .hero-actions {
-  max-width: 42rem;
   align-items: center;
 }
 
@@ -158,8 +146,9 @@ body {
 }
 
 .hero-button-primary {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   background: #d8b85f;
+  font-weight: 600;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
 }
 

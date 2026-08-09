@@ -391,17 +391,13 @@ export default function Home() {
           <div className="hero-media-shade absolute inset-0" />
 
           <div className="hero-copy relative z-10 flex flex-col items-start">
-            <p className="hero-eyebrow mb-4 inline-flex items-center gap-2 md:mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d6ba68]" />
-              ViART
-            </p>
             <h1 className="hero-title">
               Лазерная эпиляция и аппаратный массаж в Коммунарке
             </h1>
-            <p className="hero-promo mt-5 max-w-2xl md:mt-6">
+            <p className="hero-promo mt-6 max-w-2xl md:mt-7">
               Скидка 30% на любой комплекс при первом посещении
             </p>
-            <div className="hero-actions mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:flex-row">
+            <div className="hero-actions mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <a
                 href={bookingUrl}
                 target="_blank"
@@ -412,7 +408,7 @@ export default function Home() {
               </a>
               <a
                 href="#pricing"
-                className="glass-button hero-button hero-button-secondary h-14 w-full px-7 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="glass-button hero-button hero-button-secondary h-16 w-full px-7 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Услуги и цены
               </a>
