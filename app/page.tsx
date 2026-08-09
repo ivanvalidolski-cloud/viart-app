@@ -386,33 +386,33 @@ export default function Home() {
       </div>
 
       <main>
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 pt-24 text-center">
+        <section className="hero-section relative flex min-h-screen items-center overflow-hidden px-5 pt-24">
           <div className="hero-media absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center" />
           <div className="hero-media-shade absolute inset-0" />
 
-          <div className="hero-copy relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#c9a84c]/25 bg-[#c9a84c]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#e4cc89] md:mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#e4cc89] shadow-[0_0_16px_rgba(228,204,137,0.9)]" />
+          <div className="hero-copy relative z-10 flex flex-col items-start">
+            <p className="hero-eyebrow mb-4 inline-flex items-center gap-2 md:mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d6ba68]" />
               ViART
             </p>
-            <h1 className="font-serif text-[clamp(2.1rem,7vw,4.5rem)] font-light leading-[1.04] tracking-wide text-[#e4cc89] drop-shadow-2xl">
+            <h1 className="hero-title">
               Лазерная эпиляция и аппаратный массаж в Коммунарке
             </h1>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-[#f4ecd8] md:mt-6 md:text-base">
+            <p className="hero-promo mt-5 max-w-2xl md:mt-6">
               Скидка 30% на любой комплекс при первом посещении
             </p>
-            <div className="mt-6 flex w-full max-w-xl flex-col gap-3 sm:mt-8 sm:flex-row">
+            <div className="hero-actions mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:flex-row">
               <a
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener"
-                className="gold-button hero-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="gold-button hero-button hero-button-primary h-16 w-full px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Выбрать услугу и записаться
               </a>
               <a
                 href="#pricing"
-                className="glass-button hero-button h-16 w-full flex-1 px-8 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
+                className="glass-button hero-button hero-button-secondary h-14 w-full px-7 text-center leading-snug focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f4ecd8] sm:w-auto"
               >
                 Услуги и цены
               </a>
