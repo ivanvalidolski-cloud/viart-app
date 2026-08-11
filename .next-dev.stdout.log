@@ -29,3 +29,6 @@ Creating turbopack project {
  GET /videos/publicvideosviart-studio-procedure.mp4.mp4 404 in 3.4s (next.js: 1074ms, application-code: 2.3s)
  GET / 200 in 990ms (next.js: 677ms, application-code: 312ms)
 ✓ Compiled in 1706ms
+✓ Compiled in 335ms
+ GET / 200 in 624ms (next.js: 373ms, application-code: 251ms)
+✓ Compiled in 715ms
