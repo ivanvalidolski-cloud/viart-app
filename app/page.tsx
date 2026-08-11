@@ -173,28 +173,6 @@ export default function Home() {
     };
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    const targets = document.querySelectorAll<HTMLElement>('.js-reveal');
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      targets.forEach((target) => target.classList.add('is-visible'));
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.14 },
-    );
-    targets.forEach((target) => observer.observe(target));
-    return () => observer.disconnect();
-  }, []);
-
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
     if (gender === 'men' && activePriceTab === 2) setActivePriceTab(0);
@@ -274,7 +252,7 @@ export default function Home() {
               <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
             </div>
 
-            <div className="hero-media js-reveal">
+            <div className="hero-media">
               <Image
                 src="/images/hero-bg.jpg"
                 alt="Процедура аппаратного массажа в студии ViART"
@@ -302,16 +280,16 @@ export default function Home() {
         <section id="studio" className="chapter studio-chapter">
           <div className="chapter-index tech-label">02 / STUDIO</div>
           <div className="studio-layout">
-            <figure className="studio-main-media media-reveal js-reveal">
+            <figure className="studio-main-media">
               <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
             </figure>
-            <div className="studio-copy js-reveal">
+            <div className="studio-copy">
               <p className="eyebrow">Атмосфера ViART</p>
               <h2>Спокойное пространство для регулярных процедур</h2>
               <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
               <p>Понятный сценарий записи, спокойная обстановка и реальные материалы студии — без лишней сложности до и во время визита.</p>
             </div>
-            <figure className="studio-support-media media-reveal js-reveal">
+            <figure className="studio-support-media">
               <Image src="/images/gallery/5.jpg" alt="Детали интерьера студии ViART" fill sizes="(max-width: 767px) 100vw, 40vw" className="cover-image" />
             </figure>
           </div>
@@ -407,7 +385,7 @@ export default function Home() {
 
         <section id="everlas" className="chapter everlas-chapter">
           <div className="everlas-stage">
-            <div className="everlas-media js-reveal">
+            <div className="everlas-media">
               <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
               <span className="scan-line" aria-hidden="true" />
               <div className="equipment-coordinates tech-label"><span>EVERLAS</span><span>PRECISION MODE</span><span>04 / 10</span></div>
@@ -435,7 +413,7 @@ export default function Home() {
             <p className="chapter-index tech-label">05 / MOVEMENT & SURFACE</p>
             <h2>Аппаратный массаж<br />на TURBO G8</h2>
           </div>
-          <div className="turbo-media js-reveal">
+          <div className="turbo-media">
             <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Процедура аппаратного массажа на TURBO G8" fill sizes="(max-width: 767px) 100vw, 70vw" className="cover-image" />
           </div>
           <div className="turbo-copy">
@@ -473,7 +451,7 @@ export default function Home() {
         </section>
 
         <section id="video" className="chapter video-chapter">
-          <div className="master-media js-reveal">
+          <div className="master-media">
             <video
               ref={masterVideoRef}
               src="/videos/viart-procedure-prep.mp4"
@@ -514,7 +492,7 @@ export default function Home() {
             <div className="master-rim" aria-hidden="true" />
           </div>
           <div className="video-context">
-            <p className="chapter-index tech-label">07 / VIDEO</p>
+            <p className="chapter-index tech-label">07 / VIDEO GALLERY</p>
             <h2>Знакомство с ViART</h2>
             <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
             <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
