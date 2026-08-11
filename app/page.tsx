@@ -207,11 +207,14 @@ const promoCards = [
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHeaderSolid, setIsHeaderSolid] = useState(false);
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [activeVideoSrc, setActiveVideoSrc] = useState<string | null>(null);
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement | null>(null);
   const reviewsViewportRef = useRef<HTMLDivElement | null>(null);
   const reviewsHoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -235,6 +238,44 @@ export default function Home() {
     modules.forEach((module) => observer.observe(module));
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const updateHeaderSurface = () => {
+      const hero = document.querySelector<HTMLElement>('.hero-section');
+      const heroEnd = hero ? hero.offsetTop + hero.offsetHeight - 72 : 24;
+      setIsHeaderSolid(window.scrollY >= heroEnd);
+    };
+
+    updateHeaderSurface();
+    window.addEventListener('scroll', updateHeaderSurface, { passive: true });
+    window.addEventListener('resize', updateHeaderSurface);
+
+    return () => {
+      window.removeEventListener('scroll', updateHeaderSurface);
+      window.removeEventListener('resize', updateHeaderSurface);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+    mobileMenuFirstLinkRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const handleVideoPlay = (event: SyntheticEvent<HTMLVideoElement>) => {
     document.querySelectorAll<HTMLVideoElement>('.viart-vertical-video').forEach((video) => {
@@ -340,64 +381,79 @@ export default function Home() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#100905] text-[#f4ecd8] antialiased">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#c9a84c]/15 bg-[#100905]/85 px-5 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between">
-          <a href="#" className="font-serif text-2xl font-semibold tracking-wide text-[#e4cc89]">
+      <header className={`viart-header ${isHeaderSolid || isMenuOpen ? 'viart-header--solid' : ''}`}>
+        <div className="viart-header__inner">
+          <a href="#" className="viart-header__logo" aria-label="ViART — на главную">
             ViART
           </a>
 
-          <nav className="hidden items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b8a898] lg:flex">
-            <a className="nav-link" href="#about">О студии</a>
-            <a className="nav-link" href="#pricing">Цены</a>
-            <a className="nav-link" href="#promo">Акции</a>
-            <a className="nav-link" href="#contacts">Контакты</a>
-            <a className="gold-button px-5 py-2.5" href={bookingUrl} target="_blank" rel="noopener">
+          <nav className="viart-header__nav" aria-label="Основная навигация">
+            <a href="#about">О студии</a>
+            <a href="#pricing">Цены</a>
+            <a href="#promo">Акции</a>
+            <a href="#contacts">Контакты</a>
+            <a className="viart-header__booking" href={bookingUrl} target="_blank" rel="noopener">
               Записаться
             </a>
           </nav>
 
-          <button
-            type="button"
-            aria-label="Меню"
-            onClick={() => setIsMenuOpen((value) => !value)}
-            className="relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 lg:hidden"
-          >
-            <span className={`h-0.5 w-6 bg-[#f4ecd8] transition-transform duration-300 ${isMenuOpen ? 'translate-y-2 rotate-45' : ''}`} />
-            <span className={`h-0.5 w-6 bg-[#f4ecd8] transition-opacity duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
-            <span className={`h-0.5 w-6 bg-[#f4ecd8] transition-transform duration-300 ${isMenuOpen ? '-translate-y-2 -rotate-45' : ''}`} />
-          </button>
+          <div className="viart-header__mobile-actions">
+            <a className="viart-header__booking viart-header__mobile-booking" href={bookingUrl} target="_blank" rel="noopener">
+              Записаться
+            </a>
+            <button
+              ref={menuButtonRef}
+              type="button"
+              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-navigation"
+              onClick={() => setIsMenuOpen((value) => !value)}
+              className={`viart-header__menu-button ${isMenuOpen ? 'is-open' : ''}`}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className={`fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-[#100905] text-2xl font-light transition-all duration-300 lg:hidden ${isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}>
+      <div id="mobile-navigation" role="dialog" aria-modal={isMenuOpen} aria-label="Навигация" aria-hidden={!isMenuOpen} className={`viart-mobile-menu ${isMenuOpen ? 'is-open' : ''}`}>
+        <a ref={mobileMenuFirstLinkRef} href={bookingUrl} target="_blank" rel="noopener" onClick={() => setIsMenuOpen(false)} className="viart-mobile-menu__booking">
+          Записаться онлайн
+        </a>
         {[
           ['О студии', '#about'],
           ['Цены', '#pricing'],
           ['Акции', '#promo'],
           ['Контакты', '#contacts'],
         ].map(([label, href]) => (
-          <a key={href} href={href} onClick={() => setIsMenuOpen(false)} className="font-serif text-[#f4ecd8]">
+          <a key={href} href={href} onClick={() => setIsMenuOpen(false)} className="viart-mobile-menu__link">
             {label}
           </a>
         ))}
-        <a href={bookingUrl} target="_blank" rel="noopener" className="gold-button mt-3 px-7 py-3 text-xs">
-          Записаться онлайн
-        </a>
       </div>
 
       <main>
-        <section className="hero-section relative flex min-h-screen items-center overflow-hidden px-5 pt-24">
-          <div className="hero-media absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center" />
-          <div className="hero-media-shade absolute inset-0" />
+        <section className="hero-section relative overflow-hidden">
+          <Image
+            src="/images/hero-bg.jpg"
+            alt="Аппаратный массаж в студии ViART"
+            fill
+            priority
+            sizes="100vw"
+            className="hero-background"
+          />
+          <div className="hero-background-shade" aria-hidden="true" />
 
-          <div className="hero-copy relative z-10 flex flex-col items-start">
+          <div className="hero-copy relative z-10 flex flex-col items-center px-5 text-center">
             <h1 className="hero-title">
               Лазерная эпиляция и аппаратный массаж в Коммунарке
             </h1>
-            <p className="hero-promo mt-6 max-w-2xl md:mt-7">
+            <p className="hero-promo">
               Скидка 30% на любой комплекс при первом посещении
             </p>
-            <div className="hero-actions mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <div className="hero-actions flex w-full flex-col sm:w-auto sm:flex-row">
               <a
                 href={bookingUrl}
                 target="_blank"
@@ -416,24 +472,45 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="about" className="section-shell border-t border-[#c9a84c]/10 bg-[#120b07]">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 lg:grid-cols-[1fr_0.8fr] lg:px-10">
-            <div className="animate-rise">
-              <p className="section-kicker">О студии</p>
-              <h2 className="section-title">О студии ViART</h2>
-              <p className="mt-6 max-w-2xl text-sm leading-relaxed text-[#b8a898] md:text-base">
-                ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь можно выбрать отдельную процедуру или комплекс и записаться онлайн в удобное время.
-              </p>
-
-            </div>
-
-            <div className="relative hidden items-center justify-center lg:flex">
-              <div className="brand-orbit">
-                <span>ViART</span>
+        <section id="about" className="about-editorial border-t border-[#c9a84c]/10 bg-[#120b07]">
+          <div className="about-editorial-layout">
+            <div className="about-editorial-left">
+              <div className="about-editorial-copy about-copy-reveal">
+                <h2 className="section-title">Студия в Коммунарке для регулярных процедур</h2>
+                <div className="about-editorial-body">
+                  <p>
+                    ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь можно выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость услуг.
+                  </p>
+                  <p>
+                    Мы хотим, чтобы посещение студии легко встраивалось в обычный график: без лишней сложности при выборе процедуры, с понятной стоимостью и спокойной обстановкой.
+                  </p>
+                  <p>
+                    Пространство студии, оборудование и сам процесс можно увидеть на сайте до записи — дальше на странице покажем атмосферу, процедуры и варианты услуг подробнее.
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
 
+              <figure className="about-editorial-detail about-media-reveal">
+                <Image
+                  src="/images/gallery/3.jpg"
+                  alt="Зона подготовки в студии ViART"
+                  fill
+                  sizes="(min-width: 1024px) 28vw, 64vw"
+                  className="object-cover"
+                />
+              </figure>
+            </div>
+
+            <figure className="about-editorial-main about-media-reveal">
+              <Image
+                src="/images/gallery/8.jpg"
+                alt="Пространство студии ViART"
+                fill
+                sizes="(min-width: 1024px) 55vw, 94vw"
+                className="object-cover"
+              />
+            </figure>
+          </div>
         </section>
 
         <section className="section-shell border-t border-[#c9a84c]/10 bg-[#100905]">
