@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Onest } from "next/font/google";
+import { Geist, Geist_Mono, Martian_Mono, Onest } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +17,11 @@ const onest = Onest({
   subsets: ["latin", "cyrillic"],
 });
 
+const martianMono = Martian_Mono({
+  variable: "--font-martian",
+  subsets: ["latin", "cyrillic"],
+});
+
 export const metadata: Metadata = {
   title: "ViART — студия лазерной эпиляции",
   description: "Лазерная эпиляция и массаж в Москве. Современное оборудование, чистота и аккуратный сервис.",
@@ -30,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${geistSans.variable} ${geistMono.variable} ${onest.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${onest.variable} ${martianMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
