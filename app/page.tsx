@@ -93,6 +93,7 @@ const massagePrices = [
 ];
 
 type Review = { name: string; rating: number; text: string; date?: string };
+type VideoState = 'poster' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
 
 const reviews: Review[] = [
   {
@@ -154,7 +155,7 @@ export default function Home() {
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [galleryIndex, setGalleryIndex] = useState(3);
   const [reviewIndex, setReviewIndex] = useState(0);
-  const [isMasterPlaying, setIsMasterPlaying] = useState(false);
+  const [videoState, setVideoState] = useState<VideoState>('poster');
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -215,9 +216,11 @@ export default function Home() {
   const playMasterVideo = () => {
     const video = masterVideoRef.current;
     if (!video) return;
+    if (videoState === 'error') video.load();
+    if (videoState === 'ended') video.currentTime = 0;
     video.muted = false;
-    setIsMasterPlaying(true);
-    video.play().catch(() => setIsMasterPlaying(false));
+    setVideoState('loading');
+    video.play().catch(() => setVideoState('error'));
   };
 
   const activeReview = reviews[reviewIndex];
@@ -469,7 +472,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="promo" className="chapter master-chapter">
+        <section id="video" className="chapter video-chapter">
           <div className="master-media js-reveal">
             <video
               ref={masterVideoRef}
@@ -477,19 +480,53 @@ export default function Home() {
               poster="/images/gallery/4.jpg"
               playsInline
               preload="metadata"
-              controls={isMasterPlaying}
-              onEnded={() => setIsMasterPlaying(false)}
+              controls={videoState === 'playing'}
+              onPlay={() => setVideoState('playing')}
+              onPlaying={() => setVideoState('playing')}
+              onWaiting={() => setVideoState('loading')}
+              onPause={(event) => {
+                if (!event.currentTarget.ended) setVideoState('paused');
+              }}
+              onEnded={() => setVideoState('ended')}
+              onError={() => setVideoState('error')}
             />
-            {!isMasterPlaying && (
-              <button type="button" className="master-play" onClick={playMasterVideo} aria-label="Воспроизвести видео">
-                <span>▶</span><small className="tech-label">PLAY / FULL VIDEO</small>
+            {videoState !== 'playing' && videoState !== 'error' && (
+              <button
+                type="button"
+                className="master-play"
+                onClick={playMasterVideo}
+                aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
+                disabled={videoState === 'loading'}
+              >
+                <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
+                <small className="tech-label">
+                  {videoState === 'loading' ? 'LOADING' : videoState === 'paused' ? 'CONTINUE' : videoState === 'ended' ? 'REPLAY' : 'PLAY / FULL VIDEO'}
+                </small>
               </button>
+            )}
+            {videoState === 'error' && (
+              <div className="master-error" role="alert">
+                <span className="tech-label">VIDEO / ERROR</span>
+                <p>Видео временно недоступно.</p>
+                <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
+              </div>
             )}
             <div className="master-rim" aria-hidden="true" />
           </div>
-          <div className="master-offer">
-            <p className="chapter-index tech-label">07 / FIRST VISIT</p>
+          <div className="video-context">
+            <p className="chapter-index tech-label">07 / VIDEO</p>
+            <h2>Знакомство с ViART</h2>
+            <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
+            <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
+          </div>
+        </section>
+
+        <section id="promo" className="chapter first-visit-chapter">
+          <div className="first-visit-heading">
+            <p className="chapter-index tech-label">08 / FIRST VISIT</p>
             <h2>Запишитесь на комплекс со скидкой 30%</h2>
+          </div>
+          <div className="first-visit-action">
             <p>Скидка действует на любой комплекс при первом посещении.</p>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать комплекс и записаться</a>
             <a className="text-link" href="#pricing">Вернуться к составам и ценам <span>↑</span></a>
@@ -498,7 +535,7 @@ export default function Home() {
 
         <section id="reviews" className="chapter reviews-chapter">
           <div className="rating-anchor">
-            <p className="chapter-index tech-label">08 / YANDEX REVIEWS</p>
+            <p className="chapter-index tech-label">09 / YANDEX REVIEWS</p>
             <strong>5,0</strong>
             <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
             <p>119 оценок · 98 отзывов</p>
@@ -522,7 +559,7 @@ export default function Home() {
         <section id="contacts" className="closure-section">
           <div className="closure-trace" aria-hidden="true" />
           <div className="closure-message">
-            <p className="chapter-index tech-label">09 / BOOKING</p>
+            <p className="chapter-index tech-label">10 / BOOKING</p>
             <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться в ViART</a>
           </div>
