@@ -380,7 +380,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#100905] text-[#f4ecd8] antialiased">
+    <div className="viart-page min-h-screen overflow-x-hidden text-[#f4ecd8] antialiased">
       <header className={`viart-header ${isHeaderSolid || isMenuOpen ? 'viart-header--solid' : ''}`}>
         <div className="viart-header__inner">
           <a href="#" className="viart-header__logo" aria-label="ViART — на главную">
@@ -472,7 +472,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="about" className="about-editorial border-t border-[#c9a84c]/10 bg-[#120b07]">
+        <section id="about" className="about-editorial surface-tonal-warm border-t border-[#c9a84c]/10">
           <div className="about-editorial-layout">
             <div className="about-editorial-left">
               <div className="about-editorial-copy about-copy-reveal">
@@ -513,7 +513,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section-shell border-t border-[#c9a84c]/10 bg-[#100905]">
+        <section className="section-shell surface-deep border-t border-[#c9a84c]/10">
           <div className="mx-auto max-w-7xl px-5 lg:px-10">
             <div className="mb-10 text-center">
               <p className="section-kicker">ViART</p>
@@ -564,8 +564,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="pricing" className="pricing-section section-shell relative overflow-hidden border-y border-[#c9a84c]/10 bg-[#0d0704]">
-          <div className="absolute left-1/2 top-0 h-[420px] w-[900px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(201,168,76,0.12)_0%,transparent_65%)]" />
+        <section id="pricing" className="pricing-section section-shell surface-tonal-plum relative overflow-hidden border-y border-[#c9a84c]/10">
           <div className="relative z-10 mx-auto max-w-5xl px-5 lg:px-10">
             <div className="price-gender-switch-wrap">
               <div className={`price-gender-switch ${priceGender === 'men' ? 'is-men' : ''}`} aria-label="Выбор пола для прайса">
@@ -679,7 +678,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="equipment-section section-shell border-b border-[#c9a84c]/10 bg-[#120b07]">
+        <section className="equipment-section section-shell surface-deep border-b border-[#c9a84c]/10">
           <div className="mx-auto max-w-7xl space-y-6 px-5 lg:px-10">
             <article className="equipment-module equipment-module-everlas">
               <div className="equipment-media">
@@ -746,7 +745,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section-shell bg-[#100905]">
+        <section className="section-shell surface-deep">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 md:grid-cols-4 lg:px-10">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="gallery-tile">
@@ -756,7 +755,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="promo" className="section-shell bg-[#120b07]">
+        <section id="promo" className="section-shell surface-deep">
           <div className="mx-auto max-w-7xl px-5 lg:px-10">
             <div className="mb-12 text-center">
               <p className="section-kicker">Акции</p>
@@ -779,7 +778,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="trust-section section-shell border-t border-[#c9a84c]/10 bg-[#100905]" aria-labelledby="trust-title">
+        <section className="trust-section section-shell surface-tonal-plum border-t border-[#c9a84c]/10" aria-labelledby="trust-title">
           <div className="mx-auto max-w-7xl px-5 lg:px-10">
             <div className="trust-plaque">
               <span className="trust-plaque-accent" aria-hidden="true" />
@@ -864,7 +863,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="contacts" className="section-shell border-t border-[#c9a84c]/10 bg-[#100905]">
+        <section id="contacts" className="section-shell surface-deep-calm border-t border-[#c9a84c]/10">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 lg:grid-cols-2 lg:px-10">
             <div className="flex flex-col justify-center">
               <p className="section-kicker">Контакты</p>
@@ -888,7 +887,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-[#c9a84c]/15 bg-[#0d0704] px-5 py-8 text-center text-xs text-[#7a6e62]">
+      <footer className="surface-deep-calm border-t border-[#c9a84c]/15 px-5 py-8 text-center text-xs text-[#7a6e62]">
         © 2026 ViART · Москва
       </footer>
     </div>

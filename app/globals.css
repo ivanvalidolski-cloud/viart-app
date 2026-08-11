@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #100905;
+  --background: #120b08;
   --foreground: #f4ecd8;
+  --surface-deep: #120b08;
+  --surface-deep-low: #0f0907;
+  --surface-warm: #19100c;
+  --surface-plum: #18100f;
 }
 
 html {
@@ -18,6 +22,41 @@ body {
 ::selection {
   background: rgba(201, 168, 76, 0.35);
   color: #fff8e8;
+}
+
+.viart-page {
+  background: var(--surface-deep);
+}
+
+.surface-deep {
+  background: linear-gradient(180deg, var(--surface-deep-low) 0%, var(--surface-deep) 18%, var(--surface-deep) 82%, var(--surface-deep-low) 100%);
+}
+
+.surface-deep-calm {
+  background: linear-gradient(180deg, var(--surface-deep) 0%, var(--surface-deep-low) 100%);
+}
+
+.surface-tonal-warm {
+  background: linear-gradient(180deg, #15100c 0%, var(--surface-warm) 20%, var(--surface-warm) 78%, #140d0a 100%);
+}
+
+.surface-tonal-plum {
+  background: linear-gradient(180deg, #140d0b 0%, var(--surface-plum) 20%, var(--surface-plum) 80%, #120b09 100%);
+}
+
+@media (max-width: 767px) {
+  .surface-deep,
+  .surface-deep-calm {
+    background: var(--surface-deep);
+  }
+
+  .surface-tonal-warm {
+    background: #17100c;
+  }
+
+  .surface-tonal-plum {
+    background: #16100e;
+  }
 }
 
 .viart-header {
@@ -494,7 +533,7 @@ body {
   min-height: 100svh;
   place-items: center;
   padding: 6.5rem 1.25rem 2.5rem;
-  background: #100905;
+  background: var(--surface-deep-low);
 }
 
 .hero-background {
@@ -507,8 +546,8 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(16, 9, 5, 0.36) 0%, rgba(16, 9, 5, 0.14) 38%, rgba(16, 9, 5, 0.42) 100%),
-    rgba(16, 9, 5, 0.14);
+    linear-gradient(180deg, rgba(18, 11, 8, 0.36) 0%, rgba(18, 11, 8, 0.14) 38%, rgba(15, 9, 7, 0.48) 100%),
+    rgba(18, 11, 8, 0.14);
 }
 
 .hero-copy {
