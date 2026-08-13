@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -93,7 +93,8 @@ const massagePrices = [
 ];
 
 type Review = { name: string; rating: number; text: string; date?: string };
-type VideoState = 'poster' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
+type VideoState = 'poster' | 'preview' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
+type GalleryRole = 'active' | 'support-one' | 'support-two' | 'support-three' | 'hidden';
 
 const reviews: Review[] = [
   {
@@ -147,16 +148,41 @@ const reviews: Review[] = [
 ];
 
 const galleryImages = Array.from({ length: 8 }, (_, index) => `/images/gallery/${index + 1}.jpg`);
+const initialGalleryOrder = [3, 2, 4, 5, 0, 1, 6, 7];
+
+const galleryRoleAt = (position: number): GalleryRole => {
+  if (position === 0) return 'active';
+  if (position === 1) return 'support-one';
+  if (position === 2) return 'support-two';
+  if (position === 3) return 'support-three';
+  return 'hidden';
+};
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderSolid, setIsHeaderSolid] = useState(false);
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
-  const [galleryIndex, setGalleryIndex] = useState(3);
+  const [galleryOrder, setGalleryOrder] = useState(initialGalleryOrder);
+  const [galleryExchangeIndex, setGalleryExchangeIndex] = useState<number | null>(null);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [videoState, setVideoState] = useState<VideoState>('poster');
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isVideoEngaged, setIsVideoEngaged] = useState(false);
+  const [isFirstVisitEngaged, setIsFirstVisitEngaged] = useState(false);
+  const galleryOrderRef = useRef(initialGalleryOrder);
+  const galleryIntentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const galleryPrepareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const galleryExchangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const galleryHoverLockUntilRef = useRef(0);
+  const galleryTouchLockUntilRef = useRef(0);
+  const galleryTouchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const videoStateRef = useRef<VideoState>('poster');
+  const intentionalAudioRef = useRef(false);
+  const isVideoInViewRef = useRef(false);
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
+  const videoChapterRef = useRef<HTMLElement | null>(null);
+  const firstVisitRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onScroll = () => setIsHeaderSolid(window.scrollY > 32);
@@ -173,6 +199,86 @@ export default function Home() {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => () => {
+    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
+    if (galleryPrepareTimerRef.current) clearTimeout(galleryPrepareTimerRef.current);
+    if (galleryExchangeTimerRef.current) clearTimeout(galleryExchangeTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    const section = videoChapterRef.current;
+    if (!section) return;
+
+    if (!('IntersectionObserver' in window)) {
+      isVideoInViewRef.current = true;
+      setIsVideoEngaged(true);
+      return;
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const observer = new IntersectionObserver(([entry]) => {
+      const engaged = entry.isIntersecting && entry.intersectionRatio >= 0.08;
+      isVideoInViewRef.current = engaged;
+      if (engaged) setIsVideoEngaged(true);
+
+      const video = masterVideoRef.current;
+      if (!video) return;
+
+      if (engaged && !reducedMotion.matches && videoStateRef.current === 'poster') {
+        intentionalAudioRef.current = false;
+        setIsAudioEnabled(false);
+        video.muted = true;
+        video.play().catch(() => {
+          videoStateRef.current = 'poster';
+          setVideoState('poster');
+        });
+      } else if (!engaged && !video.paused) {
+        const wasIntentional = videoStateRef.current === 'playing' || intentionalAudioRef.current;
+        video.pause();
+        if (!wasIntentional) video.currentTime = 0;
+        video.muted = true;
+        intentionalAudioRef.current = false;
+        setIsAudioEnabled(false);
+        videoStateRef.current = wasIntentional ? 'paused' : 'poster';
+        setVideoState(wasIntentional ? 'paused' : 'poster');
+      }
+    }, { threshold: [0, 0.08, 0.3, 0.6] });
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const section = firstVisitRef.current;
+    if (!section) return;
+
+    if (!('IntersectionObserver' in window)) {
+      setIsFirstVisitEngaged(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      const engaged = entry.isIntersecting && entry.intersectionRatio >= 0.1;
+      if (engaged) setIsFirstVisitEngaged(true);
+      if (!engaged) return;
+
+      const video = masterVideoRef.current;
+      if (!video || video.paused) return;
+
+      const wasIntentional = videoStateRef.current === 'playing' || intentionalAudioRef.current;
+      video.pause();
+      if (!wasIntentional) video.currentTime = 0;
+      video.muted = true;
+      intentionalAudioRef.current = false;
+      setIsAudioEnabled(false);
+      videoStateRef.current = wasIntentional ? 'paused' : 'poster';
+      setVideoState(wasIntentional ? 'paused' : 'poster');
+    }, { threshold: [0, 0.1, 0.35] });
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
     if (gender === 'men' && activePriceTab === 2) setActivePriceTab(0);
@@ -183,8 +289,87 @@ export default function Home() {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const changeGallery = (direction: number) => {
-    setGalleryIndex((current) => (current + direction + galleryImages.length) % galleryImages.length);
+  const commitGalleryOrder = (nextOrder: number[]) => {
+    galleryOrderRef.current = nextOrder;
+    setGalleryOrder(nextOrder);
+  };
+
+  const markGalleryExchange = (index: number) => {
+    if (galleryExchangeTimerRef.current) clearTimeout(galleryExchangeTimerRef.current);
+    setGalleryExchangeIndex(index);
+    galleryExchangeTimerRef.current = setTimeout(() => setGalleryExchangeIndex(null), 680);
+  };
+
+  const promoteGalleryMedia = (index: number) => {
+    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
+    if (galleryPrepareTimerRef.current) clearTimeout(galleryPrepareTimerRef.current);
+
+    const currentOrder = galleryOrderRef.current;
+    const currentPosition = currentOrder.indexOf(index);
+    if (currentPosition <= 0) return;
+
+    const exchange = () => {
+      const readyOrder = [...galleryOrderRef.current];
+      const readyPosition = readyOrder.indexOf(index);
+      if (readyPosition <= 0) return;
+      [readyOrder[0], readyOrder[readyPosition]] = [readyOrder[readyPosition], readyOrder[0]];
+      commitGalleryOrder(readyOrder);
+      if (!isVideoInViewRef.current) setIsVideoEngaged(false);
+      galleryHoverLockUntilRef.current = Date.now() + 720;
+      markGalleryExchange(index);
+    };
+
+    if (currentPosition > 3) {
+      const preparedOrder = [...currentOrder];
+      [preparedOrder[3], preparedOrder[currentPosition]] = [preparedOrder[currentPosition], preparedOrder[3]];
+      commitGalleryOrder(preparedOrder);
+      galleryPrepareTimerRef.current = setTimeout(exchange, 170);
+      return;
+    }
+
+    exchange();
+  };
+
+  const queueGalleryMedia = (index: number, respectHoverLock = false) => {
+    if (Date.now() < galleryTouchLockUntilRef.current) return;
+    if (respectHoverLock && Date.now() < galleryHoverLockUntilRef.current) return;
+    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
+    galleryIntentTimerRef.current = setTimeout(() => promoteGalleryMedia(index), 140);
+  };
+
+  const cancelGalleryIntent = () => {
+    if (!galleryIntentTimerRef.current) return;
+    clearTimeout(galleryIntentTimerRef.current);
+    galleryIntentTimerRef.current = null;
+  };
+
+  const stepGallery = (direction: number) => {
+    const currentIndex = galleryOrderRef.current[0];
+    promoteGalleryMedia((currentIndex + direction + galleryImages.length) % galleryImages.length);
+  };
+
+  const handleGalleryTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    galleryTouchStartRef.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+  };
+
+  const handleGalleryTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const start = galleryTouchStartRef.current;
+    const touch = event.changedTouches[0];
+    galleryTouchStartRef.current = null;
+    if (!start || !touch) return;
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
+    galleryTouchLockUntilRef.current = Date.now() + 420;
+    stepGallery(deltaX < 0 ? 1 : -1);
+  };
+
+  const handleGalleryKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    stepGallery(event.key === 'ArrowRight' ? 1 : -1);
   };
 
   const changeReview = (direction: number) => {
@@ -195,15 +380,28 @@ export default function Home() {
     const video = masterVideoRef.current;
     if (!video) return;
     if (videoState === 'error') video.load();
-    if (videoState === 'ended') video.currentTime = 0;
+    if (videoState === 'ended' || videoState === 'preview') video.currentTime = 0;
+    intentionalAudioRef.current = true;
+    setIsAudioEnabled(true);
     video.muted = false;
+    videoStateRef.current = 'loading';
     setVideoState('loading');
-    video.play().catch(() => setVideoState('error'));
+    video.play()
+      .then(() => {
+        videoStateRef.current = 'playing';
+        setVideoState('playing');
+      })
+      .catch(() => {
+        intentionalAudioRef.current = false;
+        setIsAudioEnabled(false);
+        videoStateRef.current = 'error';
+        setVideoState('error');
+      });
   };
 
   const activeReview = reviews[reviewIndex];
-  const previousGalleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
-  const nextGalleryIndex = (galleryIndex + 1) % galleryImages.length;
+  const galleryIndex = galleryOrder[0];
+  const galleryActiveSource = galleryImages[galleryIndex];
 
   return (
     <div className="viart-site">
@@ -432,74 +630,156 @@ export default function Home() {
             <div><p className="chapter-index tech-label">06 / SPACE</p><h2>Студия<br />в деталях</h2></div>
             <p>Реальные кадры пространства, оборудования и процесса.</p>
           </div>
-          <div className="film-sequence">
-            <button type="button" className="film-secondary film-secondary--left" onClick={() => changeGallery(-1)} aria-label="Предыдущий кадр">
-              <Image src={galleryImages[previousGalleryIndex]} alt="" fill sizes="20vw" className="cover-image" />
-            </button>
-            <figure className="film-active" key={galleryImages[galleryIndex]}>
-              <Image src={galleryImages[galleryIndex]} alt={`Пространство студии ViART — кадр ${galleryIndex + 1}`} fill sizes="(max-width: 767px) 100vw, 68vw" className="cover-image" />
-            </figure>
-            <button type="button" className="film-secondary film-secondary--right" onClick={() => changeGallery(1)} aria-label="Следующий кадр">
-              <Image src={galleryImages[nextGalleryIndex]} alt="" fill sizes="20vw" className="cover-image" />
-            </button>
-          </div>
-          <div className="film-controls">
-            <button type="button" onClick={() => changeGallery(-1)} aria-label="Предыдущий кадр">←</button>
-            <span className="tech-label">{String(galleryIndex + 1).padStart(2, '0')} / {String(galleryImages.length).padStart(2, '0')}</span>
-            <button type="button" onClick={() => changeGallery(1)} aria-label="Следующий кадр">→</button>
+          <div
+            className="gallery-stage"
+            role="group"
+            aria-label="Фотографии пространства студии ViART"
+            aria-roledescription="интерактивная галерея"
+            tabIndex={0}
+            onKeyDown={handleGalleryKeyDown}
+            onTouchStart={handleGalleryTouchStart}
+            onTouchEnd={handleGalleryTouchEnd}
+          >
+            {galleryImages.map((src, index) => {
+              const position = galleryOrder.indexOf(index);
+              const role = galleryRoleAt(position);
+              const isActive = role === 'active';
+
+              return (
+                <button
+                  key={src}
+                  type="button"
+                  className={`gallery-media gallery-media--${role} ${galleryExchangeIndex === index ? 'is-exchanging' : ''}`}
+                  aria-label={isActive ? `Выбран кадр ${index + 1} из ${galleryImages.length}` : `Выбрать кадр ${index + 1} из ${galleryImages.length}`}
+                  aria-pressed={isActive}
+                  tabIndex={role === 'hidden' ? -1 : 0}
+                  onPointerEnter={(event) => {
+                    if (!isActive && event.pointerType !== 'touch' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) queueGalleryMedia(index, true);
+                  }}
+                  onPointerLeave={cancelGalleryIntent}
+                  onFocus={() => {
+                    if (!isActive) queueGalleryMedia(index);
+                  }}
+                  onBlur={cancelGalleryIntent}
+                  onClick={() => {
+                    if (Date.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
+                  }}
+                >
+                  <Image
+                    src={src}
+                    alt={isActive ? `Пространство студии ViART — кадр ${index + 1}` : ''}
+                    fill
+                    sizes={isActive ? '(max-width: 899px) 100vw, 64vw' : '(max-width: 899px) 33vw, 24vw'}
+                    className="cover-image"
+                  />
+                  <span className="gallery-media__edge" aria-hidden="true" />
+                </button>
+              );
+            })}
+            <div className="gallery-status tech-label" aria-live="polite">
+              <span>{String(galleryIndex + 1).padStart(2, '0')} / {String(galleryImages.length).padStart(2, '0')}</span>
+            </div>
           </div>
         </section>
 
-        <section id="video" className="chapter video-chapter">
-          <div className="master-media">
-            <video
-              ref={masterVideoRef}
-              src="/videos/viart-procedure-prep.mp4"
-              poster="/images/gallery/4.jpg"
-              playsInline
-              preload="metadata"
-              controls={videoState === 'playing'}
-              onPlay={() => setVideoState('playing')}
-              onPlaying={() => setVideoState('playing')}
-              onWaiting={() => setVideoState('loading')}
-              onPause={(event) => {
-                if (!event.currentTarget.ended) setVideoState('paused');
-              }}
-              onEnded={() => setVideoState('ended')}
-              onError={() => setVideoState('error')}
-            />
-            {videoState !== 'playing' && videoState !== 'error' && (
-              <button
-                type="button"
-                className="master-play"
-                onClick={playMasterVideo}
-                aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
-                disabled={videoState === 'loading'}
-              >
-                <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                <small className="tech-label">
-                  {videoState === 'loading' ? 'LOADING' : videoState === 'paused' ? 'CONTINUE' : videoState === 'ended' ? 'REPLAY' : 'PLAY / FULL VIDEO'}
-                </small>
-              </button>
-            )}
-            {videoState === 'error' && (
-              <div className="master-error" role="alert">
-                <span className="tech-label">VIDEO / ERROR</span>
-                <p>Видео временно недоступно.</p>
-                <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
-              </div>
-            )}
-            <div className="master-rim" aria-hidden="true" />
+        <section
+          id="video"
+          ref={videoChapterRef}
+          className={`chapter video-chapter ${isVideoEngaged ? 'is-engaged' : ''}`}
+        >
+          <div className="media-continuity" aria-hidden="true">
+            <Image src={galleryActiveSource} alt="" fill sizes="(max-width: 899px) 100vw, 64vw" className="cover-image" />
+            <span className="media-continuity__edge" />
           </div>
-          <div className="video-context">
-            <p className="chapter-index tech-label">07 / VIDEO GALLERY</p>
-            <h2>Знакомство с ViART</h2>
-            <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
-            <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
+
+          <div className="video-gallery">
+            <div className="master-media">
+              <video
+                ref={masterVideoRef}
+                src="/videos/viart-procedure-prep.mp4"
+                poster={galleryActiveSource}
+                playsInline
+                muted={!isAudioEnabled}
+                preload="metadata"
+                controls={videoState === 'playing'}
+                onPlay={() => {
+                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onPlaying={() => {
+                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onWaiting={() => {
+                  if (!intentionalAudioRef.current) return;
+                  videoStateRef.current = 'loading';
+                  setVideoState('loading');
+                }}
+                onPause={(event) => {
+                  if (event.currentTarget.ended) return;
+                  const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
+                    ? 'paused'
+                    : 'poster';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onEnded={() => {
+                  intentionalAudioRef.current = false;
+                  setIsAudioEnabled(false);
+                  videoStateRef.current = 'ended';
+                  setVideoState('ended');
+                }}
+                onError={() => {
+                  intentionalAudioRef.current = false;
+                  setIsAudioEnabled(false);
+                  videoStateRef.current = 'error';
+                  setVideoState('error');
+                }}
+              />
+              {videoState !== 'playing' && videoState !== 'error' && (
+                <button
+                  type="button"
+                  className="master-play"
+                  onClick={playMasterVideo}
+                  aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
+                  disabled={videoState === 'loading'}
+                >
+                  <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
+                  <small className="tech-label">
+                    {videoState === 'loading' ? 'LOADING' : videoState === 'paused' ? 'CONTINUE' : videoState === 'ended' ? 'REPLAY' : 'PLAY / FULL VIDEO'}
+                  </small>
+                </button>
+              )}
+              {videoState === 'error' && (
+                <div className="master-error" role="alert">
+                  <span className="tech-label">VIDEO / ERROR</span>
+                  <p>Видео временно недоступно.</p>
+                  <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
+                </div>
+              )}
+              <div className="master-rim" aria-hidden="true" />
+            </div>
+
+            <div className="video-context">
+              <p className="chapter-index tech-label">07 / VIDEO GALLERY</p>
+              <h2>Знакомство с ViART</h2>
+              <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
+              <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
+            </div>
+
           </div>
+
+          <div className="video-resolve" aria-hidden="true"><span /></div>
         </section>
 
-        <section id="promo" className="chapter first-visit-chapter">
+        <section
+          id="promo"
+          ref={firstVisitRef}
+          className={`chapter first-visit-chapter ${isFirstVisitEngaged ? 'is-engaged' : ''}`}
+        >
+          <div className="first-visit-trace" aria-hidden="true" />
           <div className="first-visit-heading">
             <p className="chapter-index tech-label">08 / FIRST VISIT</p>
             <h2>Запишитесь на комплекс со скидкой 30%</h2>
