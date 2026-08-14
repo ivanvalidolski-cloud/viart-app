@@ -94,7 +94,7 @@ const massagePrices = [
 
 type Review = { name: string; rating: number; text: string; date?: string };
 type VideoState = 'poster' | 'preview' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
-type GalleryRole = 'active' | 'support-one' | 'support-two' | 'support-three' | 'hidden';
+type GalleryRole = 'active' | 'support-one' | 'support-two' | 'support-three';
 
 const reviews: Review[] = [
   {
@@ -147,15 +147,20 @@ const reviews: Review[] = [
   },
 ];
 
-const galleryImages = Array.from({ length: 8 }, (_, index) => `/images/gallery/${index + 1}.jpg`);
-const initialGalleryOrder = [3, 2, 4, 5, 0, 1, 6, 7];
+const galleryImages = [
+  '/images/gallery/4.jpg',
+  '/images/gallery/3.jpg',
+  '/images/gallery/5.jpg',
+  '/images/gallery/6.jpg',
+];
+const initialGalleryOrder = [0, 1, 2, 3];
 
 const galleryRoleAt = (position: number): GalleryRole => {
   if (position === 0) return 'active';
   if (position === 1) return 'support-one';
   if (position === 2) return 'support-two';
   if (position === 3) return 'support-three';
-  return 'hidden';
+  return 'support-three';
 };
 
 export default function Home() {
@@ -164,25 +169,15 @@ export default function Home() {
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [galleryOrder, setGalleryOrder] = useState(initialGalleryOrder);
-  const [galleryExchangeIndex, setGalleryExchangeIndex] = useState<number | null>(null);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [videoState, setVideoState] = useState<VideoState>('poster');
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const [isVideoEngaged, setIsVideoEngaged] = useState(false);
-  const [isFirstVisitEngaged, setIsFirstVisitEngaged] = useState(false);
   const galleryOrderRef = useRef(initialGalleryOrder);
-  const galleryIntentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const galleryPrepareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const galleryExchangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const galleryHoverLockUntilRef = useRef(0);
   const galleryTouchLockUntilRef = useRef(0);
   const galleryTouchStartRef = useRef<{ x: number; y: number } | null>(null);
   const videoStateRef = useRef<VideoState>('poster');
   const intentionalAudioRef = useRef(false);
-  const isVideoInViewRef = useRef(false);
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
-  const videoChapterRef = useRef<HTMLElement | null>(null);
-  const firstVisitRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onScroll = () => setIsHeaderSolid(window.scrollY > 32);
@@ -199,86 +194,6 @@ export default function Home() {
     };
   }, [isMenuOpen]);
 
-  useEffect(() => () => {
-    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
-    if (galleryPrepareTimerRef.current) clearTimeout(galleryPrepareTimerRef.current);
-    if (galleryExchangeTimerRef.current) clearTimeout(galleryExchangeTimerRef.current);
-  }, []);
-
-  useEffect(() => {
-    const section = videoChapterRef.current;
-    if (!section) return;
-
-    if (!('IntersectionObserver' in window)) {
-      isVideoInViewRef.current = true;
-      setIsVideoEngaged(true);
-      return;
-    }
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const observer = new IntersectionObserver(([entry]) => {
-      const engaged = entry.isIntersecting && entry.intersectionRatio >= 0.08;
-      isVideoInViewRef.current = engaged;
-      if (engaged) setIsVideoEngaged(true);
-
-      const video = masterVideoRef.current;
-      if (!video) return;
-
-      if (engaged && !reducedMotion.matches && videoStateRef.current === 'poster') {
-        intentionalAudioRef.current = false;
-        setIsAudioEnabled(false);
-        video.muted = true;
-        video.play().catch(() => {
-          videoStateRef.current = 'poster';
-          setVideoState('poster');
-        });
-      } else if (!engaged && !video.paused) {
-        const wasIntentional = videoStateRef.current === 'playing' || intentionalAudioRef.current;
-        video.pause();
-        if (!wasIntentional) video.currentTime = 0;
-        video.muted = true;
-        intentionalAudioRef.current = false;
-        setIsAudioEnabled(false);
-        videoStateRef.current = wasIntentional ? 'paused' : 'poster';
-        setVideoState(wasIntentional ? 'paused' : 'poster');
-      }
-    }, { threshold: [0, 0.08, 0.3, 0.6] });
-
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const section = firstVisitRef.current;
-    if (!section) return;
-
-    if (!('IntersectionObserver' in window)) {
-      setIsFirstVisitEngaged(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      const engaged = entry.isIntersecting && entry.intersectionRatio >= 0.1;
-      if (engaged) setIsFirstVisitEngaged(true);
-      if (!engaged) return;
-
-      const video = masterVideoRef.current;
-      if (!video || video.paused) return;
-
-      const wasIntentional = videoStateRef.current === 'playing' || intentionalAudioRef.current;
-      video.pause();
-      if (!wasIntentional) video.currentTime = 0;
-      video.muted = true;
-      intentionalAudioRef.current = false;
-      setIsAudioEnabled(false);
-      videoStateRef.current = wasIntentional ? 'paused' : 'poster';
-      setVideoState(wasIntentional ? 'paused' : 'poster');
-    }, { threshold: [0, 0.1, 0.35] });
-
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
     if (gender === 'men' && activePriceTab === 2) setActivePriceTab(0);
@@ -286,7 +201,8 @@ export default function Home() {
 
   const openPriceTab = (tab: number) => {
     setActivePriceTab(tab);
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('pricing')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
   };
 
   const commitGalleryOrder = (nextOrder: number[]) => {
@@ -294,53 +210,13 @@ export default function Home() {
     setGalleryOrder(nextOrder);
   };
 
-  const markGalleryExchange = (index: number) => {
-    if (galleryExchangeTimerRef.current) clearTimeout(galleryExchangeTimerRef.current);
-    setGalleryExchangeIndex(index);
-    galleryExchangeTimerRef.current = setTimeout(() => setGalleryExchangeIndex(null), 680);
-  };
-
   const promoteGalleryMedia = (index: number) => {
-    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
-    if (galleryPrepareTimerRef.current) clearTimeout(galleryPrepareTimerRef.current);
-
     const currentOrder = galleryOrderRef.current;
     const currentPosition = currentOrder.indexOf(index);
     if (currentPosition <= 0) return;
-
-    const exchange = () => {
-      const readyOrder = [...galleryOrderRef.current];
-      const readyPosition = readyOrder.indexOf(index);
-      if (readyPosition <= 0) return;
-      [readyOrder[0], readyOrder[readyPosition]] = [readyOrder[readyPosition], readyOrder[0]];
-      commitGalleryOrder(readyOrder);
-      if (!isVideoInViewRef.current) setIsVideoEngaged(false);
-      galleryHoverLockUntilRef.current = Date.now() + 720;
-      markGalleryExchange(index);
-    };
-
-    if (currentPosition > 3) {
-      const preparedOrder = [...currentOrder];
-      [preparedOrder[3], preparedOrder[currentPosition]] = [preparedOrder[currentPosition], preparedOrder[3]];
-      commitGalleryOrder(preparedOrder);
-      galleryPrepareTimerRef.current = setTimeout(exchange, 170);
-      return;
-    }
-
-    exchange();
-  };
-
-  const queueGalleryMedia = (index: number, respectHoverLock = false) => {
-    if (Date.now() < galleryTouchLockUntilRef.current) return;
-    if (respectHoverLock && Date.now() < galleryHoverLockUntilRef.current) return;
-    if (galleryIntentTimerRef.current) clearTimeout(galleryIntentTimerRef.current);
-    galleryIntentTimerRef.current = setTimeout(() => promoteGalleryMedia(index), 140);
-  };
-
-  const cancelGalleryIntent = () => {
-    if (!galleryIntentTimerRef.current) return;
-    clearTimeout(galleryIntentTimerRef.current);
-    galleryIntentTimerRef.current = null;
+    const nextOrder = [...currentOrder];
+    [nextOrder[0], nextOrder[currentPosition]] = [nextOrder[currentPosition], nextOrder[0]];
+    commitGalleryOrder(nextOrder);
   };
 
   const stepGallery = (direction: number) => {
@@ -445,9 +321,17 @@ export default function Home() {
       <main>
         <section id="top" className="wp-hero">
           <div className="hero-grid">
-            <div className="hero-heading">
-              <p className="tech-label">VIART / КОММУНАРКА / 01</p>
-              <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
+            <div className="hero-content">
+              <div className="hero-heading">
+                <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
+              </div>
+              <div className="hero-decision">
+                <p>Скидка 30% на любой комплекс при первом посещении</p>
+                <div className="hero-decision__actions">
+                  <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться онлайн</a>
+                  <a className="text-link" href="#pricing">Посмотреть цены <span>↘</span></a>
+                </div>
+              </div>
             </div>
 
             <div className="hero-media">
@@ -459,24 +343,11 @@ export default function Home() {
                 sizes="(max-width: 767px) 100vw, 64vw"
                 className="hero-media__image"
               />
-              <div className="hero-aperture" aria-hidden="true" />
-              <div className="hero-trace" aria-hidden="true" />
-              <span className="hero-media__meta tech-label">BEAUTY × INSTRUMENT × MATERIAL</span>
-            </div>
-
-            <div className="hero-decision">
-              <p>Скидка 30% на любой комплекс при первом посещении</p>
-              <div className="hero-decision__actions">
-                <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться онлайн</a>
-                <a className="text-link" href="#pricing">Посмотреть цены <span>↘</span></a>
-              </div>
             </div>
           </div>
-          <div className="hero-scroll tech-label">SCROLL TO DISCOVER <span>↓</span></div>
         </section>
 
         <section id="studio" className="chapter studio-chapter">
-          <div className="chapter-index tech-label">02 / STUDIO</div>
           <div className="studio-layout">
             <figure className="studio-main-media">
               <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
@@ -496,7 +367,6 @@ export default function Home() {
         <section id="pricing" className="chapter pricing-chapter">
           <div className="chapter-heading">
             <div>
-              <p className="chapter-index tech-label">03 / SERVICES & PRICES</p>
               <h2>Открытые цены.<br />Точный выбор.</h2>
             </div>
             <p>Выберите направление — состав и стоимость всегда остаются перед глазами.</p>
@@ -505,14 +375,14 @@ export default function Home() {
           <div className="pricing-layout">
             <aside className="price-controls" aria-label="Фильтры прайс-листа">
               <div className="control-group">
-                <span className="control-caption tech-label">КЛИЕНТ</span>
+                <span className="control-caption">Клиент</span>
                 <div className="segmented-control">
                   <button type="button" className={priceGender === 'women' ? 'is-active' : ''} onClick={() => selectGender('women')}>Женщины</button>
                   <button type="button" className={priceGender === 'men' ? 'is-active' : ''} onClick={() => selectGender('men')}>Мужчины</button>
                 </div>
               </div>
               <div className="control-group control-group--categories">
-                <span className="control-caption tech-label">НАПРАВЛЕНИЕ</span>
+                <span className="control-caption">Направление</span>
                 {priceTabs.map((tab, index) => (
                   <button
                     type="button"
@@ -521,7 +391,7 @@ export default function Home() {
                     onClick={() => setActivePriceTab(index)}
                     disabled={priceGender === 'men' && index === 2}
                   >
-                    <span>0{index + 1}</span>{tab}
+                    {tab}
                   </button>
                 ))}
               </div>
@@ -533,7 +403,6 @@ export default function Home() {
                 <section className="service-group" key={category.title}>
                   <div className="service-group__heading">
                     <h3>{category.title}</h3>
-                    <span className="tech-label">{String(category.items.length).padStart(2, '0')} УСЛУГ</span>
                   </div>
                   {category.items.length ? category.items.map((item) => (
                     <div className="service-line" key={item.name}>
@@ -548,10 +417,10 @@ export default function Home() {
 
               {activePriceTab === 1 && (
                 <section className="complexes-list">
-                  <div className="complexes-header tech-label"><span>КОМПЛЕКС</span><span>СОСТАВ</span><span>СТОИМОСТЬ</span></div>
-                  {epilationComplexes[priceGender].map((item, index) => (
+                  <div className="complexes-header"><span>Комплекс</span><span>Состав</span><span>Стоимость</span></div>
+                  {epilationComplexes[priceGender].map((item) => (
                     <article className="complex-line" key={item.name}>
-                      <div><span className="tech-label">0{index + 1}</span><h3>{item.name}</h3></div>
+                      <div><h3>{item.name}</h3></div>
                       <p>{item.detail}</p>
                       <div className="complex-line__price">
                         <span>{item.price}</span>
@@ -566,7 +435,7 @@ export default function Home() {
 
               {activePriceTab === 2 && priceGender === 'women' && (
                 <section className="service-group massage-list">
-                  <div className="service-group__heading"><h3>Аппаратный массаж</h3><span className="tech-label">TURBO G8</span></div>
+                  <div className="service-group__heading"><h3>Аппаратный массаж</h3><span className="service-note">TURBO G8</span></div>
                   {massagePrices.map((item) => (
                     <div className="service-line" key={item.name}>
                       <span>{item.name}</span>
@@ -585,20 +454,17 @@ export default function Home() {
           <div className="everlas-stage">
             <div className="everlas-media">
               <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
-              <span className="scan-line" aria-hidden="true" />
-              <div className="equipment-coordinates tech-label"><span>EVERLAS</span><span>PRECISION MODE</span><span>04 / 10</span></div>
             </div>
             <div className="everlas-copy">
               <div className="technology-heading">
-                <p className="chapter-index tech-label">04 / PRECISION TECHNOLOGY</p>
                 <h2>Лазерная эпиляция на EVERLAS</h2>
                 <p>Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
               </div>
               <ol className="fact-stages">
-                <li><span className="tech-label">01 / ПОДГОТОВКА</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
-                <li><span className="tech-label">02 / НАСТРОЙКА</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
-                <li><span className="tech-label">03 / ПРОЦЕДУРА</span><p>Во время процедуры используются защитные очки.</p></li>
-                <li><span className="tech-label">04 / КУРС</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
+                <li><span className="fact-title">Подготовка</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
+                <li><span className="fact-title">Настройка</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
+                <li><span className="fact-title">Процедура</span><p>Во время процедуры используются защитные очки.</p></li>
+                <li><span className="fact-title">Курс</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
               </ol>
               <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
             </div>
@@ -606,9 +472,7 @@ export default function Home() {
         </section>
 
         <section className="chapter turbo-chapter">
-          <div className="turbo-wave" aria-hidden="true" />
           <div className="turbo-heading">
-            <p className="chapter-index tech-label">05 / MOVEMENT & SURFACE</p>
             <h2>Аппаратный массаж<br />на TURBO G8</h2>
           </div>
           <div className="turbo-media">
@@ -627,7 +491,7 @@ export default function Home() {
 
         <section id="gallery" className="chapter gallery-chapter">
           <div className="gallery-topline">
-            <div><p className="chapter-index tech-label">06 / SPACE</p><h2>Студия<br />в деталях</h2></div>
+            <div><h2>Студия<br />в деталях</h2></div>
             <p>Реальные кадры пространства, оборудования и процесса.</p>
           </div>
           <div
@@ -649,18 +513,9 @@ export default function Home() {
                 <button
                   key={src}
                   type="button"
-                  className={`gallery-media gallery-media--${role} ${galleryExchangeIndex === index ? 'is-exchanging' : ''}`}
+                  className={`gallery-media gallery-media--${role}`}
                   aria-label={isActive ? `Выбран кадр ${index + 1} из ${galleryImages.length}` : `Выбрать кадр ${index + 1} из ${galleryImages.length}`}
                   aria-pressed={isActive}
-                  tabIndex={role === 'hidden' ? -1 : 0}
-                  onPointerEnter={(event) => {
-                    if (!isActive && event.pointerType !== 'touch' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) queueGalleryMedia(index, true);
-                  }}
-                  onPointerLeave={cancelGalleryIntent}
-                  onFocus={() => {
-                    if (!isActive) queueGalleryMedia(index);
-                  }}
-                  onBlur={cancelGalleryIntent}
                   onClick={() => {
                     if (Date.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
                   }}
@@ -672,26 +527,13 @@ export default function Home() {
                     sizes={isActive ? '(max-width: 899px) 100vw, 64vw' : '(max-width: 899px) 33vw, 24vw'}
                     className="cover-image"
                   />
-                  <span className="gallery-media__edge" aria-hidden="true" />
                 </button>
               );
             })}
-            <div className="gallery-status tech-label" aria-live="polite">
-              <span>{String(galleryIndex + 1).padStart(2, '0')} / {String(galleryImages.length).padStart(2, '0')}</span>
-            </div>
           </div>
         </section>
 
-        <section
-          id="video"
-          ref={videoChapterRef}
-          className={`chapter video-chapter ${isVideoEngaged ? 'is-engaged' : ''}`}
-        >
-          <div className="media-continuity" aria-hidden="true">
-            <Image src={galleryActiveSource} alt="" fill sizes="(max-width: 899px) 100vw, 64vw" className="cover-image" />
-            <span className="media-continuity__edge" />
-          </div>
-
+        <section id="video" className="chapter video-chapter">
           <div className="video-gallery">
             <div className="master-media">
               <video
@@ -747,41 +589,26 @@ export default function Home() {
                   disabled={videoState === 'loading'}
                 >
                   <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                  <small className="tech-label">
-                    {videoState === 'loading' ? 'LOADING' : videoState === 'paused' ? 'CONTINUE' : videoState === 'ended' ? 'REPLAY' : 'PLAY / FULL VIDEO'}
-                  </small>
                 </button>
               )}
               {videoState === 'error' && (
                 <div className="master-error" role="alert">
-                  <span className="tech-label">VIDEO / ERROR</span>
                   <p>Видео временно недоступно.</p>
                   <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
                 </div>
               )}
-              <div className="master-rim" aria-hidden="true" />
             </div>
 
             <div className="video-context">
-              <p className="chapter-index tech-label">07 / VIDEO GALLERY</p>
               <h2>Знакомство с ViART</h2>
               <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
-              <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
             </div>
 
           </div>
-
-          <div className="video-resolve" aria-hidden="true"><span /></div>
         </section>
 
-        <section
-          id="promo"
-          ref={firstVisitRef}
-          className={`chapter first-visit-chapter ${isFirstVisitEngaged ? 'is-engaged' : ''}`}
-        >
-          <div className="first-visit-trace" aria-hidden="true" />
+        <section id="promo" className="chapter first-visit-chapter">
           <div className="first-visit-heading">
-            <p className="chapter-index tech-label">08 / FIRST VISIT</p>
             <h2>Запишитесь на комплекс со скидкой 30%</h2>
           </div>
           <div className="first-visit-action">
@@ -793,7 +620,6 @@ export default function Home() {
 
         <section id="reviews" className="chapter reviews-chapter">
           <div className="rating-anchor">
-            <p className="chapter-index tech-label">09 / YANDEX REVIEWS</p>
             <strong>5,0</strong>
             <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
             <p>119 оценок · 98 отзывов</p>
@@ -808,24 +634,21 @@ export default function Home() {
             <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
             <div className="review-controls">
               <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
-              <span className="tech-label">{String(reviewIndex + 1).padStart(2, '0')} / {String(reviews.length).padStart(2, '0')}</span>
               <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
             </div>
           </div>
         </section>
 
         <section id="contacts" className="closure-section">
-          <div className="closure-trace" aria-hidden="true" />
           <div className="closure-message">
-            <p className="chapter-index tech-label">10 / BOOKING</p>
             <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться в ViART</a>
           </div>
           <div className="contact-grid">
-            <div><span className="tech-label">АДРЕС</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
-            <div><span className="tech-label">ТЕЛЕФОН</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
-            <div><span className="tech-label">РЕЖИМ РАБОТЫ</span><p>Пн–Вс: 10:00–21:00</p></div>
-            <div><span className="tech-label">ЗАПИСЬ</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
+            <div><span className="contact-label">Адрес</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
+            <div><span className="contact-label">Телефон</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
+            <div><span className="contact-label">Режим работы</span><p>Пн–Вс: 10:00–21:00</p></div>
+            <div><span className="contact-label">Запись</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
           </div>
           <div className="map-frame">
             <iframe
@@ -842,7 +665,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="footer-wordmark">ViART</div>
-        <div className="footer-meta tech-label"><span>© 2026 VIART</span><span>КОММУНАРКА · МОСКВА</span><a href="#top">НАВЕРХ ↑</a></div>
+        <div className="footer-meta"><span>© 2026 VIART</span><span>КОММУНАРКА · МОСКВА</span><a href="#top">НАВЕРХ ↑</a></div>
       </footer>
     </div>
   );
