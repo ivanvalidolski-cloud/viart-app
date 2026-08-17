@@ -74,38 +74,53 @@ export function createCapsulesScene(root: HTMLElement) {
 
   const { duration, textDelay } = CAPSULES;
 
+  /**
+   * `overwrite: 'auto'` on every phase tween.
+   *
+   * A threshold crossed twice in quick succession — a flick of the wheel, a
+   * trackpad rubber-band, a mobile fling that lands near 0.33 — fires the `in`
+   * and then the `out` while the first is still running, and GSAP's default is
+   * to let both keep writing. Two 0.75s tweens driving one column to opposite
+   * ends is the source of the columns arriving half-way and staying there.
+   * `'auto'` kills only the *properties* that actually conflict, so the third
+   * column can still be sliding on `yPercent` from phase one while phase two
+   * takes over its `xPercent`.
+   */
+  const phase = (target: gsap.TweenTarget, vars: gsap.TweenVars) =>
+    gsap.to(target, { duration, overwrite: 'auto', ...vars });
+
   const phaseOneIn = () => {
-    gsap.to(col1, { opacity: 0, scale: 0.75, duration });
-    gsap.to(col2, { xPercent: 0, duration });
-    gsap.to(col3, { yPercent: 0, duration });
-    gsap.to(photo1, { scale: 1.25, duration });
-    gsap.to(capsule2, { clipPath: CAPSULES.clipOpen, duration });
-    gsap.to(photo2, { scale: 1, duration });
+    phase(col1, { opacity: 0, scale: 0.75 });
+    phase(col2, { xPercent: 0 });
+    phase(col3, { yPercent: 0 });
+    phase(photo1, { scale: 1.25 });
+    phase(capsule2, { clipPath: CAPSULES.clipOpen });
+    phase(photo2, { scale: 1 });
   };
 
   const phaseOneOut = () => {
-    gsap.to(col1, { opacity: 1, scale: 1, duration });
-    gsap.to(col2, { xPercent: 100, duration });
-    gsap.to(col3, { yPercent: 100, duration });
-    gsap.to(photo1, { scale: 1, duration });
-    gsap.to(capsule2, { clipPath: CAPSULES.clipClosed, duration });
-    gsap.to(photo2, { scale: 1.25, duration });
+    phase(col1, { opacity: 1, scale: 1 });
+    phase(col2, { xPercent: 100 });
+    phase(col3, { yPercent: 100 });
+    phase(photo1, { scale: 1 });
+    phase(capsule2, { clipPath: CAPSULES.clipClosed });
+    phase(photo2, { scale: 1.25 });
   };
 
   const phaseTwoIn = () => {
-    gsap.to(col2, { opacity: 0, scale: 0.75, duration });
-    gsap.to(col3, { xPercent: 0, duration });
-    gsap.to(col4, { yPercent: 0, duration });
-    gsap.to(linesA, { y: '-125%', duration });
-    gsap.to(linesB, { y: '0%', duration, delay: textDelay });
+    phase(col2, { opacity: 0, scale: 0.75 });
+    phase(col3, { xPercent: 0 });
+    phase(col4, { yPercent: 0 });
+    phase(linesA, { y: '-125%' });
+    phase(linesB, { y: '0%', delay: textDelay });
   };
 
   const phaseTwoOut = () => {
-    gsap.to(col2, { opacity: 1, scale: 1, duration });
-    gsap.to(col3, { xPercent: 100, duration });
-    gsap.to(col4, { yPercent: 100, duration });
-    gsap.to(linesA, { y: '0%', duration, delay: textDelay });
-    gsap.to(linesB, { y: '-125%', duration });
+    phase(col2, { opacity: 1, scale: 1 });
+    phase(col3, { xPercent: 100 });
+    phase(col4, { yPercent: 100 });
+    phase(linesA, { y: '0%', delay: textDelay });
+    phase(linesB, { y: '-125%' });
   };
 
   // --- 3. the two triggers --------------------------------------------------

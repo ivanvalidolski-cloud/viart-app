@@ -787,7 +787,13 @@ export default function Home() {
                   poster="/images/gallery/1.jpg"
                   playsInline
                   muted={!isAudioEnabled}
-                  preload="metadata"
+                  // The file is ~19MB and its `moov` atom sits at the very end,
+                  // so `metadata` costs a fetch of nearly the whole thing before
+                  // anything is playable — paid by every visitor, most of whom
+                  // never press play, and competing for bandwidth with the
+                  // images the scenes are measured against. The poster is what
+                  // the section shows until the play button is pressed.
+                  preload="none"
                   controls={videoState === 'playing'}
                   onPlay={() => {
                     const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
