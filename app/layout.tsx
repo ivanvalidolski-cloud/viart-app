@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Martian_Mono, Onest } from "next/font/google";
+import { Martian_Mono, Onest, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin", "cyrillic"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin", "cyrillic"],
-});
-
+// Body and UI.
 const onest = Onest({
   variable: "--font-onest",
   subsets: ["latin", "cyrillic"],
 });
 
+// Metadata, section indices, `.tech-label`.
 const martianMono = Martian_Mono({
   variable: "--font-martian",
+  subsets: ["latin", "cyrillic"],
+});
+
+// Display serif for headings. Previously this was the bare `Georgia,
+// "Times New Roman", serif` stack, which is not installed on Android and only
+// partially on Windows — the same headline rendered in three different faces
+// depending on the device. Georgia stays as the fallback.
+const playfair = Playfair_Display({
+  variable: "--font-display",
   subsets: ["latin", "cyrillic"],
 });
 
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${geistSans.variable} ${geistMono.variable} ${onest.variable} ${martianMono.variable} h-full antialiased`}
+      className={`${onest.variable} ${martianMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

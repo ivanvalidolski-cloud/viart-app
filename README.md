@@ -24,16 +24,23 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 | Layer | Where |
 |---|---|
-| Design tokens & taste rules | `.claude/skills/frontend-design/SKILL.md` |
-| External component adaptation | `.claude/skills/component-import/SKILL.md` |
-| Animation primitives (Framer Motion) | `app/components/motion.tsx` |
 | Visual system (CSS) | `app/globals.css` |
+| Animation layer | `app/lib/motion/` — see its `README.md` |
+| Design & review skills | `.claude/skills/` (6 skills, see `AGENTS.md`) |
 | Tool permissions for Claude Code | `.claude/settings.json` |
 | 21st.dev Magic MCP server | `.mcp.json` (needs `TWENTY_FIRST_API_KEY`) |
 
-Animation uses the [`motion`](https://motion.dev) package (Framer Motion). Use the
-`Reveal` / `RevealGroup` / `RevealChild` primitives with the `as` prop instead of
-adding wrapper elements, so the CSS grid layouts in `globals.css` stay intact.
+Animation is [GSAP](https://gsap.com) (ScrollTrigger + SplitText) with
+[Lenis](https://lenis.darkroom.engineering) as the scroll driver, started once from
+`useViartMotion`. Adding an entrance to a section is a markup change — put
+`data-reveal` on the element; see `app/lib/motion/README.md`.
+
+Two cautions when editing:
+
+- `globals.css` contains a second styling pass appended at the end that re-declares
+  about half of its rules. The later declaration wins — grep the whole file and edit
+  the last occurrence.
+- There is deliberately no `scroll-behavior: smooth`; Lenis owns the scroll position.
 
 ## Learn More
 

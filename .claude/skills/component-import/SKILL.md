@@ -31,8 +31,12 @@ adaptation targets.
 5. **Replace the content.** Russian copy, real ViART services/prices, real photos from
    `public/images/`. Never ship lorem ipsum, placeholder avatars or invented
    testimonials — reviews come from the `reviews` array in `app/page.tsx`.
-6. **Add motion last.** Wrap with `Reveal` / `RevealGroup` + `RevealChild` from
-   `app/components/motion.tsx`, using the `as` prop so no extra `<div>` is introduced.
+6. **Add motion last, and only through the attributes.** Put `data-reveal`,
+   `data-reveal="group"` + `data-reveal-item` on the markup — see the `motion-system`
+   skill. Never import an animation library with the component: a pasted block that
+   arrives with Framer Motion, AOS or its own `IntersectionObserver` must have that
+   stripped, or the site ends up with two animation systems fighting over the same
+   transforms.
 7. **Check dependencies.** Prefer zero new packages. If the block needs
    `lucide-react`, `clsx`, `class-variance-authority` or a Radix primitive, first ask
    whether the same result can be reached with the existing arrow glyphs and plain CSS.
@@ -41,13 +45,17 @@ adaptation targets.
    parent grid, selector order, and the responsive overrides in `globals.css`.
    Then hand it to the user for visual confirmation — do not start a dev server.
 
+Then verify statically at 1440px, 1099px, 1000px, 899px and 640px, and remember that
+`globals.css` carries a second styling pass — grep the selector across the whole file
+and edit the *last* occurrence.
+
 ## Rejection list
 
 If the pasted component brings any of these, strip them before integrating:
 rounded-2xl/3xl cards · gradient text · glassmorphism · emoji icons · avatar rows ·
 `shadow-lg`/`shadow-2xl` · animated gradient borders · marquee logo strips ·
 "Trusted by 10,000+ customers" style social proof · dark/light theme toggles
-(the site is warm-dark only).
+(the site is warm-dark only) · a bundled animation library.
 
 ## Using the Magic MCP server (21st.dev)
 

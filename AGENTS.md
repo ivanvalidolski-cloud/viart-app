@@ -14,25 +14,46 @@ Optimize for implementation speed in this Next.js project.
 - Prefer an explicit parent grid/flex layout when alignment depends on the surrounding container; avoid relying on fragile implicit sizing or auto margins when a deterministic layout rule is available.
 - Preserve unrelated changes and avoid destructive operations.
 
-## Design & motion stack
+## Skills
 
-- Any UI work (new section, restyle, layout or animation change) follows the
-  `frontend-design` skill in `.claude/skills/frontend-design/`. It holds the colour
-  tokens, type scale, 8px spacing grid, component patterns and the "no generic AI
-  aesthetic" rules. Read it before writing CSS.
-- Any component copied in from 21st.dev, shadcn or another site goes through the
-  `component-import` skill in `.claude/skills/component-import/`.
-- All animation uses Framer Motion (the `motion` package) through the shared
-  primitives in `app/components/motion.tsx`: `Reveal`, `RevealGroup`, `RevealChild`.
-  Scroll-triggered fades, staggered reveals, `once: true`, and a fade + ≤26px rise;
-  large media fades only. Pass `as` and keep the element's own `className` — never add
-  a wrapper `<div>`, because the grids in `globals.css` place direct children.
-- Hover and press feedback stays in CSS transitions. Ambient/CSS-keyframe elements
-  (`.price-content`, `.active-review`, `.gallery-media`, `.media-continuity`,
-  `.hero-trace`, `.turbo-wave`) must not be given a second animation in JS.
-- `prefers-reduced-motion` must always degrade a reveal to an instant appearance.
-- The `magic` MCP server (21st.dev) is configured in `.mcp.json` and needs
-  `TWENTY_FIRST_API_KEY` in the environment; it is optional — components can be pasted
-  in by hand instead.
+Read the relevant skill in `.claude/skills/` before starting; they carry this
+project's real tokens, architecture and constraints.
+
+| Skill | Covers |
+|---|---|
+| `frontend-design` | colour tokens, type scale, spacing, component patterns, anti-generic-AI rules |
+| `motion-system` | the GSAP/Lenis architecture, `data-reveal`, scene rules, animation bugs |
+| `component-import` | adapting a 21st.dev / shadcn / pasted block to this system |
+| `ux-review` | booking path, price discovery, mobile behaviour, conversion |
+| `accessibility` | keyboard, focus, reduced motion, screen-reader semantics, contrast |
+| `performance-seo` | image/font budgets, Core Web Vitals, local business metadata |
+
+## Animation
+
+- One animation library: **GSAP** (+ ScrollTrigger, SplitText) with **Lenis** as the
+  scroll driver. Do not add a second one. The whole layer lives in `app/lib/motion/`
+  and is started once from `useViartMotion`.
+- Adding an entrance is a markup change — `data-reveal`, `data-reveal="media"`,
+  `data-reveal="mask"`, `data-reveal="group"` + `data-reveal-item`. Do not hand-write
+  a ScrollTrigger for a fade.
+- Durations, easings, distances and scroll budgets come from `motion/tokens.ts`.
+- Hover and press feedback stays in CSS transitions.
+- `prefers-reduced-motion` builds nothing, and any scroll space a scene reserves must
+  collapse in the reduced-motion CSS block.
+- There is no `scroll-behavior: smooth` in the CSS on purpose — Lenis owns the scroll
+  position. Programmatic scrolling goes through the hook's `scrollTo`.
+
+## Stylesheet caution
+
+`app/globals.css` carries two styling passes: an original layer and a later "Global
+Correction" layer appended at the end that re-declares roughly half of the top-level
+rules. **The later declaration wins.** Grep the selector across the whole file and
+edit the last occurrence, or the change will appear to do nothing.
+
+## MCP
+
+The `magic` MCP server (21st.dev) is configured in `.mcp.json` and needs
+`TWENTY_FIRST_API_KEY` in the environment; it is optional — components can be pasted
+in by hand instead.
 
 A later explicit user request overrides these defaults.
