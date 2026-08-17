@@ -2,12 +2,7 @@
 
 import Image from 'next/image';
 import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import Lenis from 'lenis';
-
-gsap.registerPlugin(ScrollTrigger, SplitText);
+import { useViartMotion } from './lib/motion/useViartMotion';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -186,150 +181,13 @@ export default function Home() {
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
   const voyeurSceneRef = useRef<HTMLElement | null>(null);
+  const pageContentRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    const root = motionSequenceRef.current;
-    const voyeurScene = voyeurSceneRef.current;
-    if (!root || !voyeurScene) return;
-
-    const lenis = new Lenis();
-    const onTick = (time: number) => lenis.raf(time * 1000);
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
-
-    let cancelled = false;
-    let context: gsap.Context | undefined;
-    let outroSplit: SplitText | undefined;
-
-    document.fonts.ready.then(() => {
-      if (cancelled) return;
-
-      context = gsap.context(() => {
-        const gallery = root.querySelector<HTMLElement>('.hb-gallery');
-        const sideColumns = root.querySelectorAll<HTMLElement>('.hb-col:not(.hb-col--main)');
-        const focalImage = root.querySelector<HTMLElement>('.hb-img--main img');
-        const heurebleueTrigger = root.querySelector<HTMLElement>('.hb-ws');
-
-        const fgContent = voyeurScene.querySelector<HTMLElement>('.vv-fg-content');
-        const fgOverlayDark = voyeurScene.querySelector<HTMLElement>('.vv-fg-overlay-dark');
-        const fgOverlayAccent = voyeurScene.querySelector<HTMLElement>('.vv-fg-overlay-accent');
-        const bgCopies = voyeurScene.querySelectorAll<HTMLElement>('.vv-bg-copy');
-        const outroImages = voyeurScene.querySelectorAll<HTMLElement>('.vv-outro-img');
-        const outroHeadline = voyeurScene.querySelector<HTMLElement>('.vv-outro-header h3');
-
-        if (
-          !gallery || !focalImage || !heurebleueTrigger || !fgContent || !fgOverlayDark
-          || !fgOverlayAccent || bgCopies.length < 2 || outroImages.length < 2 || !outroHeadline
-        ) return;
-
-        ScrollTrigger.create({
-          trigger: heurebleueTrigger,
-          start: 'top bottom',
-          end: 'bottom bottom',
-          scrub: 1,
-          onUpdate: ({ progress }) => {
-            const maxScale = window.innerWidth < 900 ? 4 : 2.65;
-            const scale = 1 + progress * maxScale;
-            const yTranslate = progress * 300;
-            const mainImageScale = 2 - progress * 0.85;
-
-            gallery.style.transform = `translate(-50%, -50%) scale(${scale})`;
-            sideColumns.forEach((column) => {
-              column.style.transform = `translateY(${yTranslate}px)`;
-            });
-            focalImage.style.transform = `scale(${mainImageScale})`;
-          },
-        });
-
-        outroSplit = SplitText.create(outroHeadline, {
-          type: 'lines',
-          mask: 'lines',
-          linesClass: 'vv-line',
-        });
-        gsap.set(outroSplit.lines, { y: '100%' });
-
-        let areOutroLinesRevealed = false;
-        const clamp = gsap.utils.clamp(0, 1);
-        const interpolate = gsap.utils.interpolate;
-
-        ScrollTrigger.create({
-          trigger: voyeurScene,
-          start: 'top top',
-          end: `+=${window.innerHeight * 3}px`,
-          pin: true,
-          pinSpacing: true,
-          scrub: 1,
-          onUpdate: ({ progress: scrollProgress }) => {
-            const phase1Progress = clamp(scrollProgress / 0.25);
-            const slitLeftEdge = interpolate(0, 48, phase1Progress);
-            const slitRightEdge = interpolate(100, 52, phase1Progress);
-            gsap.set(fgContent, {
-              clipPath: `polygon(${slitLeftEdge}% 0%, ${slitRightEdge}% 0%, ${slitRightEdge}% 100%, ${slitLeftEdge}% 100%)`,
-            });
-            gsap.set(fgOverlayDark, { opacity: interpolate(0, 1, phase1Progress) });
-
-            const phase2Progress = clamp((scrollProgress - 0.25) / 0.2);
-            gsap.set(fgContent, { rotate: interpolate(0, 65, phase2Progress) });
-
-            const phase3Progress = clamp((scrollProgress - 0.45) / 0.2);
-            gsap.set(fgContent, { scale: interpolate(1, 0, phase3Progress) });
-            gsap.set(bgCopies[0], { x: `${interpolate(0, 100, phase3Progress)}%` });
-            gsap.set(bgCopies[1], { x: `${interpolate(0, -100, phase3Progress)}%` });
-
-            const phase3OverlayProgress = clamp((scrollProgress - 0.45) / 0.05);
-            gsap.set(fgOverlayAccent, { opacity: interpolate(0, 1, phase3OverlayProgress) });
-
-            const phase4Progress = clamp((scrollProgress - 0.65) / 0.2);
-            const topImageBottomEdge = interpolate(0, 100, phase4Progress);
-            const bottomImageTopEdge = interpolate(100, 0, phase4Progress);
-            gsap.set(outroImages[0], {
-              clipPath: `polygon(0% 0%, 100% 0%, 100% ${topImageBottomEdge}%, 0% ${topImageBottomEdge}%)`,
-            });
-            gsap.set(outroImages[1], {
-              clipPath: `polygon(0% ${bottomImageTopEdge}%, 100% ${bottomImageTopEdge}%, 100% 100%, 0% 100%)`,
-            });
-
-            if (scrollProgress >= 0.9 && !areOutroLinesRevealed) {
-              areOutroLinesRevealed = true;
-              gsap.to(outroSplit!.lines, {
-                y: '0%',
-                duration: 0.75,
-                stagger: 0.1,
-                ease: 'power3.out',
-              });
-            } else if (scrollProgress < 0.9 && areOutroLinesRevealed) {
-              areOutroLinesRevealed = false;
-              gsap.to(outroSplit!.lines, {
-                y: '100%',
-                duration: 0.25,
-                stagger: -0.05,
-                ease: 'power3.out',
-              });
-            }
-          },
-        });
-      }, root);
-
-      ScrollTrigger.refresh();
-    });
-
-    return () => {
-      cancelled = true;
-      if (outroSplit) gsap.killTweensOf(outroSplit.lines);
-      context?.revert();
-      gsap.set(
-        root.querySelectorAll(
-          '.hb-gallery, .hb-col, .hb-img--main img, .vv-fg-content, .vv-fg-overlay-dark, .vv-fg-overlay-accent, .vv-bg-copy, .vv-outro-img',
-        ),
-        { clearProps: 'all' },
-      );
-      outroSplit?.revert();
-      gsap.ticker.remove(onTick);
-      lenis.destroy();
-      gsap.ticker.lagSmoothing(500, 33);
-    };
-  }, []);
+  const { scrollTo, setScrollLocked } = useViartMotion({
+    sequence: motionSequenceRef,
+    voyeur: voyeurSceneRef,
+    page: pageContentRef,
+  });
 
   useEffect(() => {
     const onScroll = () => setIsHeaderSolid(window.scrollY > 32);
@@ -339,12 +197,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = isMenuOpen ? 'hidden' : previousOverflow;
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isMenuOpen]);
+    setScrollLocked(isMenuOpen);
+    return () => setScrollLocked(false);
+  }, [isMenuOpen, setScrollLocked]);
 
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
@@ -353,8 +208,7 @@ export default function Home() {
 
   const openPriceTab = (tab: number) => {
     setActivePriceTab(tab);
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.getElementById('pricing')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+    scrollTo('#pricing');
   };
 
   const commitGalleryOrder = (nextOrder: number[]) => {
@@ -390,7 +244,10 @@ export default function Home() {
     const deltaX = touch.clientX - start.x;
     const deltaY = touch.clientY - start.y;
     if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
-    galleryTouchLockUntilRef.current = Date.now() + 420;
+    // `event.timeStamp` shares its time origin with `performance.now()`, which
+    // the click guard below reads. A wall-clock reading would also drift if the
+    // system clock changed between the swipe and the click it suppresses.
+    galleryTouchLockUntilRef.current = event.timeStamp + 420;
     stepGallery(deltaX < 0 ? 1 : -1);
   };
 
@@ -470,7 +327,7 @@ export default function Home() {
         ))}
       </div>
 
-      <main>
+      <main ref={pageContentRef}>
         <div className="viart-motion-sequence" ref={motionSequenceRef}>
           <div className="hb-scene">
             <div className="hb-stage">
@@ -553,23 +410,23 @@ export default function Home() {
 
         <section id="studio" className="chapter studio-chapter">
           <div className="studio-layout">
-            <figure className="studio-main-media">
+            <figure className="studio-main-media" data-reveal="media">
               <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
             </figure>
-            <div className="studio-copy">
+            <div className="studio-copy" data-reveal="">
               <p className="eyebrow">Атмосфера ViART</p>
               <h2>Спокойное пространство для регулярных процедур</h2>
               <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
               <p>Понятный сценарий записи, спокойная обстановка и реальные материалы студии — без лишней сложности до и во время визита.</p>
             </div>
-            <figure className="studio-support-media">
+            <figure className="studio-support-media" data-reveal="media" data-reveal-delay="0.12">
               <Image src="/images/gallery/5.jpg" alt="Детали интерьера студии ViART" fill sizes="(max-width: 767px) 100vw, 40vw" className="cover-image" />
             </figure>
           </div>
         </section>
 
         <section id="pricing" className="chapter pricing-chapter">
-          <div className="chapter-heading">
+          <div className="chapter-heading" data-reveal="">
             <div>
               <h2>Открытые цены.<br />Точный выбор.</h2>
             </div>
@@ -577,7 +434,7 @@ export default function Home() {
           </div>
 
           <div className="pricing-layout">
-            <aside className="price-controls" aria-label="Фильтры прайс-листа">
+            <aside className="price-controls" aria-label="Фильтры прайс-листа" data-reveal="" data-reveal-delay="0.08">
               <div className="control-group">
                 <span className="control-caption">Клиент</span>
                 <div className="segmented-control">
@@ -656,19 +513,19 @@ export default function Home() {
 
         <section id="everlas" className="chapter everlas-chapter">
           <div className="everlas-stage">
-            <div className="everlas-media">
+            <div className="everlas-media" data-reveal="media">
               <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
             </div>
             <div className="everlas-copy">
-              <div className="technology-heading">
+              <div className="technology-heading" data-reveal="">
                 <h2>Лазерная эпиляция на EVERLAS</h2>
                 <p>Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
               </div>
-              <ol className="fact-stages">
-                <li><span className="fact-title">Подготовка</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
-                <li><span className="fact-title">Настройка</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
-                <li><span className="fact-title">Процедура</span><p>Во время процедуры используются защитные очки.</p></li>
-                <li><span className="fact-title">Курс</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
+              <ol className="fact-stages" data-reveal="group">
+                <li data-reveal-item=""><span className="fact-title">Подготовка</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
+                <li data-reveal-item=""><span className="fact-title">Настройка</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
+                <li data-reveal-item=""><span className="fact-title">Процедура</span><p>Во время процедуры используются защитные очки.</p></li>
+                <li data-reveal-item=""><span className="fact-title">Курс</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
               </ol>
               <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
             </div>
@@ -676,13 +533,13 @@ export default function Home() {
         </section>
 
         <section className="chapter turbo-chapter">
-          <div className="turbo-heading">
+          <div className="turbo-heading" data-reveal="">
             <h2>Аппаратный массаж<br />на TURBO G8</h2>
           </div>
-          <div className="turbo-media">
+          <div className="turbo-media" data-reveal="media">
             <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Процедура аппаратного массажа на TURBO G8" fill sizes="(max-width: 767px) 100vw, 70vw" className="cover-image" />
           </div>
-          <div className="turbo-copy">
+          <div className="turbo-copy" data-reveal="" data-reveal-delay="0.08">
             <p>Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.</p>
             <ul>
               <li>Работа с выбранными зонами</li>
@@ -694,7 +551,7 @@ export default function Home() {
         </section>
 
         <section id="gallery" className="chapter gallery-chapter">
-          <div className="gallery-topline">
+          <div className="gallery-topline" data-reveal="">
             <div><h2>Студия<br />в деталях</h2></div>
             <p>Реальные кадры пространства, оборудования и процесса.</p>
           </div>
@@ -721,7 +578,7 @@ export default function Home() {
                   aria-label={isActive ? `Выбран кадр ${index + 1} из ${galleryImages.length}` : `Выбрать кадр ${index + 1} из ${galleryImages.length}`}
                   aria-pressed={isActive}
                   onClick={() => {
-                    if (Date.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
+                    if (performance.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
                   }}
                 >
                   <Image
@@ -803,7 +660,7 @@ export default function Home() {
               )}
             </div>
 
-            <div className="video-context">
+            <div className="video-context" data-reveal="">
               <h2>Знакомство с ViART</h2>
               <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
             </div>
@@ -812,10 +669,10 @@ export default function Home() {
         </section>
 
         <section id="promo" className="chapter first-visit-chapter">
-          <div className="first-visit-heading">
+          <div className="first-visit-heading" data-reveal="">
             <h2>Запишитесь на комплекс со скидкой 30%</h2>
           </div>
-          <div className="first-visit-action">
+          <div className="first-visit-action" data-reveal="" data-reveal-delay="0.12">
             <p>Скидка действует на любой комплекс при первом посещении.</p>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать комплекс и записаться</a>
             <a className="text-link" href="#pricing">Вернуться к составам и ценам <span>↑</span></a>
@@ -823,7 +680,7 @@ export default function Home() {
         </section>
 
         <section id="reviews" className="chapter reviews-chapter">
-          <div className="rating-anchor">
+          <div className="rating-anchor" data-reveal="">
             <strong>5,0</strong>
             <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
             <p>119 оценок · 98 отзывов</p>
@@ -844,17 +701,17 @@ export default function Home() {
         </section>
 
         <section id="contacts" className="closure-section">
-          <div className="closure-message">
+          <div className="closure-message" data-reveal="">
             <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться в ViART</a>
           </div>
-          <div className="contact-grid">
-            <div><span className="contact-label">Адрес</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
-            <div><span className="contact-label">Телефон</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
-            <div><span className="contact-label">Режим работы</span><p>Пн–Вс: 10:00–21:00</p></div>
-            <div><span className="contact-label">Запись</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
+          <div className="contact-grid" data-reveal="group">
+            <div data-reveal-item=""><span className="contact-label">Адрес</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
+            <div data-reveal-item=""><span className="contact-label">Телефон</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
+            <div data-reveal-item=""><span className="contact-label">Режим работы</span><p>Пн–Вс: 10:00–21:00</p></div>
+            <div data-reveal-item=""><span className="contact-label">Запись</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
           </div>
-          <div className="map-frame">
+          <div className="map-frame" data-reveal="media">
             <iframe
               src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
               width="100%"
