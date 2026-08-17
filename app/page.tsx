@@ -2,6 +2,12 @@
 
 import Image from 'next/image';
 import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import Lenis from 'lenis';
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -178,6 +184,152 @@ export default function Home() {
   const videoStateRef = useRef<VideoState>('poster');
   const intentionalAudioRef = useRef(false);
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
+  const motionSequenceRef = useRef<HTMLDivElement | null>(null);
+  const voyeurSceneRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const root = motionSequenceRef.current;
+    const voyeurScene = voyeurSceneRef.current;
+    if (!root || !voyeurScene) return;
+
+    const lenis = new Lenis();
+    const onTick = (time: number) => lenis.raf(time * 1000);
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(onTick);
+    gsap.ticker.lagSmoothing(0);
+
+    let cancelled = false;
+    let context: gsap.Context | undefined;
+    let outroSplit: SplitText | undefined;
+
+    document.fonts.ready.then(() => {
+      if (cancelled) return;
+
+      context = gsap.context(() => {
+        const gallery = root.querySelector<HTMLElement>('.hb-gallery');
+        const sideColumns = root.querySelectorAll<HTMLElement>('.hb-col:not(.hb-col--main)');
+        const focalImage = root.querySelector<HTMLElement>('.hb-img--main img');
+        const heurebleueTrigger = root.querySelector<HTMLElement>('.hb-ws');
+
+        const fgContent = voyeurScene.querySelector<HTMLElement>('.vv-fg-content');
+        const fgOverlayDark = voyeurScene.querySelector<HTMLElement>('.vv-fg-overlay-dark');
+        const fgOverlayAccent = voyeurScene.querySelector<HTMLElement>('.vv-fg-overlay-accent');
+        const bgCopies = voyeurScene.querySelectorAll<HTMLElement>('.vv-bg-copy');
+        const outroImages = voyeurScene.querySelectorAll<HTMLElement>('.vv-outro-img');
+        const outroHeadline = voyeurScene.querySelector<HTMLElement>('.vv-outro-header h3');
+
+        if (
+          !gallery || !focalImage || !heurebleueTrigger || !fgContent || !fgOverlayDark
+          || !fgOverlayAccent || bgCopies.length < 2 || outroImages.length < 2 || !outroHeadline
+        ) return;
+
+        ScrollTrigger.create({
+          trigger: heurebleueTrigger,
+          start: 'top bottom',
+          end: 'bottom bottom',
+          scrub: 1,
+          onUpdate: ({ progress }) => {
+            const maxScale = window.innerWidth < 900 ? 4 : 2.65;
+            const scale = 1 + progress * maxScale;
+            const yTranslate = progress * 300;
+            const mainImageScale = 2 - progress * 0.85;
+
+            gallery.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            sideColumns.forEach((column) => {
+              column.style.transform = `translateY(${yTranslate}px)`;
+            });
+            focalImage.style.transform = `scale(${mainImageScale})`;
+          },
+        });
+
+        outroSplit = SplitText.create(outroHeadline, {
+          type: 'lines',
+          mask: 'lines',
+          linesClass: 'vv-line',
+        });
+        gsap.set(outroSplit.lines, { y: '100%' });
+
+        let areOutroLinesRevealed = false;
+        const clamp = gsap.utils.clamp(0, 1);
+        const interpolate = gsap.utils.interpolate;
+
+        ScrollTrigger.create({
+          trigger: voyeurScene,
+          start: 'top top',
+          end: `+=${window.innerHeight * 3}px`,
+          pin: true,
+          pinSpacing: true,
+          scrub: 1,
+          onUpdate: ({ progress: scrollProgress }) => {
+            const phase1Progress = clamp(scrollProgress / 0.25);
+            const slitLeftEdge = interpolate(0, 48, phase1Progress);
+            const slitRightEdge = interpolate(100, 52, phase1Progress);
+            gsap.set(fgContent, {
+              clipPath: `polygon(${slitLeftEdge}% 0%, ${slitRightEdge}% 0%, ${slitRightEdge}% 100%, ${slitLeftEdge}% 100%)`,
+            });
+            gsap.set(fgOverlayDark, { opacity: interpolate(0, 1, phase1Progress) });
+
+            const phase2Progress = clamp((scrollProgress - 0.25) / 0.2);
+            gsap.set(fgContent, { rotate: interpolate(0, 65, phase2Progress) });
+
+            const phase3Progress = clamp((scrollProgress - 0.45) / 0.2);
+            gsap.set(fgContent, { scale: interpolate(1, 0, phase3Progress) });
+            gsap.set(bgCopies[0], { x: `${interpolate(0, 100, phase3Progress)}%` });
+            gsap.set(bgCopies[1], { x: `${interpolate(0, -100, phase3Progress)}%` });
+
+            const phase3OverlayProgress = clamp((scrollProgress - 0.45) / 0.05);
+            gsap.set(fgOverlayAccent, { opacity: interpolate(0, 1, phase3OverlayProgress) });
+
+            const phase4Progress = clamp((scrollProgress - 0.65) / 0.2);
+            const topImageBottomEdge = interpolate(0, 100, phase4Progress);
+            const bottomImageTopEdge = interpolate(100, 0, phase4Progress);
+            gsap.set(outroImages[0], {
+              clipPath: `polygon(0% 0%, 100% 0%, 100% ${topImageBottomEdge}%, 0% ${topImageBottomEdge}%)`,
+            });
+            gsap.set(outroImages[1], {
+              clipPath: `polygon(0% ${bottomImageTopEdge}%, 100% ${bottomImageTopEdge}%, 100% 100%, 0% 100%)`,
+            });
+
+            if (scrollProgress >= 0.9 && !areOutroLinesRevealed) {
+              areOutroLinesRevealed = true;
+              gsap.to(outroSplit!.lines, {
+                y: '0%',
+                duration: 0.75,
+                stagger: 0.1,
+                ease: 'power3.out',
+              });
+            } else if (scrollProgress < 0.9 && areOutroLinesRevealed) {
+              areOutroLinesRevealed = false;
+              gsap.to(outroSplit!.lines, {
+                y: '100%',
+                duration: 0.25,
+                stagger: -0.05,
+                ease: 'power3.out',
+              });
+            }
+          },
+        });
+      }, root);
+
+      ScrollTrigger.refresh();
+    });
+
+    return () => {
+      cancelled = true;
+      if (outroSplit) gsap.killTweensOf(outroSplit.lines);
+      context?.revert();
+      gsap.set(
+        root.querySelectorAll(
+          '.hb-gallery, .hb-col, .hb-img--main img, .vv-fg-content, .vv-fg-overlay-dark, .vv-fg-overlay-accent, .vv-bg-copy, .vv-outro-img',
+        ),
+        { clearProps: 'all' },
+      );
+      outroSplit?.revert();
+      gsap.ticker.remove(onTick);
+      lenis.destroy();
+      gsap.ticker.lagSmoothing(500, 33);
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsHeaderSolid(window.scrollY > 32);
@@ -319,33 +471,85 @@ export default function Home() {
       </div>
 
       <main>
-        <section id="top" className="wp-hero">
-          <div className="hero-grid">
-            <div className="hero-content">
-              <div className="hero-heading">
-                <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
+        <div className="viart-motion-sequence" ref={motionSequenceRef}>
+          <div className="hb-scene">
+            <div className="hb-stage">
+              <div className="hb-gallery" aria-hidden="true">
+                {[
+                  ['/images/gallery/1.jpg', '/images/gallery/5.jpg', '/images/gallery/3.jpg'],
+                  ['/images/gallery/4.jpg', '/images/gallery/7.jpg', '/images/gallery/1.jpg'],
+                  ['/images/gallery/6.jpg', '/images/gallery/2.jpg', '/images/gallery/8.jpg'],
+                  ['/images/gallery/3.jpg', '/images/gallery/7.jpg', '/images/gallery/5.jpg'],
+                  ['/images/gallery/6.jpg', '/images/gallery/4.jpg', '/images/gallery/8.jpg'],
+                ].map((column, columnIndex) => (
+                  <div className={`hb-col ${columnIndex === 2 ? 'hb-col--main' : ''}`} key={`hb-col-${columnIndex}`}>
+                    {column.map((src, imageIndex) => {
+                      const isFocal = columnIndex === 2 && imageIndex === 1;
+                      return (
+                        <figure className={`hb-img ${isFocal ? 'hb-img--main' : ''}`} key={`${columnIndex}-${src}`}>
+                          <Image
+                            src={src}
+                            alt=""
+                            fill
+                            priority={columnIndex < 3}
+                            sizes="32vw"
+                          />
+                        </figure>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
-              <div className="hero-decision">
-                <p>Скидка 30% на любой комплекс при первом посещении</p>
-                <div className="hero-decision__actions">
-                  <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться онлайн</a>
-                  <a className="text-link" href="#pricing">Посмотреть цены <span>↘</span></a>
+            </div>
+
+            <div className="hb-flow">
+              <section id="top" className="hb-intro">
+                <div className="hb-intro__shade" />
+                <div className="hb-intro__copy">
+                  <p className="hb-intro__kicker">ViART · Коммунарка</p>
+                  <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
+                  <p className="hb-intro__subtitle">Процедуры на аппаратах EVERLAS и TURBO G8</p>
+                  <p className="hb-intro__offer">Скидка 30% на любой комплекс при первом посещении</p>
+                  <div className="hb-intro__actions">
+                    <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать услугу и записаться</a>
+                    <a className="text-link" href="#pricing">Услуги и цены <span>↘</span></a>
+                  </div>
+                </div>
+              </section>
+              <div className="hb-ws" aria-hidden="true" />
+            </div>
+          </div>
+
+          <section className="vv-hero" ref={voyeurSceneRef}>
+            <div className="vv-bg-content">
+              <div className="vv-bg-col">
+                <div className="vv-bg-copy">
+                  <h3>Атмосфера ViART</h3>
+                  <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке.</p>
+                </div>
+              </div>
+              <div className="vv-bg-col">
+                <div className="vv-bg-copy">
+                  <h3>Спокойное пространство</h3>
+                  <p>Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
                 </div>
               </div>
             </div>
 
-            <div className="hero-media">
-              <Image
-                src="/images/hero-bg.jpg"
-                alt="Процедура аппаратного массажа в студии ViART"
-                fill
-                priority
-                sizes="(max-width: 767px) 100vw, 64vw"
-                className="hero-media__image"
-              />
+            <div className="vv-outro-content">
+              <figure className="vv-outro-img"><Image src="/images/gallery/4.jpg" alt="Процедура лазерной эпиляции в ViART" fill sizes="50vw" /></figure>
+              <figure className="vv-outro-img"><Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="50vw" /></figure>
+              <div className="vv-outro-header"><h3>Спокойное пространство для регулярных процедур</h3></div>
             </div>
-          </div>
-        </section>
+
+            <div className="vv-fg-content">
+              <figure className="vv-fg-img"><Image src="/images/gallery/2.jpg" alt="Аппаратная процедура в студии ViART" fill priority sizes="100vw" /></figure>
+              <div className="vv-fg-header"><h2>Процедуры на аппаратах EVERLAS и TURBO G8</h2></div>
+              <div className="vv-fg-overlay-dark" />
+              <div className="vv-fg-overlay-accent" />
+            </div>
+          </section>
+        </div>
 
         <section id="studio" className="chapter studio-chapter">
           <div className="studio-layout">
