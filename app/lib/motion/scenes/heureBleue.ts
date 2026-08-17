@@ -1,5 +1,5 @@
 /**
- * Cinematic scenes — the hand-built, pinned/scrubbed sequences.
+ * Scene 01 — the hero image wall.
  *
  * Rules that keep scenes from fighting each other and the rest of the page:
  *  - A scene owns every element inside it. No `data-reveal` may appear within
@@ -14,7 +14,7 @@
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SCENE } from './tokens';
+import { SCENE } from '../tokens';
 
 /**
  * Scene 01 — "heure bleue": the image wall zooms toward the viewer while the

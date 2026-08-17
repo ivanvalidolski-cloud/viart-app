@@ -21,7 +21,16 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { HEADER_OFFSET } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
-import { createHeureBleueScene } from './scenes';
+import {
+  createBookingRevealerScene,
+  createCapsulesScene,
+  createEverlasSpotlightScene,
+  createGalleryMosaicScene,
+  createHeureBleueScene,
+  createStickyCardsScene,
+  createTurboDissolveScene,
+  createVideoGrowScene,
+} from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -90,6 +99,23 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
 
         createHeureBleueScene(sequenceRoot);
         createMaskReveals(pageRoot);
+
+        // The chapter scenes, in document order. Each is scoped to the page
+        // root and returns a teardown for whatever this context cannot revert
+        // by itself — a rAF loop, a WebGL context, injected DOM, a SplitText,
+        // a plain listener. Everything they build with GSAP is recorded here,
+        // so the pins and their spacers go away with the context.
+        const teardowns = [
+          createCapsulesScene(pageRoot),
+          createEverlasSpotlightScene(pageRoot),
+          createTurboDissolveScene(pageRoot, lenis),
+          createGalleryMosaicScene(pageRoot),
+          createVideoGrowScene(pageRoot),
+          createStickyCardsScene(pageRoot),
+          createBookingRevealerScene(pageRoot),
+        ].filter((teardown): teardown is () => void => typeof teardown === 'function');
+
+        return () => teardowns.forEach((teardown) => teardown());
       });
 
       // Late-loading images change every trigger's start/end. next/image below
