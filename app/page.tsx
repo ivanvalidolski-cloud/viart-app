@@ -180,12 +180,10 @@ export default function Home() {
   const intentionalAudioRef = useRef(false);
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
-  const voyeurSceneRef = useRef<HTMLElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
 
   const { scrollTo, setScrollLocked } = useViartMotion({
     sequence: motionSequenceRef,
-    voyeur: voyeurSceneRef,
     page: pageContentRef,
   });
 
@@ -294,7 +292,7 @@ export default function Home() {
         <div className="site-header__inner">
           <a href="#top" className="site-logo" aria-label="ViART — на главную">ViART</a>
           <nav className="site-nav" aria-label="Основная навигация">
-            <a href="#studio">Студия</a>
+            <a href="#services">Направления</a>
             <a href="#pricing">Услуги и цены</a>
             <a href="#everlas">Оборудование</a>
             <a href="#reviews">Отзывы</a>
@@ -317,7 +315,7 @@ export default function Home() {
 
       <div className={`mobile-menu ${isMenuOpen ? 'is-open' : ''}`} aria-hidden={!isMenuOpen}>
         {[
-          ['Студия', '#studio'],
+          ['Направления', '#services'],
           ['Услуги и цены', '#pricing'],
           ['Оборудование', '#everlas'],
           ['Отзывы', '#reviews'],
@@ -376,52 +374,68 @@ export default function Home() {
               <div className="hb-ws" aria-hidden="true" />
             </div>
           </div>
-
-          <section className="vv-hero" ref={voyeurSceneRef}>
-            <div className="vv-bg-content">
-              <div className="vv-bg-col">
-                <div className="vv-bg-copy">
-                  <h3>Атмосфера ViART</h3>
-                  <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке.</p>
-                </div>
-              </div>
-              <div className="vv-bg-col">
-                <div className="vv-bg-copy">
-                  <h3>Спокойное пространство</h3>
-                  <p>Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="vv-outro-content">
-              <figure className="vv-outro-img"><Image src="/images/gallery/4.jpg" alt="Процедура лазерной эпиляции в ViART" fill sizes="50vw" /></figure>
-              <figure className="vv-outro-img"><Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="50vw" /></figure>
-              <div className="vv-outro-header"><h3>Спокойное пространство для регулярных процедур</h3></div>
-            </div>
-
-            <div className="vv-fg-content">
-              <figure className="vv-fg-img"><Image src="/images/gallery/2.jpg" alt="Аппаратная процедура в студии ViART" fill priority sizes="100vw" /></figure>
-              <div className="vv-fg-header"><h2>Процедуры на аппаратах EVERLAS и TURBO G8</h2></div>
-              <div className="vv-fg-overlay-dark" />
-              <div className="vv-fg-overlay-accent" />
-            </div>
-          </section>
         </div>
 
-        <section id="studio" className="chapter studio-chapter">
-          <div className="studio-layout">
-            <figure className="studio-main-media" data-reveal="media">
-              <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
-            </figure>
-            <div className="studio-copy" data-reveal="">
-              <p className="eyebrow">Атмосфера ViART</p>
-              <h2>Спокойное пространство для регулярных процедур</h2>
-              <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
-              <p>Понятный сценарий записи, спокойная обстановка и реальные материалы студии — без лишней сложности до и во время визита.</p>
-            </div>
-            <figure className="studio-support-media" data-reveal="media" data-reveal-delay="0.12">
-              <Image src="/images/gallery/5.jpg" alt="Детали интерьера студии ViART" fill sizes="(max-width: 767px) 100vw, 40vw" className="cover-image" />
-            </figure>
+        <section id="services" className="chapter services-chapter">
+          <div className="services-intro">
+            <p className="eyebrow">Два направления</p>
+            <h2 data-reveal="">Что делаем<br />в студии</h2>
+          </div>
+
+          <div className="services-columns" data-reveal="group">
+            <article className="service-column" data-reveal-item="">
+              <figure className="service-column__media">
+                <Image
+                  src="/images/gallery/6.jpg"
+                  alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
+                  fill
+                  sizes="(max-width: 899px) 100vw, 46vw"
+                  className="cover-image"
+                />
+              </figure>
+              <div className="service-column__body">
+                <p className="service-column__kicker">EVERLAS</p>
+                <h3>Лазерная эпиляция</h3>
+                <p className="service-column__lead">
+                  Курс процедур, чтобы реже возвращаться к бритве.
+                </p>
+                <ul className="service-column__points">
+                  <li>Параметры аппарата мастер подбирает под вашу зону</li>
+                  <li>Во время процедуры используются защитные очки</li>
+                  <li>Результат накапливается за курс — число процедур зависит от зоны</li>
+                </ul>
+                <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>
+                  Зоны и цены
+                </button>
+              </div>
+            </article>
+
+            <article className="service-column" data-reveal-item="">
+              <figure className="service-column__media">
+                <Image
+                  src="/images/gallery/2.jpg"
+                  alt="Роликовая манипула аппарата TURBO G8 в студии ViART"
+                  fill
+                  sizes="(max-width: 899px) 100vw, 46vw"
+                  className="cover-image"
+                />
+              </figure>
+              <div className="service-column__body">
+                <p className="service-column__kicker">TURBO G8</p>
+                <h3>Аппаратный массаж</h3>
+                <p className="service-column__lead">
+                  Работа по выбранным зонам в комфортном для вас режиме.
+                </p>
+                <ul className="service-column__points">
+                  <li>Роликовая манипула прорабатывает выбранные зоны</li>
+                  <li>Интенсивность мастер регулирует по вашим ощущениям</li>
+                  <li>Программы для живота, ягодиц и двух зон</li>
+                </ul>
+                <button type="button" className="button button--outline" onClick={() => openPriceTab(2)}>
+                  Программы и цены
+                </button>
+              </div>
+            </article>
           </div>
         </section>
 

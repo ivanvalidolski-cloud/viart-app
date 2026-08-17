@@ -21,7 +21,7 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { HEADER_OFFSET } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
-import { createHeureBleueScene, createVoyeurScene } from './scenes';
+import { createHeureBleueScene } from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -29,22 +29,19 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 type MotionRefs = {
-  /** Wrapper around both cinematic scenes. */
+  /** Wrapper around the cinematic hero scene. */
   sequence: React.RefObject<HTMLDivElement | null>;
-  /** The pinned voyeur scene itself. */
-  voyeur: React.RefObject<HTMLElement | null>;
-  /** Everything below the scenes — the declarative reveal scope. */
+  /** Everything below the scene — the declarative reveal scope. */
   page: React.RefObject<HTMLElement | null>;
 };
 
-export function useViartMotion({ sequence, voyeur, page }: MotionRefs) {
+export function useViartMotion({ sequence, page }: MotionRefs) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useIsomorphicLayoutEffect(() => {
     const sequenceRoot = sequence.current;
-    const voyeurScene = voyeur.current;
     const pageRoot = page.current;
-    if (!sequenceRoot || !voyeurScene || !pageRoot) return;
+    if (!sequenceRoot || !pageRoot) return;
 
     // --- scroll driver -----------------------------------------------------
     // `anchors` hands every in-page link to Lenis, so `#pricing` lands at the
@@ -92,7 +89,6 @@ export function useViartMotion({ sequence, voyeur, page }: MotionRefs) {
         if (motionReduced) return;
 
         createHeureBleueScene(sequenceRoot);
-        createVoyeurScene(voyeurScene);
         createMaskReveals(pageRoot);
       });
 
@@ -123,7 +119,7 @@ export function useViartMotion({ sequence, voyeur, page }: MotionRefs) {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [sequence, voyeur, page]);
+  }, [sequence, page]);
 
   /**
    * Programmatic scrolling must go through Lenis for the same reason anchors
