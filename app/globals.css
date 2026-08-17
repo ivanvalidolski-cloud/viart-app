@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* The imported Magic UI components are written against shadcn's theme names
+   (`bg-background`, `bg-primary`, `text-primary-foreground`). Mapping those three
+   onto ViART tokens is what lets the official markup keep its own classes while
+   painting in this palette — see `.viart-cta` at the end of this file for the
+   rest of the adaptation. */
+@theme inline {
+  --color-background: var(--warm-black);
+  --color-primary: var(--bronze-soft);
+  --color-primary-foreground: var(--warm-black);
+}
+
 :root {
   --warm-black: #100905;
   --ink: #0d0704;
@@ -3426,5 +3437,1609 @@ h3,
 @media (hover: none) {
   .service-column:hover .service-column__media img {
     transform: none;
+  }
+}
+
+/* ==========================================================================
+   ViART Motion Chapters (v13)
+
+   The scene scaffolding for the eight chapters below the hero. Every block is
+   the CSS half of a scene in `app/lib/motion/scenes/`; the source it is adapted
+   from is named at the top of that module, and the geometry here is transcribed
+   from it — a capsule column is 50% wide, the spotlight column carries 50svh of
+   padding, the dissolve section is 175svh, the wipe runway is 300vh. Those are
+   progress mapping, not taste, and cannot be nudged.
+
+   What *is* ours: the palette, the type, the copy, the media and the
+   responsive/reduced-motion composition at the end.
+   ========================================================================== */
+
+:root {
+  /* Gold on hover for a filled control — already in use by .button--ivory. */
+  --bronze-hi: #e4cc89;
+  /* Gold and hairlines that hold up on the warm off-white closing panel. */
+  --bronze-ink: #6b5015;
+  --hairline-ink: rgba(42, 28, 17, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   Global CTA system — Magic UI's Interactive Hover Button in ViART clothing.
+   The component's own utilities drive the motion (the dot scaling to the fill,
+   the label sliding out, the second label arriving); these rules only restate
+   the surface, the radius and the type, and pick the four colours through
+   custom properties so a variant is one declaration block.
+   -------------------------------------------------------------------------- */
+.viart-cta {
+  --cta-surface: transparent;
+  --cta-ink: var(--ivory);
+  --cta-border: var(--hairline-strong);
+  --cta-fill: var(--bronze-soft);
+  --cta-fill-ink: var(--warm-black);
+
+  min-height: 2.8rem;
+  border: 1px solid var(--cta-border);
+  /* Nothing on this site is a pill; the component's `rounded-full` is replaced
+     by the project radius. The dot still scales to cover the whole control. */
+  border-radius: 0.4rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--cta-surface);
+  color: var(--cta-ink);
+  font-family: var(--font-onest), Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* The expanding dot. */
+.viart-cta > div:first-child > div:first-child {
+  background: var(--cta-fill);
+}
+
+/* The label that arrives once the fill has covered the control. */
+.viart-cta > div:last-child {
+  color: var(--cta-fill-ink);
+}
+
+.viart-cta:focus-visible {
+  outline: 1px solid var(--ivory);
+  outline-offset: 4px;
+}
+
+.viart-cta--ivory {
+  --cta-surface: var(--bronze-soft);
+  --cta-ink: var(--warm-black);
+  --cta-border: var(--bronze-soft);
+  --cta-fill: var(--bronze-hi);
+  --cta-fill-ink: var(--warm-black);
+}
+
+.viart-cta--outline {
+  --cta-surface: transparent;
+  --cta-ink: var(--bronze-soft);
+  --cta-border: rgba(201, 168, 76, 0.58);
+  --cta-fill: var(--bronze-soft);
+  --cta-fill-ink: var(--warm-black);
+}
+
+/* For the warm off-white closing panel. */
+.viart-cta--dark {
+  --cta-surface: var(--warm-black);
+  --cta-ink: var(--ivory);
+  --cta-border: var(--warm-black);
+  --cta-fill: var(--bronze);
+  --cta-fill-ink: var(--warm-black);
+}
+
+/* --------------------------------------------------------------------------
+   02 SERVICES — capsule columns
+   -------------------------------------------------------------------------- */
+.cap-scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  border-top: 1px solid var(--hairline);
+  padding: 0.5rem;
+  background: var(--warm-black);
+}
+
+.cap-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* 50% is load-bearing: every phase moves a column by a full 100% of its own
+   width, so at half width it lands exactly on the other half. Widen it and the
+   two middle columns hang off the edge at one of their two stops. */
+.cap-col {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Off-stage positions for the frame before the scene is built — and the whole
+   composition when motion is reduced. */
+.cap-col--2 {
+  transform: translateX(100%);
+}
+
+.cap-col--3 {
+  padding: 0.5rem;
+  transform: translateX(100%) translateY(100%);
+}
+
+.cap-col--4 {
+  transform: translateX(100%) translateY(100%);
+}
+
+.cap-content,
+.cap-img {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.cap-plate {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.cap-plate--text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 2.4vw, 2.6rem);
+}
+
+/* Sits exactly on top of the first text plate, with no surface of its own. */
+.cap-text--b {
+  position: absolute;
+  /* Not `inset: 0` — absolute offsets resolve against the column's padding box,
+     which would leave this block 0.5rem wider than the plate it stacks on and
+     shift its copy outward mid-swap. */
+  inset: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 2.4vw, 2.6rem);
+}
+
+.cap-img--1,
+.cap-img--2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* A zero-height sliver at the top edge: the second photograph starts hidden and
+   the phase-one wipe grows it to the full plate. */
+.cap-img--2 {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+}
+
+/* `transform`, not the `scale` property — GSAP writes the same channel, so the
+   two cannot compound. */
+.cap-img--2 img {
+  transform: scale(1.25);
+}
+
+.cap-plate--text h2,
+.cap-plate--text h3 {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1.9rem, 3.2vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+}
+
+.cap-kicker {
+  margin: 0 0 0.9rem;
+  color: var(--bronze-soft);
+}
+
+.cap-lead {
+  max-width: 26ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.cap-points {
+  display: grid;
+  max-width: 34ch;
+  gap: 0.7rem;
+}
+
+.cap-points p {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+p.cap-tag {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  margin: 0;
+  border-radius: 0.3rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(13, 7, 4, 0.74);
+  color: var(--bronze-soft);
+  white-space: nowrap;
+}
+
+/* One span per line, clipped by the line: the swap is two stacks of line masks
+   passing each other. */
+.cap-line {
+  overflow: hidden;
+  /* Same reason as .reveal-line — at this leading a mask clips Cyrillic
+     descenders without it. */
+  padding-bottom: 0.14em;
+}
+
+.cap-line span {
+  display: block;
+  will-change: transform;
+}
+
+.cap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   03 EVERLAS — pinned spotlight
+   -------------------------------------------------------------------------- */
+.spot-intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.spot-intro__copy {
+  grid-column: 1 / span 7;
+}
+
+.spot-intro__copy h2 {
+  max-width: 13ch;
+  margin: 0 0 1.25rem;
+  color: var(--ivory);
+  font-size: clamp(2.8rem, 4.2vw, 4.7rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.spot-intro__lead {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* The beam's SVG is absolutely positioned against this box. */
+.spot-beam {
+  position: relative;
+  grid-column: 9 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 7.5rem;
+}
+
+.spot-node {
+  display: inline-grid;
+  min-width: 5.5rem;
+  place-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 0.3rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--cocoa);
+  color: var(--bronze-soft);
+}
+
+.spot-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  /* The JS reads this padding to derive the counter and name travel. */
+  padding: 2rem;
+}
+
+.spot-index {
+  position: relative;
+  z-index: 2;
+}
+
+.spot-counter {
+  display: inline-block;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 5vw, 7rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  will-change: transform;
+}
+
+/* Half a viewport of padding top and bottom is what puts the first and last
+   frame near mid-screen at the two ends of the scrub. */
+.spot-images {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  display: flex;
+  width: 35%;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 50svh 0;
+  transform: translateX(-50%);
+  will-change: transform;
+}
+
+.spot-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0.5rem;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.spot-names {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spot-name {
+  display: grid;
+  max-width: 26rem;
+  justify-items: end;
+  gap: 0.2rem;
+  color: var(--muted);
+  text-align: right;
+  transition: color 0.3s ease;
+  will-change: transform;
+}
+
+.spot-name__index {
+  color: var(--bronze-soft);
+}
+
+.spot-name__title {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.spot-name__copy {
+  max-width: 34ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.spot-outro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
+}
+
+.spot-outro > p {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   04 TURBO G8 — WebGL dissolve
+   -------------------------------------------------------------------------- */
+.dissolve-scene {
+  position: relative;
+  width: 100%;
+  height: 175svh;
+  overflow: hidden;
+  background: var(--warm-black);
+  color: var(--ivory);
+}
+
+.dissolve-img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* The photograph is graded here rather than in the file — this is what ties an
+   ordinary frame to the warm palette the dissolve sweeps in with. */
+.dissolve-img::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    180deg,
+    rgba(201, 168, 76, 0.32) 0%,
+    rgba(122, 74, 26, 0.6) 55%,
+    rgba(16, 9, 5, 1) 130%
+  );
+  mix-blend-mode: multiply;
+}
+
+.dissolve-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  height: 100svh;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 var(--page-gutter);
+  text-align: center;
+}
+
+.dissolve-header h2 {
+  margin: 0;
+  font-size: clamp(2.8rem, 8vw, 7rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 0.94;
+}
+
+.dissolve-header > p:last-child {
+  max-width: 34ch;
+  margin: 0;
+  color: rgba(244, 236, 216, 0.86);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.dissolve-header .tech-label {
+  margin: 0;
+  color: var(--bronze-soft);
+}
+
+/* Transparent, and above the photograph and the header: the fill is what
+   blots them out. */
+.dissolve-canvas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.dissolve-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  height: 125svh;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0 var(--page-gutter);
+  text-align: center;
+}
+
+/* Keeps the paragraph readable during the crossover, before the fill arrives. */
+.dissolve-content::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: radial-gradient(62% 46% at 50% 50%, rgba(16, 9, 5, 0.74), transparent 72%);
+  pointer-events: none;
+}
+
+.dissolve-mark {
+  position: relative;
+  color: var(--bronze-soft);
+  font-family: var(--font-martian), "Courier New", monospace;
+  opacity: 0.55;
+}
+
+.dissolve-copy {
+  position: relative;
+  max-width: 22ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1.7rem, 4vw, 3.9rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.dissolve-content .text-button {
+  position: relative;
+  margin-top: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   05 GALLERY — 3×3 clip-path mosaic
+   -------------------------------------------------------------------------- */
+.mosaic-scene {
+  background: var(--warm-black);
+}
+
+.mosaic-row {
+  display: flex;
+  width: 100%;
+  gap: var(--grid-gap);
+}
+
+.gallery-topline + .mosaic-row {
+  margin-top: clamp(3rem, 6vw, 6rem);
+}
+
+.mosaic-row + .mosaic-row,
+.mosaic-feature + .mosaic-row {
+  margin-top: clamp(2rem, 4vw, 4rem);
+}
+
+.mosaic-cell {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+}
+
+/* All nine masks in a cell carry the same full-cover picture; the 3×3 grid is
+   entirely a matter of clip-path, so a tile uncovers its own ninth of one
+   continuous photograph. A cell with no `--mosaic-src` resolves to no image and
+   tiles in empty — that is what makes the row read as a gappy editorial grid. */
+.mosaic-cell .mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-image: var(--mosaic-src);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+}
+
+.mosaic-feature {
+  position: relative;
+  margin: clamp(2rem, 4vw, 4rem) 0 0;
+}
+
+.mosaic-feature > div {
+  border-radius: 0.8rem;
+}
+
+.mosaic-feature img {
+  display: block;
+  height: clamp(18rem, 42vw, 40rem);
+  width: 100%;
+  border-radius: 0.8rem;
+  object-fit: cover;
+}
+
+.mosaic-feature figcaption {
+  margin-top: 0.9rem;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------------------
+   06 VIDEO — the plate grows into the frame
+   -------------------------------------------------------------------------- */
+.grow-scene {
+  position: relative;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter);
+  background: var(--espresso);
+}
+
+.grow-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+/* The quarter-scale thumbnail pulled above its own section. The JS takes the
+   same value from its breakpoint table on the first frame, so a wide screen
+   never jumps. Below the gate the plate is an ordinary block in flow. */
+@media (min-width: 900px) {
+  .grow-container {
+    transform: translateY(-105%) scale(0.25);
+    will-change: transform;
+  }
+}
+
+/* Sized off the plate it sits behind, not off the whole container — the caption
+   below should not glow. */
+.grow-backlight {
+  position: absolute;
+  top: -6%;
+  left: -4%;
+  right: -4%;
+  z-index: 0;
+  aspect-ratio: 16 / 9;
+  pointer-events: none;
+}
+
+.grow-backlight svg {
+  position: absolute;
+}
+
+.grow-backlight > div:last-child {
+  height: 100%;
+  width: 100%;
+}
+
+.grow-backlight__plate {
+  height: 100%;
+  width: 100%;
+  border-radius: 2.5rem;
+  background: radial-gradient(
+    58% 54% at 50% 46%,
+    rgba(201, 168, 76, 0.34),
+    rgba(42, 28, 17, 0.16) 62%,
+    transparent 78%
+  );
+}
+
+.grow-preview {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--cocoa);
+}
+
+/* .master-media is laid out for a 12-column grid elsewhere; inside the plate it
+   is simply the full frame. */
+.grow-preview .master-media {
+  position: absolute;
+  inset: 0;
+  grid-column: auto;
+  height: 100%;
+  border-radius: 1.5rem;
+}
+
+.grow-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.grow-title p {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  /* The JS owns this from the first frame; the value only matters pre-script. */
+  font-size: 78px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.grow-title p:last-child {
+  color: var(--muted);
+  text-align: right;
+}
+
+.grow-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  max-width: 68ch;
+  margin-top: clamp(2rem, 4vw, 4rem);
+}
+
+.grow-context > p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   07 COMPLEXES — sticky deck
+   -------------------------------------------------------------------------- */
+.deck-chapter {
+  background: var(--ink);
+}
+
+.deck-intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.deck-intro > div:first-child {
+  grid-column: 1 / span 7;
+}
+
+.deck-intro > p {
+  grid-column: 9 / -1;
+  max-width: 30rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.deck-intro h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(3rem, 5vw, 5.6rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.deck-scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  padding: 2rem;
+  background: var(--ink);
+}
+
+/* The clip is what hides the card waiting one container-height below. */
+.deck-container {
+  position: relative;
+  height: 50%;
+  width: 50%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.deck-card {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--cocoa);
+}
+
+.deck-card img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.deck-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(13, 7, 4, 0.3) 0%, rgba(13, 7, 4, 0.88) 64%);
+}
+
+.deck-tag {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  z-index: 1;
+  border-radius: 0.25em;
+  padding: 0.5em 0.7em;
+  background: rgba(13, 7, 4, 0.86);
+}
+
+.deck-tag p {
+  margin: 0;
+  color: var(--bronze-soft);
+}
+
+.deck-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: grid;
+  gap: 0.6rem;
+  padding: clamp(1.25rem, 2vw, 2rem);
+}
+
+.deck-detail {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
+  line-height: 1.4;
+}
+
+.deck-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+}
+
+.deck-price > span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.deck-price strong {
+  color: var(--bronze-soft);
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.deck-price small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.deck-outro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 2rem;
+  padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
+}
+
+/* --------------------------------------------------------------------------
+   08 REVIEWS — the pause. Only the two counts changed.
+   -------------------------------------------------------------------------- */
+.rating-counts__value {
+  color: var(--bronze-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   09 REVIEWS → BOOKING — the cross that opens and wipes
+   -------------------------------------------------------------------------- */
+.wipe-story {
+  position: relative;
+  width: 100%;
+}
+
+.wipe-lead {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--page-gutter);
+  background: var(--warm-black);
+  text-align: center;
+}
+
+.wipe-lead h2 {
+  max-width: 18ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 0.94;
+}
+
+.wipe-rows {
+  position: relative;
+  z-index: 1;
+  height: 150vh;
+  width: 100%;
+  background: var(--warm-black);
+}
+
+.wipe-row {
+  display: flex;
+  height: 250px;
+  width: 100%;
+  align-items: center;
+  padding: 0 var(--page-gutter);
+}
+
+.wipe-row--start {
+  justify-content: flex-start;
+}
+
+.wipe-row--end {
+  justify-content: flex-end;
+}
+
+.wipe-row p {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.13);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(3.5rem, 12vw, 11rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Pinned behind the cross for the whole runway. */
+.wipe-editorial {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(4rem, 7vw, 7rem) var(--page-gutter);
+  background: var(--espresso);
+}
+
+.wipe-editorial__inner {
+  max-width: 48ch;
+}
+
+.wipe-editorial__inner > p:last-child {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.86);
+  font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+  line-height: 1.55;
+}
+
+.wipe-thumbs {
+  display: grid;
+  height: 250px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+.wipe-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.wipe-runway {
+  position: relative;
+  z-index: 0;
+  height: 300vh;
+  width: 100%;
+  background: var(--warm-black);
+}
+
+.wipe-pinned {
+  position: absolute;
+  top: 100vh;
+  left: 0;
+  z-index: 2;
+  height: 250vh;
+  width: 100%;
+  /* At 13x the square is far wider than the viewport; clipping it here keeps the
+     page from gaining a horizontal scrollbar without a rule on html/body. When
+     the section is pinned this box is exactly the viewport's width, so the wipe
+     still covers the screen edge to edge. */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wipe-revealer {
+  position: absolute;
+  top: 0;
+  left: 35%;
+  height: 120px;
+  width: 120px;
+  margin-top: 325px;
+  transform: translate(-50%, 0%);
+  will-change: transform;
+}
+
+/* Two bars, one rotated: a thin plus that the scroll opens into a solid square
+   and then scales up to wipe the screen. Its colour is the closing panel's, or
+   the handoff would show a seam. */
+.wipe-bar {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--ivory);
+  clip-path: polygon(45% 0%, 55% 0%, 55% 100%, 45% 100%);
+}
+
+.wipe-bar--2 {
+  transform: rotate(90deg);
+}
+
+.wipe-booking {
+  position: relative;
+  z-index: 10;
+  min-height: 150vh;
+  width: 100%;
+  padding: clamp(5rem, 8vw, 9rem) var(--page-gutter) clamp(4rem, 6vw, 7rem);
+  background: var(--ivory);
+  color: var(--warm-black);
+}
+
+.wipe-booking__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  row-gap: clamp(3rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.wipe-booking__lead {
+  grid-column: 1 / span 7;
+}
+
+.wipe-eyebrow {
+  margin: 0 0 1rem;
+  color: var(--bronze-ink);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.wipe-booking h2 {
+  max-width: 15ch;
+  margin: 0 0 2.5rem;
+  color: var(--warm-black);
+  font-size: clamp(2.6rem, 5vw, 5.4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.wipe-magnet {
+  display: inline-block;
+}
+
+/* The beam is `absolute inset-0 rounded-[inherit]`, so the frame owns the
+   radius and the positioning context. */
+.wipe-cta-frame {
+  position: relative;
+  display: inline-block;
+  border-radius: 0.4rem;
+}
+
+.wipe-facts {
+  grid-column: 9 / -1;
+  display: grid;
+  gap: 1.6rem;
+  margin: 0;
+}
+
+.wipe-facts dt {
+  color: var(--bronze-ink);
+}
+
+.wipe-facts dd {
+  margin: 0.4rem 0 0;
+  color: rgba(42, 28, 17, 0.88);
+  line-height: 1.5;
+}
+
+.wipe-facts a {
+  border-bottom: 1px solid rgba(42, 28, 17, 0.32);
+  color: var(--warm-black);
+}
+
+.wipe-facts a:hover {
+  border-color: var(--bronze-ink);
+  color: var(--bronze-ink);
+}
+
+.wipe-map {
+  grid-column: 1 / -1;
+  height: clamp(19rem, 32vw, 30rem);
+  overflow: hidden;
+  border: 1px solid var(--hairline-ink);
+  border-radius: 0.75rem;
+}
+
+.wipe-map iframe {
+  display: block;
+  border: 0;
+  filter: saturate(0.82);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive composition
+
+   Mobile is a different composition, not a smaller desktop — with one hard
+   exception. The capsule columns stay at 50%: the phase tweens move a column by
+   100% of its own width, so any other width lands the two middle columns off
+   the edge at one of their two stops. Widen the content, never the column.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .spot-intro__copy {
+    grid-column: 1 / span 12;
+  }
+
+  .spot-beam {
+    grid-column: 1 / span 12;
+    height: 6rem;
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1.25rem;
+  }
+
+  .cap-plate--text h2,
+  .cap-plate--text h3,
+  .cap-lead,
+  .cap-points {
+    max-width: 100%;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.85rem;
+  }
+
+  .cap-plate--text,
+  .cap-text--b {
+    padding: 2rem;
+  }
+
+  /* Near-full-width frames spaced far apart, so one still owns the midline. */
+  .spot-images {
+    width: calc(100% - 4rem);
+    gap: 25svh;
+  }
+
+  /* At this size the dim/active distinction stops earning its keep. */
+  .spot-name {
+    color: var(--ivory) !important;
+  }
+
+  .spot-name__copy {
+    max-width: 40ch;
+  }
+}
+
+@media (max-width: 899px) {
+  .deck-intro > div:first-child,
+  .deck-intro > p {
+    grid-column: 1 / span 12;
+  }
+
+  .deck-intro > p {
+    margin-top: 1.5rem;
+    max-width: none;
+  }
+
+  /* No script below 900px, so this is the size the caption actually ships at. */
+  .grow-title p {
+    font-size: 1.05rem;
+  }
+
+  .grow-title {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .grow-title p:last-child {
+    text-align: left;
+  }
+
+  .grow-preview {
+    border-radius: 0.8rem;
+  }
+
+  .grow-preview .master-media {
+    border-radius: 0.8rem;
+  }
+
+  .mosaic-feature img {
+    height: clamp(15rem, 60vw, 24rem);
+  }
+
+  .wipe-booking__lead,
+  .wipe-facts {
+    grid-column: 1 / span 12;
+  }
+
+  .wipe-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wipe-thumbs {
+    height: 150px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wipe-thumbs .wipe-thumb:nth-child(n + 3) {
+    display: none;
+  }
+
+  .wipe-row {
+    height: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Give the fixed header its own band instead of letting the wordmark sit on
+     the capsule's own eyebrow. Costs ~54px of plate height. */
+  .cap-scene {
+    padding-top: 3.4rem;
+  }
+
+  .cap-plate {
+    border-radius: 0.8rem;
+  }
+
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.8125rem;
+  }
+
+  /* The desktop split — heading at the top, copy at the bottom — leaves a dead
+     middle two thirds of a plate this narrow, and parks the copy below the fold
+     while the section is still settling into the pin. */
+  .cap-plate--text,
+  .cap-text--b {
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 1.15rem;
+  }
+
+  .cap-points {
+    gap: 0.5rem;
+  }
+
+  /* Type plus class, matching the base rule — a bare `.cap-tag` override loses
+     the specificity contest and the tag silently keeps nowrap and truncates. */
+  p.cap-tag {
+    left: 0.6rem;
+    bottom: 0.6rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.55rem;
+    white-space: normal;
+  }
+
+  /* The plates are roughly 1:4 here, so `cover` crops the width, not the
+     height: the vertical half of object-position has nothing to do. */
+  .cap-plate img {
+    object-position: 40% 50%;
+  }
+
+  .cap-actions {
+    gap: 0.5rem;
+  }
+
+  .cap-actions .viart-cta {
+    flex: 1 1 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .mosaic-row {
+    gap: 0.5rem;
+  }
+
+  /* Four 4:5 cells across a phone is a 20%-wide sliver; two rows of two read. */
+  .mosaic-row {
+    flex-wrap: wrap;
+  }
+
+  .mosaic-cell {
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+
+  .mosaic-cell--void {
+    display: none;
+  }
+
+  .spot-names {
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .spot-name {
+    max-width: none;
+  }
+
+  .deck-container {
+    height: 60%;
+    width: 100%;
+  }
+
+  .wipe-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The mosaic cell is a background image, so it has no intrinsic ratio to keep
+   the row honest below 1000px — the source relaxes the whole grid instead. */
+@media (max-width: 1000px) {
+  .deck-container {
+    width: 95%;
+  }
+
+  .deck-intro h2,
+  .wipe-lead h2 {
+    font-size: clamp(2.4rem, 8vw, 4rem);
+  }
+}
+
+/* Pointer-only embellishments. The lens and the magnet are also gated in JS —
+   this is the belt to that pair of braces. */
+@media (hover: none) {
+  .mosaic-feature > div {
+    pointer-events: none;
+  }
+
+  .wipe-magnet > div {
+    transform: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+
+   No scene is built at all, so every box that exists only to hold scroll has to
+   collapse — a pin that never happens still leaves 5svh of section, and the wipe
+   runway would be five and a half screens of nothing. Everything readable stays
+   readable, and every control stays reachable.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  /* --- services: four plates in a static two-column grid --- */
+  .cap-scene {
+    display: block;
+    height: auto;
+    padding: clamp(4rem, 6vw, 6rem) var(--page-gutter);
+  }
+
+  .cap-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .cap-col {
+    position: static;
+    height: auto;
+    width: auto;
+    padding: 0;
+    transform: none;
+  }
+
+  .cap-content,
+  .cap-img {
+    height: auto;
+    padding: 0;
+  }
+
+  .cap-img--1,
+  .cap-img--2 {
+    position: relative;
+    clip-path: none;
+  }
+
+  .cap-img--2 {
+    margin-top: var(--grid-gap);
+  }
+
+  .cap-img--2 img {
+    transform: none;
+  }
+
+  .cap-img .cap-plate {
+    height: auto;
+    aspect-ratio: 4 / 5;
+    border-radius: 0.8rem;
+  }
+
+  .cap-plate--text {
+    height: auto;
+    gap: 1.75rem;
+  }
+
+  .cap-text--b {
+    position: static;
+    margin-top: var(--grid-gap);
+    border-radius: 0.8rem;
+    background: var(--cocoa);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+
+  /* --- EVERLAS: the stage list beside a static strip of frames --- */
+  .spot-scene {
+    height: auto;
+    padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
+  }
+
+  .spot-index {
+    display: none;
+  }
+
+  .spot-images {
+    position: static;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    padding: 0;
+    transform: none;
+  }
+
+  .spot-img {
+    opacity: 1;
+  }
+
+  .spot-names {
+    position: static;
+    align-items: stretch;
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  .spot-name {
+    max-width: none;
+    justify-items: start;
+    color: var(--ivory) !important;
+    text-align: left;
+  }
+
+  /* --- TURBO G8: no canvas, no 175svh, the photograph simply stands --- */
+  .dissolve-scene {
+    height: auto;
+  }
+
+  .dissolve-img {
+    position: relative;
+    height: clamp(20rem, 46vw, 38rem);
+  }
+
+  .dissolve-header {
+    position: relative;
+    height: auto;
+    padding: clamp(3rem, 5vw, 5rem) var(--page-gutter) clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .dissolve-canvas {
+    display: none;
+  }
+
+  .dissolve-content {
+    position: relative;
+    height: auto;
+    padding: 0 var(--page-gutter) clamp(4rem, 6vw, 6rem);
+  }
+
+  .dissolve-content::before {
+    display: none;
+  }
+
+  /* --- video: the plate is already where it belongs --- */
+  .grow-container {
+    transform: none;
+    gap: 1.5rem;
+  }
+
+  .grow-title p {
+    font-size: 1.15rem;
+  }
+
+  /* --- complexes: the deck unstacks into a list --- */
+  .deck-scene {
+    height: auto;
+    padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
+  }
+
+  .deck-container {
+    display: grid;
+    height: auto;
+    width: 100%;
+    gap: var(--grid-gap);
+    overflow: visible;
+  }
+
+  .deck-card {
+    position: relative;
+    inset: auto;
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+
+  /* --- the wipe: keep the statement and the panel, drop the scaffolding --- */
+  .wipe-lead {
+    height: auto;
+    padding: clamp(5rem, 8vw, 8rem) var(--page-gutter);
+  }
+
+  .wipe-rows,
+  .wipe-runway,
+  .wipe-pinned {
+    display: none;
+  }
+
+  .wipe-editorial {
+    height: auto;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  .wipe-thumbs {
+    height: clamp(9rem, 18vw, 15rem);
+  }
+
+  .wipe-booking {
+    min-height: 0;
   }
 }
