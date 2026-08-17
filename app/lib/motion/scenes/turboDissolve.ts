@@ -56,20 +56,33 @@ export function createTurboDissolveScene(root: HTMLElement, lenis: Lenis) {
   const words = split.words;
   gsap.set(words, { opacity: 0 });
 
+  // One reusable tween per word instead of a fresh `gsap.to` per word per tick.
+  // At any scroll position exactly one word is mid-fade and the rest are already
+  // at 0 or 1, so the source's loop was allocating a full set of tweens sixty
+  // times a second to move a single value — the same 0.1s catch-up, at a
+  // fraction of the cost, and no stack of overlapping tweens on one word.
+  const fadeTo = words.map((word) =>
+    gsap.quickTo(word, 'opacity', { duration: 0.1, ease: 'power1.out', overwrite: true }),
+  );
+  const lastOpacity = words.map(() => 0);
+
   ScrollTrigger.create({
     trigger: content,
     start: 'top 25%',
     end: 'bottom 100%',
+    invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
       const count = words.length;
-      words.forEach((word, index) => {
+      for (let index = 0; index < count; index += 1) {
         const from = index / count;
         const to = (index + 1) / count;
         let opacity = 0;
         if (progress >= to) opacity = 1;
         else if (progress >= from) opacity = (progress - from) / (to - from);
-        gsap.to(word, { opacity, duration: 0.1, overwrite: true });
-      });
+        if (Math.abs(opacity - lastOpacity[index]) < 0.001) continue;
+        lastOpacity[index] = opacity;
+        fadeTo[index](opacity);
+      }
     },
   });
 
@@ -107,15 +120,22 @@ export function createTurboDissolveScene(root: HTMLElement, lenis: Lenis) {
     ScrollTrigger.removeEventListener('refresh', measureRange);
   });
 
-  // The renderer is idle whenever the section is off screen. Frames nobody can
-  // see are the only thing this skips — the uniform still tracks scroll.
+  // The renderer is idle whenever the section is off screen — and so is its rAF
+  // loop, which would otherwise keep a frame callback alive for the whole page.
+  // The uniform still tracks scroll through the Lenis listener above, so
+  // re-entering draws the correct frame immediately.
   let onScreen = false;
+  let startRenderLoop: (() => void) | null = null;
+  let stopRenderLoop: (() => void) | null = null;
+
   ScrollTrigger.create({
     trigger: section,
     start: 'top bottom',
     end: 'bottom top',
     onToggle: ({ isActive }) => {
       onScreen = isActive;
+      if (isActive) startRenderLoop?.();
+      else stopRenderLoop?.();
     },
   });
 
@@ -144,10 +164,23 @@ export function createTurboDissolveScene(root: HTMLElement, lenis: Lenis) {
 
       scene.add(new THREE.Mesh(geometry, material));
 
+      // Reallocating the drawing buffer is the most expensive thing this scene
+      // can do, and on a phone the address bar sliding away fires `resize` for
+      // a height change the canvas has no reason to care about — the section is
+      // sized in `svh`, which does not move with the browser chrome. Only a
+      // genuine change in the section's box reaches the renderer, and the pixel
+      // ratio is set first so the very first buffer is already the right one.
+      let lastWidth = 0;
+      let lastHeight = 0;
       const resize = () => {
-        renderer.setSize(section.offsetWidth, section.offsetHeight);
+        const width = section.offsetWidth;
+        const height = section.offsetHeight;
+        if (width === lastWidth && height === lastHeight) return;
+        lastWidth = width;
+        lastHeight = height;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        material.uniforms.uResolution.value.set(section.offsetWidth, section.offsetHeight);
+        renderer.setSize(width, height);
+        material.uniforms.uResolution.value.set(width, height);
       };
 
       resize();
@@ -156,16 +189,32 @@ export function createTurboDissolveScene(root: HTMLElement, lenis: Lenis) {
       let frame = 0;
       const animate = () => {
         material.uniforms.uProgress.value = scrollProgress;
-        if (onScreen) renderer.render(scene, camera);
+        renderer.render(scene, camera);
         frame = requestAnimationFrame(animate);
       };
-      animate();
+
+      stopRenderLoop = () => {
+        if (!frame) return;
+        cancelAnimationFrame(frame);
+        frame = 0;
+      };
+      startRenderLoop = () => {
+        if (frame) return;
+        frame = requestAnimationFrame(animate);
+      };
+
+      // The section may already be on screen by the time `three` finishes
+      // loading, in which case the toggle that would have started the loop has
+      // already fired.
+      if (onScreen) startRenderLoop();
 
       // Stop the loop before disposing anything it touches, then give the GPU
       // resources back — a leaked context is a hard per-page limit, and the
       // page eventually stops being able to create one at all.
       teardowns.push(() => {
-        cancelAnimationFrame(frame);
+        stopRenderLoop?.();
+        startRenderLoop = null;
+        stopRenderLoop = null;
         window.removeEventListener('resize', resize);
         geometry.dispose();
         material.dispose();

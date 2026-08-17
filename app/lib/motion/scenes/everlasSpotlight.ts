@@ -5,7 +5,7 @@
  * https://motionprompts.dev/component/prototypestudio-scroll-animation/
  *
  * One pinned, scrubbed ScrollTrigger over five viewport heights; everything
- * else happens in its `onUpdate` through `gsap.set` off `self.progress`:
+ * else happens in its `onUpdate` off `self.progress`:
  *
  *   1. the counter's text steps `01/04 → 04/04`
  *   2. the counter slides straight down its own travel
@@ -22,11 +22,20 @@
  * the two name colours come from the palette tokens instead of literals. The
  * geometry is re-measured on refresh rather than once at load, so the travel
  * distances survive a resize — the formulas are unchanged.
+ *
+ * Which image is lit is derived, not measured. The source asks each frame for
+ * its `getBoundingClientRect()` and writes to it in the same loop, so a scrubbed
+ * frame reads layout, writes layout, reads, writes — four synchronous reflows
+ * per tick, which is the whole of this scene's jitter. Every position it needs
+ * is a fixed offset inside a column whose only motion is the translate this
+ * callback just chose, so the offsets are cached on refresh and the rest is
+ * arithmetic.
  */
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SPOTLIGHT } from '../tokens';
+import { changedOnly } from '../setters';
 
 export function createEverlasSpotlightScene(root: HTMLElement) {
   const section = root.querySelector<HTMLElement>('.spot-scene');
@@ -57,11 +66,32 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
   const activeColor = palette.getPropertyValue('--ivory').trim();
   const idleColor = palette.getPropertyValue('--muted').trim();
 
+  const setCounterY = gsap.quickSetter(counter, 'y', 'px') as (value: number) => void;
+  const setColumnY = gsap.quickSetter(imageColumn, 'y', 'px') as (value: number) => void;
+  const setNameY = names.map(
+    (name) => gsap.quickSetter(name, 'y', 'px') as (value: number) => void,
+  );
+  const setLabel = changedOnly<string>((value) => {
+    counter.textContent = value;
+  });
+  const setImageOpacity = images.map((image) =>
+    changedOnly<number>((value) => {
+      image.style.opacity = String(value);
+    }),
+  );
+  const setNameColor = names.map((name) =>
+    changedOnly<string>((value) => {
+      name.style.color = value;
+    }),
+  );
+
   // Cached on refresh — never read inside onUpdate.
   let counterTravel = 0;
   let namesTravel = 0;
   let imagesTravel = 0;
   let midline = 0;
+  /** Each frame's top and bottom inside the untranslated column. */
+  let imageBands: Array<{ top: number; bottom: number }> = [];
 
   const measure = () => {
     const sectionHeight = section.offsetHeight;
@@ -72,6 +102,16 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
     // multiplied by this value walks it upward.
     imagesTravel = window.innerHeight - imageColumn.offsetHeight;
     midline = window.innerHeight / 2;
+
+    // The column's own top edge, relative to the pinned section's box, plus each
+    // frame's offset inside it. While the section is pinned its box *is* the
+    // viewport, so a band plus the current translate is the frame's screen
+    // position — the same number the rect used to report.
+    const columnTop = imageColumn.offsetTop;
+    imageBands = images.map((image) => ({
+      top: columnTop + image.offsetTop,
+      bottom: columnTop + image.offsetTop + image.offsetHeight,
+    }));
   };
 
   ScrollTrigger.create({
@@ -85,28 +125,26 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
     onRefresh: measure,
     onUpdate: ({ progress }) => {
       // 1) which stage are we on (1-based, clamped to the last one)
-      counter.textContent = label(Math.min(Math.floor(progress * total) + 1, total));
+      setLabel(label(Math.min(Math.floor(progress * total) + 1, total)));
 
       // 2) + 3) the counter walks down, the column walks up
-      gsap.set(counter, { y: progress * counterTravel });
-      gsap.set(imageColumn, { y: progress * imagesTravel });
+      setCounterY(progress * counterTravel);
+      const columnY = progress * imagesTravel;
+      setColumnY(columnY);
 
       // 4) the image spanning the midline is the lit one
-      images.forEach((image) => {
-        const rect = image.getBoundingClientRect();
-        const lit = rect.top <= midline && rect.bottom >= midline;
-        gsap.set(image, { opacity: lit ? 1 : SPOTLIGHT.dimOpacity });
+      imageBands.forEach((band, index) => {
+        const lit = band.top + columnY <= midline && band.bottom + columnY >= midline;
+        setImageOpacity[index](lit ? 1 : SPOTLIGHT.dimOpacity);
       });
 
       // 5) each name rides its own slice of the progress
-      names.forEach((name, index) => {
+      names.forEach((_name, index) => {
         const from = index / total;
         const to = (index + 1) / total;
         const local = Math.max(0, Math.min(1, (progress - from) / (to - from)));
-        gsap.set(name, {
-          y: -local * namesTravel,
-          color: local > 0 && local < 1 ? activeColor : idleColor,
-        });
+        setNameY[index](-local * namesTravel);
+        setNameColor[index](local > 0 && local < 1 ? activeColor : idleColor);
       });
     },
   });
@@ -115,9 +153,9 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
   // inline transform/opacity/colour and the plain textContent write are undone
   // by hand before the context reverts.
   return () => {
-    gsap.set([counter, imageColumn, ...images, ...names], {
-      clearProps: 'transform,opacity,color',
-    });
+    gsap.set([counter, imageColumn, ...images, ...names], { clearProps: 'transform' });
+    images.forEach((image) => image.style.removeProperty('opacity'));
+    names.forEach((name) => name.style.removeProperty('color'));
     counter.textContent = label(1);
   };
 }

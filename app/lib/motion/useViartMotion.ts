@@ -19,7 +19,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
-import { HEADER_OFFSET } from './tokens';
+import { HEADER_OFFSET, VIDEO_GROW } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
 import {
   createBookingRevealerScene,
@@ -33,6 +33,17 @@ import {
 } from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
+
+/**
+ * A phone's address bar sliding away changes `window.innerHeight` without a
+ * single pixel of layout changing — the scenes are sized in `svh`, which does
+ * not follow the chrome. Left alone, ScrollTrigger treats that as a resize,
+ * refreshes every trigger, re-measures four pins and restores the scroll
+ * position against the new numbers: the page jumps mid-flick, every time the
+ * bar appears or disappears. `ignoreMobileResize` makes ScrollTrigger ignore a
+ * height-only change on touch devices, which is exactly what this is.
+ */
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 // Client components are pre-rendered on the server, where useLayoutEffect warns.
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -70,7 +81,25 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
       motionOk: '(prefers-reduced-motion: no-preference)',
       motionReduced: '(prefers-reduced-motion: reduce)',
     };
+    /**
+     * The scenes carry one extra condition the entrances must not share.
+     *
+     * `.grow-container` is pulled up and scaled to a quarter by a
+     * `@media (min-width: 900px)` block, and the video rig is the only thing
+     * that animates it back — so the rig's gate has to be *that* media query,
+     * live, not a width read once at build time. Declaring it here means GSAP
+     * tears the scenes down and rebuilds them when the breakpoint flips, the
+     * same moment the stylesheet swaps composition.
+     *
+     * The entrances stay on the two-key object on purpose: rebuilding them on a
+     * resize would re-hide every element that has already revealed itself.
+     */
+    const SCENE_QUERIES = {
+      ...QUERIES,
+      wideRig: `(min-width: ${VIDEO_GROW.minWidth}px)`,
+    };
     type Conditions = { motionOk: boolean; motionReduced: boolean };
+    type SceneConditions = Conditions & { wideRig: boolean };
 
     // --- phase 1: entrances, before the first paint ------------------------
     // Hiding a reveal target has to happen in the same frame its markup lands.
@@ -93,8 +122,8 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     document.fonts.ready.then(() => {
       if (cancelled) return;
 
-      media.add(QUERIES, (context) => {
-        const { motionReduced } = context.conditions as Conditions;
+      media.add(SCENE_QUERIES, (context) => {
+        const { motionReduced, wideRig } = context.conditions as SceneConditions;
         if (motionReduced) return;
 
         createHeureBleueScene(sequenceRoot);
@@ -110,7 +139,7 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
           createEverlasSpotlightScene(pageRoot),
           createTurboDissolveScene(pageRoot, lenis),
           createGalleryMosaicScene(pageRoot),
-          createVideoGrowScene(pageRoot),
+          wideRig ? createVideoGrowScene(pageRoot) : undefined,
           createStickyCardsScene(pageRoot),
           createBookingRevealerScene(pageRoot),
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
@@ -118,15 +147,23 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
         return () => teardowns.forEach((teardown) => teardown());
       });
 
-      // Late-loading images change every trigger's start/end. next/image below
-      // the fold decodes after hydration, which is what puts a scene's start
+      // Late-loading images change every trigger's start/end. The eager ones
+      // decode just after hydration, which is what puts a scene's start
       // position a few hundred pixels off on a cold load.
-      const images = Array.from(document.images).filter((image) => !image.complete);
-      let pending = images.length;
-      if (pending) {
+      //
+      // Only the eager ones. Waiting for the *last* image on the page meant
+      // waiting for something a screen and a half below the reader, so the one
+      // refresh this was supposed to spend on settling the first screen landed
+      // instead in the middle of a scroll through the pinned chapters — and a
+      // single image that never resolves (a 404, a stalled connection) stranded
+      // the counter and bought no refresh at all. `refresh(true)` is the
+      // debounced form, so a burst of decodes still costs one pass.
+      const images = Array.from(document.images).filter(
+        (image) => !image.complete && image.loading !== 'lazy',
+      );
+      if (images.length) {
         const onSettled = () => {
-          pending -= 1;
-          if (pending === 0 && !cancelled) ScrollTrigger.refresh();
+          if (!cancelled) ScrollTrigger.refresh(true);
         };
         images.forEach((image) => {
           image.addEventListener('load', onSettled, { once: true });

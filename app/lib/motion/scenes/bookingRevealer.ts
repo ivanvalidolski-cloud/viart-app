@@ -24,6 +24,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { REVEALER } from '../tokens';
+import { changedOnly, quickScale } from '../setters';
 
 export function createBookingRevealerScene(root: HTMLElement) {
   const story = root.querySelector<HTMLElement>('.wipe-story');
@@ -41,6 +42,30 @@ export function createBookingRevealerScene(root: HTMLElement) {
   // centring is restated in its percentage channel rather than left to be read
   // back out of a matrix in pixels.
   gsap.set(revealer, { xPercent: -50, yPercent: 0 });
+
+  // --- the write pass -------------------------------------------------------
+  // Four of the six triggers below drive a value straight off scroll progress.
+  // Written as a `gsap.to` inside `onUpdate` that is a fresh tween per property
+  // per frame — and on the rotation, which is the one tween here that is
+  // deliberately eased and therefore still running when the next frame creates
+  // the next one, they stack: several tweens animating `rotation` to several
+  // different targets at once, which is what makes the cross stutter and
+  // occasionally settle on the wrong angle. One reusable setter each fixes both
+  // the stacking and the allocation; `quickTo` keeps the rotation's catch-up.
+  const rotateTo = gsap.quickTo(revealer, 'rotation', {
+    duration: 0.5,
+    ease: 'power1.out',
+    overwrite: true,
+  });
+  const setRevealerLeft = changedOnly<string>((value) => {
+    revealer.style.left = value;
+  });
+  const setRevealerScale = quickScale(revealer);
+  const setBarClip = bars.map((bar) =>
+    changedOnly<string>((value) => {
+      bar.style.clipPath = value;
+    }),
+  );
 
   // 1 + 2. Both pins end at the same point, so the editorial block and the
   // cross stay locked together for the whole reveal. `pinSpacing: false` — the
@@ -74,7 +99,7 @@ export function createBookingRevealerScene(root: HTMLElement) {
     end: 'bottom bottom',
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
-      gsap.to(revealer, { rotation: progress * REVEALER.rotation });
+      rotateTo(progress * REVEALER.rotation);
     },
   });
 
@@ -88,13 +113,10 @@ export function createBookingRevealerScene(root: HTMLElement) {
     end: 'bottom bottom',
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
-      const left = REVEALER.clipEdge - REVEALER.clipEdge * progress;
-      const right = 100 - left;
-      gsap.to(bars, {
-        clipPath: `polygon(${left}% 0%, ${right}% 0%, ${right}% 100%, ${left}% 100%)`,
-        ease: 'none',
-        duration: 0,
-      });
+      const left = (REVEALER.clipEdge - REVEALER.clipEdge * progress).toFixed(3);
+      const right = (100 - Number(left)).toFixed(3);
+      const clip = `polygon(${left}% 0%, ${right}% 0%, ${right}% 100%, ${left}% 100%)`;
+      setBarClip.forEach((set) => set(clip));
     },
   });
 
@@ -107,7 +129,7 @@ export function createBookingRevealerScene(root: HTMLElement) {
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
       const left = REVEALER.driftFrom + (REVEALER.driftTo - REVEALER.driftFrom) * progress;
-      gsap.to(revealer, { left: `${left}%`, ease: 'none', duration: 0 });
+      setRevealerLeft(`${left.toFixed(3)}%`);
     },
   });
 
@@ -119,21 +141,18 @@ export function createBookingRevealerScene(root: HTMLElement) {
     scrub: REVEALER.scrub,
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
-      gsap.to(revealer, {
-        scale: 1 + (REVEALER.scaleTo - 1) * progress,
-        ease: 'none',
-        duration: 0,
-      });
+      setRevealerScale(1 + (REVEALER.scaleTo - 1) * progress);
     },
   });
 
-  // The four progress-driven triggers create their tweens from callbacks the
-  // context never saw. Three resolve on the next tick anyway; the rotation is
-  // eased and would keep writing to a detached element, so both targets are
-  // killed by hand.
+  // The setters above write from callbacks the context never saw — inline
+  // styles and a transform cache it has no record of — and the rotation's
+  // `quickTo` is a live tween that would keep writing to a detached element.
   return () => {
     gsap.killTweensOf(revealer);
     gsap.killTweensOf(bars);
-    gsap.set([revealer, ...bars], { clearProps: 'transform,left,clipPath' });
+    gsap.set(revealer, { clearProps: 'transform' });
+    revealer.style.removeProperty('left');
+    bars.forEach((bar) => bar.style.removeProperty('clip-path'));
   };
 }

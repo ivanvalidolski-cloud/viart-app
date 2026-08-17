@@ -15,6 +15,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SCENE } from '../tokens';
+import { quickScale } from '../setters';
 
 /**
  * Scene 01 — "heure bleue": the image wall zooms toward the viewer while the
@@ -33,8 +34,8 @@ export function createHeureBleueScene(root: HTMLElement) {
   // it writes, so the CSS `translate(-50%, -50%)` fallback is not fought over.
   gsap.set(gallery, { xPercent: -50, yPercent: -50 });
 
-  const setGalleryScale = gsap.quickSetter(gallery, 'scale') as (value: number) => void;
-  const setFocalScale = gsap.quickSetter(focalImage, 'scale') as (value: number) => void;
+  const setGalleryScale = quickScale(gallery);
+  const setFocalScale = quickScale(focalImage);
   const setColumnY = sideColumns.map(
     (column) => gsap.quickSetter(column, 'y', 'px') as (value: number) => void,
   );
