@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Design & animation stack
+
+| Layer | Where |
+|---|---|
+| Design tokens & taste rules | `.claude/skills/frontend-design/SKILL.md` |
+| External component adaptation | `.claude/skills/component-import/SKILL.md` |
+| Animation primitives (Framer Motion) | `app/components/motion.tsx` |
+| Visual system (CSS) | `app/globals.css` |
+| Tool permissions for Claude Code | `.claude/settings.json` |
+| 21st.dev Magic MCP server | `.mcp.json` (needs `TWENTY_FIRST_API_KEY`) |
+
+Animation uses the [`motion`](https://motion.dev) package (Framer Motion). Use the
+`Reveal` / `RevealGroup` / `RevealChild` primitives with the `as` prop instead of
+adding wrapper elements, so the CSS grid layouts in `globals.css` stay intact.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

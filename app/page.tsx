@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
+import { Reveal, RevealChild, RevealGroup } from './components/motion';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -445,12 +446,12 @@ export default function Home() {
       <main>
         <section id="top" className="wp-hero">
           <div className="hero-grid">
-            <div className="hero-heading">
+            <Reveal className="hero-heading" amount={0.1} delay={0.05}>
               <p className="tech-label">VIART / КОММУНАРКА / 01</p>
               <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
-            </div>
+            </Reveal>
 
-            <div className="hero-media">
+            <Reveal className="hero-media" amount={0.05} distance={0} delay={0.12}>
               <Image
                 src="/images/hero-bg.jpg"
                 alt="Процедура аппаратного массажа в студии ViART"
@@ -462,15 +463,15 @@ export default function Home() {
               <div className="hero-aperture" aria-hidden="true" />
               <div className="hero-trace" aria-hidden="true" />
               <span className="hero-media__meta tech-label">BEAUTY × INSTRUMENT × MATERIAL</span>
-            </div>
+            </Reveal>
 
-            <div className="hero-decision">
+            <Reveal className="hero-decision" amount={0.1} delay={0.22}>
               <p>Скидка 30% на любой комплекс при первом посещении</p>
               <div className="hero-decision__actions">
                 <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться онлайн</a>
                 <a className="text-link" href="#pricing">Посмотреть цены <span>↘</span></a>
               </div>
-            </div>
+            </Reveal>
           </div>
           <div className="hero-scroll tech-label">SCROLL TO DISCOVER <span>↓</span></div>
         </section>
@@ -478,32 +479,32 @@ export default function Home() {
         <section id="studio" className="chapter studio-chapter">
           <div className="chapter-index tech-label">02 / STUDIO</div>
           <div className="studio-layout">
-            <figure className="studio-main-media">
+            <Reveal as="figure" className="studio-main-media" distance={0} amount={0.15}>
               <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
-            </figure>
-            <div className="studio-copy">
+            </Reveal>
+            <Reveal className="studio-copy" delay={0.1}>
               <p className="eyebrow">Атмосфера ViART</p>
               <h2>Спокойное пространство для регулярных процедур</h2>
               <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
               <p>Понятный сценарий записи, спокойная обстановка и реальные материалы студии — без лишней сложности до и во время визита.</p>
-            </div>
-            <figure className="studio-support-media">
+            </Reveal>
+            <Reveal as="figure" className="studio-support-media" distance={0} amount={0.15} delay={0.18}>
               <Image src="/images/gallery/5.jpg" alt="Детали интерьера студии ViART" fill sizes="(max-width: 767px) 100vw, 40vw" className="cover-image" />
-            </figure>
+            </Reveal>
           </div>
         </section>
 
         <section id="pricing" className="chapter pricing-chapter">
-          <div className="chapter-heading">
+          <Reveal className="chapter-heading" amount={0.3}>
             <div>
               <p className="chapter-index tech-label">03 / SERVICES & PRICES</p>
               <h2>Открытые цены.<br />Точный выбор.</h2>
             </div>
             <p>Выберите направление — состав и стоимость всегда остаются перед глазами.</p>
-          </div>
+          </Reveal>
 
           <div className="pricing-layout">
-            <aside className="price-controls" aria-label="Фильтры прайс-листа">
+            <Reveal as="aside" className="price-controls" aria-label="Фильтры прайс-листа" delay={0.08} amount={0.15}>
               <div className="control-group">
                 <span className="control-caption tech-label">КЛИЕНТ</span>
                 <div className="segmented-control">
@@ -526,7 +527,7 @@ export default function Home() {
                 ))}
               </div>
               <a href={bookingUrl} target="_blank" rel="noopener" className="control-booking">Онлайн-запись <span>↗</span></a>
-            </aside>
+            </Reveal>
 
             <div className="price-content" key={`${priceGender}-${activePriceTab}`}>
               {activePriceTab === 0 && laserPrices[priceGender].map((category) => (
@@ -583,23 +584,23 @@ export default function Home() {
 
         <section id="everlas" className="chapter everlas-chapter">
           <div className="everlas-stage">
-            <div className="everlas-media">
+            <Reveal className="everlas-media" distance={0} amount={0.15}>
               <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
               <span className="scan-line" aria-hidden="true" />
               <div className="equipment-coordinates tech-label"><span>EVERLAS</span><span>PRECISION MODE</span><span>04 / 10</span></div>
-            </div>
+            </Reveal>
             <div className="everlas-copy">
-              <div className="technology-heading">
+              <Reveal className="technology-heading" amount={0.3}>
                 <p className="chapter-index tech-label">04 / PRECISION TECHNOLOGY</p>
                 <h2>Лазерная эпиляция на EVERLAS</h2>
                 <p>Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
-              </div>
-              <ol className="fact-stages">
-                <li><span className="tech-label">01 / ПОДГОТОВКА</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
-                <li><span className="tech-label">02 / НАСТРОЙКА</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
-                <li><span className="tech-label">03 / ПРОЦЕДУРА</span><p>Во время процедуры используются защитные очки.</p></li>
-                <li><span className="tech-label">04 / КУРС</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
-              </ol>
+              </Reveal>
+              <RevealGroup as="ol" className="fact-stages" step={0.09}>
+                <RevealChild as="li"><span className="tech-label">01 / ПОДГОТОВКА</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></RevealChild>
+                <RevealChild as="li"><span className="tech-label">02 / НАСТРОЙКА</span><p>Параметры аппарата подбираются мастером индивидуально.</p></RevealChild>
+                <RevealChild as="li"><span className="tech-label">03 / ПРОЦЕДУРА</span><p>Во время процедуры используются защитные очки.</p></RevealChild>
+                <RevealChild as="li"><span className="tech-label">04 / КУРС</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></RevealChild>
+              </RevealGroup>
               <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
             </div>
           </div>
@@ -607,14 +608,14 @@ export default function Home() {
 
         <section className="chapter turbo-chapter">
           <div className="turbo-wave" aria-hidden="true" />
-          <div className="turbo-heading">
+          <Reveal className="turbo-heading" amount={0.3}>
             <p className="chapter-index tech-label">05 / MOVEMENT & SURFACE</p>
             <h2>Аппаратный массаж<br />на TURBO G8</h2>
-          </div>
-          <div className="turbo-media">
+          </Reveal>
+          <Reveal className="turbo-media" distance={0} amount={0.15}>
             <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Процедура аппаратного массажа на TURBO G8" fill sizes="(max-width: 767px) 100vw, 70vw" className="cover-image" />
-          </div>
-          <div className="turbo-copy">
+          </Reveal>
+          <Reveal className="turbo-copy" delay={0.08} amount={0.25}>
             <p>Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.</p>
             <ul>
               <li>Работа с выбранными зонами</li>
@@ -622,14 +623,14 @@ export default function Home() {
               <li>Программы для живота, ягодиц и двух зон</li>
             </ul>
             <button type="button" className="text-button" onClick={() => openPriceTab(2)}>Программы и цены <span>↗</span></button>
-          </div>
+          </Reveal>
         </section>
 
         <section id="gallery" className="chapter gallery-chapter">
-          <div className="gallery-topline">
+          <Reveal className="gallery-topline" amount={0.3}>
             <div><p className="chapter-index tech-label">06 / SPACE</p><h2>Студия<br />в деталях</h2></div>
             <p>Реальные кадры пространства, оборудования и процесса.</p>
-          </div>
+          </Reveal>
           <div
             className="gallery-stage"
             role="group"
@@ -762,12 +763,12 @@ export default function Home() {
               <div className="master-rim" aria-hidden="true" />
             </div>
 
-            <div className="video-context">
+            <Reveal className="video-context" amount={0.25}>
               <p className="chapter-index tech-label">07 / VIDEO GALLERY</p>
               <h2>Знакомство с ViART</h2>
               <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
               <div className="video-context__line tech-label"><span>HUMAN MOMENT</span><span>VIART / STUDIO</span></div>
-            </div>
+            </Reveal>
 
           </div>
 
@@ -780,19 +781,19 @@ export default function Home() {
           className={`chapter first-visit-chapter ${isFirstVisitEngaged ? 'is-engaged' : ''}`}
         >
           <div className="first-visit-trace" aria-hidden="true" />
-          <div className="first-visit-heading">
+          <Reveal className="first-visit-heading" amount={0.3}>
             <p className="chapter-index tech-label">08 / FIRST VISIT</p>
             <h2>Запишитесь на комплекс со скидкой 30%</h2>
-          </div>
-          <div className="first-visit-action">
+          </Reveal>
+          <Reveal className="first-visit-action" amount={0.3} delay={0.12}>
             <p>Скидка действует на любой комплекс при первом посещении.</p>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать комплекс и записаться</a>
             <a className="text-link" href="#pricing">Вернуться к составам и ценам <span>↑</span></a>
-          </div>
+          </Reveal>
         </section>
 
         <section id="reviews" className="chapter reviews-chapter">
-          <div className="rating-anchor">
+          <Reveal className="rating-anchor" amount={0.25}>
             <p className="chapter-index tech-label">09 / YANDEX REVIEWS</p>
             <strong>5,0</strong>
             <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
@@ -801,7 +802,7 @@ export default function Home() {
               <div className="award-image"><Image src="/images/awards/good-place-2026-source.png" alt="Награда Яндекс Карт Хорошее место 2026" fill sizes="120px" className="contain-image" /></div>
               <span>Хорошее место<br />2026</span>
             </div>
-          </div>
+          </Reveal>
           <div className="active-review" key={reviewIndex}>
             <div className="quote-mark">“</div>
             <blockquote>{activeReview.text}</blockquote>
@@ -816,18 +817,18 @@ export default function Home() {
 
         <section id="contacts" className="closure-section">
           <div className="closure-trace" aria-hidden="true" />
-          <div className="closure-message">
+          <Reveal className="closure-message" amount={0.3}>
             <p className="chapter-index tech-label">10 / BOOKING</p>
             <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
             <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться в ViART</a>
-          </div>
-          <div className="contact-grid">
-            <div><span className="tech-label">АДРЕС</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
-            <div><span className="tech-label">ТЕЛЕФОН</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
-            <div><span className="tech-label">РЕЖИМ РАБОТЫ</span><p>Пн–Вс: 10:00–21:00</p></div>
-            <div><span className="tech-label">ЗАПИСЬ</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
-          </div>
-          <div className="map-frame">
+          </Reveal>
+          <RevealGroup className="contact-grid" step={0.07}>
+            <RevealChild><span className="tech-label">АДРЕС</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></RevealChild>
+            <RevealChild><span className="tech-label">ТЕЛЕФОН</span><a href="tel:+79633555888">+7 963 355-58-88</a></RevealChild>
+            <RevealChild><span className="tech-label">РЕЖИМ РАБОТЫ</span><p>Пн–Вс: 10:00–21:00</p></RevealChild>
+            <RevealChild><span className="tech-label">ЗАПИСЬ</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></RevealChild>
+          </RevealGroup>
+          <Reveal className="map-frame" distance={0} amount={0.1}>
             <iframe
               src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
               width="100%"
@@ -836,7 +837,7 @@ export default function Home() {
               title="ViART на карте"
               loading="lazy"
             />
-          </div>
+          </Reveal>
         </section>
       </main>
 
