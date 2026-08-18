@@ -10,7 +10,7 @@
  *   1. the counter's text steps `01/04 → 04/04`
  *   2. the counter slides straight down its own travel
  *   3. the tall image column translates upward
- *   4. whichever image crosses the viewport midline goes to full opacity
+ *   4. the active stage's image goes to full opacity, the rest stay dim
  *   5. each stage name owns a `1/total` slice: it slides up inside that slice
  *      and holds the ink colour while it is the active one
  *
@@ -26,10 +26,18 @@
  * Which image is lit is derived, not measured. The source asks each frame for
  * its `getBoundingClientRect()` and writes to it in the same loop, so a scrubbed
  * frame reads layout, writes layout, reads, writes — four synchronous reflows
- * per tick, which is the whole of this scene's jitter. Every position it needs
- * is a fixed offset inside a column whose only motion is the translate this
- * callback just chose, so the offsets are cached on refresh and the rest is
- * arithmetic.
+ * per tick, which is the whole of this scene's jitter.
+ *
+ * It is derived from the *stage*, not from the geometry. Testing which frame
+ * spans the viewport midline only agrees with the counter and the name list
+ * while the frames sit close together: under `@media (max-width: 1000px)` the
+ * column opens to `gap: 25svh`, which leaves more than a third of the scrub with
+ * the counter on `02/04`, the second name lit, and no image at full opacity at
+ * all. One index now feeds the counter, the frame and the name, so the four
+ * states cannot drift apart — and because it is a pure function of `progress`,
+ * they hold on the way back up as well. On a desktop column the two rules agree
+ * to within half a percent of the scrub, which is why the scene still looks the
+ * way it did.
  */
 
 import gsap from 'gsap';
@@ -89,9 +97,6 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
   let counterTravel = 0;
   let namesTravel = 0;
   let imagesTravel = 0;
-  let midline = 0;
-  /** Each frame's top and bottom inside the untranslated column. */
-  let imageBands: Array<{ top: number; bottom: number }> = [];
 
   const measure = () => {
     const sectionHeight = section.offsetHeight;
@@ -101,17 +106,6 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
     // Negative: the column is far taller than the viewport, so progress
     // multiplied by this value walks it upward.
     imagesTravel = window.innerHeight - imageColumn.offsetHeight;
-    midline = window.innerHeight / 2;
-
-    // The column's own top edge, relative to the pinned section's box, plus each
-    // frame's offset inside it. While the section is pinned its box *is* the
-    // viewport, so a band plus the current translate is the frame's screen
-    // position — the same number the rect used to report.
-    const columnTop = imageColumn.offsetTop;
-    imageBands = images.map((image) => ({
-      top: columnTop + image.offsetTop,
-      bottom: columnTop + image.offsetTop + image.offsetHeight,
-    }));
   };
 
   ScrollTrigger.create({
@@ -124,27 +118,29 @@ export function createEverlasSpotlightScene(root: HTMLElement) {
     invalidateOnRefresh: true,
     onRefresh: measure,
     onUpdate: ({ progress }) => {
-      // 1) which stage are we on (1-based, clamped to the last one)
-      setLabel(label(Math.min(Math.floor(progress * total) + 1, total)));
+      // 1) which stage are we on — the one index the other three read
+      const active = Math.min(Math.floor(progress * total), total - 1);
+      setLabel(label(active + 1));
 
       // 2) + 3) the counter walks down, the column walks up
       setCounterY(progress * counterTravel);
-      const columnY = progress * imagesTravel;
-      setColumnY(columnY);
+      setColumnY(progress * imagesTravel);
 
-      // 4) the image spanning the midline is the lit one
-      imageBands.forEach((band, index) => {
-        const lit = band.top + columnY <= midline && band.bottom + columnY >= midline;
-        setImageOpacity[index](lit ? 1 : SPOTLIGHT.dimOpacity);
-      });
+      // 4) the active stage's frame is the lit one
+      setImageOpacity.forEach((set, index) =>
+        set(index === active ? 1 : SPOTLIGHT.dimOpacity),
+      );
 
-      // 5) each name rides its own slice of the progress
+      // 5) each name rides its own slice of the progress. The slice is what
+      //    moves it; the stage is what colours it — the old `0 < local < 1`
+      //    test left every name dim at both ends of the scrub, while the
+      //    counter was reading `01/04` and `04/04`.
       names.forEach((_name, index) => {
         const from = index / total;
         const to = (index + 1) / total;
         const local = Math.max(0, Math.min(1, (progress - from) / (to - from)));
         setNameY[index](-local * namesTravel);
-        setNameColor[index](local > 0 && local < 1 ? activeColor : idleColor);
+        setNameColor[index](index === active ? activeColor : idleColor);
       });
     },
   });

@@ -203,14 +203,6 @@ const mosaicRows: Array<Array<{ src: string; alt: string } | null>> = [
   ],
 ];
 
-/** The block behind the wipe. */
-const closureThumbs = [
-  { src: '/images/gallery/6.jpg', alt: 'Аппарат EVERLAS в кабинете ViART' },
-  { src: '/images/gallery/2.jpg', alt: 'Роликовая манипула аппарата TURBO G8' },
-  { src: '/images/gallery/3.jpg', alt: 'Расходные материалы и защитные очки на столике' },
-  { src: '/images/gallery/5.jpg', alt: 'Интерьер студии ViART' },
-];
-
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderSolid, setIsHeaderSolid] = useState(false);
@@ -232,7 +224,7 @@ export default function Home() {
 
   const pointerFine = usePointerFine();
 
-  const { scrollTo, setScrollLocked } = useViartMotion({
+  const { scrollTo, setScrollLocked, refresh } = useViartMotion({
     sequence: motionSequenceRef,
     page: pageContentRef,
   });
@@ -248,6 +240,20 @@ export default function Home() {
     setScrollLocked(isMenuOpen);
     return () => setScrollLocked(false);
   }, [isMenuOpen, setScrollLocked]);
+
+  // The price list is keyed, so a tab or gender swap remounts it at a different
+  // height and every scene below `#pricing` is left measured against the page as
+  // it used to be. The first pass is skipped: the motion layer runs its own
+  // refresh behind `document.fonts.ready`, and racing it re-measures the pins
+  // against fonts that have not landed.
+  const priceMounted = useRef(false);
+  useEffect(() => {
+    if (!priceMounted.current) {
+      priceMounted.current = true;
+      return;
+    }
+    refresh();
+  }, [activePriceTab, priceGender, refresh]);
 
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
@@ -669,40 +675,6 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* TURBO G8 — the organic counterpart: a scrubbed WebGL dissolve.   */}
-        {/* Mechanics: motionprompts.dev/component/ironhill-scroll-animation */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="turbo" className="dissolve-scene">
-          <div className="dissolve-img">
-            <Image
-              src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg"
-              alt="Процедура аппаратного массажа на TURBO G8 в студии ViART"
-              fill
-              sizes="100vw"
-              className="cover-image"
-            />
-          </div>
-
-          <div className="dissolve-header">
-            <p className="tech-label">TURBO G8 · направление 02</p>
-            <h2>Аппаратный массаж</h2>
-            <p>Работа по выбранным зонам в комфортном для вас режиме.</p>
-          </div>
-
-          <canvas className="dissolve-canvas" aria-hidden="true" />
-
-          <div className="dissolve-content">
-            <span className="dissolve-mark" aria-hidden="true">&#10033;</span>
-            <h3 className="dissolve-copy">
-              Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по вашим ощущениям.
-            </h3>
-            <button type="button" className="text-button" onClick={() => openPriceTab(2)}>
-              Программы и цены <span>↗</span>
-            </button>
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
         {/* GALLERY — every plate tiles in as a 3×3 clip-path mosaic.        */}
         {/* Mechanics: motionprompts.dev/component/mask-reveal               */}
         {/* ---------------------------------------------------------------- */}
@@ -948,111 +920,71 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* REVIEWS → BOOKING — the cross opens and wipes to the last screen. */}
-        {/* Mechanics: motionprompts.dev/component/epic-scroll-anims-scrolltrigger-gsap */}
-        {/* ---------------------------------------------------------------- */}
-        <div className="wipe-story">
-          <section className="wipe-lead">
-            <h2>Остался один шаг</h2>
-          </section>
-
-          <section className="wipe-rows" aria-hidden="true">
-            <div className="wipe-row wipe-row--start"><p>Выберите</p></div>
-            <div className="wipe-row wipe-row--end"><p>процедуру</p></div>
-          </section>
-
-          <section className="wipe-editorial">
-            <div className="wipe-editorial__inner">
-              <p className="eyebrow">ViART · Коммунарка</p>
-              <p>
-                Мастер подберёт режим под вашу зону, объяснит порядок процедуры и назовёт ориентир по курсу.
-                Запись — онлайн, в любое время.
-              </p>
-            </div>
-            <div className="wipe-thumbs" aria-hidden="true">
-              {closureThumbs.map((thumb) => (
-                <div className="wipe-thumb" key={thumb.src}>
-                  <Image src={thumb.src} alt="" fill sizes="(max-width: 899px) 45vw, 23vw" className="cover-image" />
+        {/* BOOKING — the closing panel: the record, the contacts and the map. */}
+        <section id="contacts" className="wipe-booking">
+          <div className="wipe-booking__inner">
+            <div className="wipe-booking__lead">
+              <p className="wipe-eyebrow">Запись в студию</p>
+              <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
+              <Magnet
+                padding={90}
+                magnetStrength={7}
+                disabled={!pointerFine}
+                wrapperClassName="wipe-magnet"
+              >
+                {/* A div, not a span: the beam renders a div of its own, and
+                    a span may only carry phrasing content. */}
+                <div className="wipe-cta-frame">
+                  <InteractiveHoverLink
+                    className="viart-cta viart-cta--dark"
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Записаться в ViART
+                  </InteractiveHoverLink>
+                  <BorderBeam
+                    size={64}
+                    duration={9}
+                    borderWidth={1}
+                    colorFrom="#d3b561"
+                    colorTo="#2a1c11"
+                  />
                 </div>
-              ))}
+              </Magnet>
             </div>
-          </section>
 
-          <section className="wipe-runway" aria-hidden="true" />
-
-          <section className="wipe-pinned" aria-hidden="true">
-            <div className="wipe-revealer">
-              <div className="wipe-bar wipe-bar--1" />
-              <div className="wipe-bar wipe-bar--2" />
-            </div>
-          </section>
-
-          <section id="contacts" className="wipe-booking">
-            <div className="wipe-booking__inner">
-              <div className="wipe-booking__lead">
-                <p className="wipe-eyebrow">Запись в студию</p>
-                <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
-                <Magnet
-                  padding={90}
-                  magnetStrength={7}
-                  disabled={!pointerFine}
-                  wrapperClassName="wipe-magnet"
-                >
-                  {/* A div, not a span: the beam renders a div of its own, and
-                      a span may only carry phrasing content. */}
-                  <div className="wipe-cta-frame">
-                    <InteractiveHoverLink
-                      className="viart-cta viart-cta--dark"
-                      href={bookingUrl}
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Записаться в ViART
-                    </InteractiveHoverLink>
-                    <BorderBeam
-                      size={64}
-                      duration={9}
-                      borderWidth={1}
-                      colorFrom="#d3b561"
-                      colorTo="#2a1c11"
-                    />
-                  </div>
-                </Magnet>
+            <dl className="wipe-facts">
+              <div>
+                <dt className="tech-label">Адрес</dt>
+                <dd>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</dd>
               </div>
-
-              <dl className="wipe-facts">
-                <div>
-                  <dt className="tech-label">Адрес</dt>
-                  <dd>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</dd>
-                </div>
-                <div>
-                  <dt className="tech-label">Телефон</dt>
-                  <dd><a href="tel:+79633555888">+7 963 355-58-88</a></dd>
-                </div>
-                <div>
-                  <dt className="tech-label">Режим работы</dt>
-                  <dd>Пн–Вс: 10:00–21:00</dd>
-                </div>
-                <div>
-                  <dt className="tech-label">Запись</dt>
-                  <dd><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></dd>
-                </div>
-              </dl>
-
-              <div className="wipe-map">
-                <iframe
-                  src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  title="ViART на карте"
-                  loading="lazy"
-                />
+              <div>
+                <dt className="tech-label">Телефон</dt>
+                <dd><a href="tel:+79633555888">+7 963 355-58-88</a></dd>
               </div>
+              <div>
+                <dt className="tech-label">Режим работы</dt>
+                <dd>Пн–Вс: 10:00–21:00</dd>
+              </div>
+              <div>
+                <dt className="tech-label">Запись</dt>
+                <dd><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></dd>
+              </div>
+            </dl>
+
+            <div className="wipe-map">
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                title="ViART на карте"
+                loading="lazy"
+              />
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
 
       <footer className="site-footer">
