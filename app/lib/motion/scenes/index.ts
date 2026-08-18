@@ -12,9 +12,9 @@
  *  - Per-frame callbacks never read layout (`innerWidth`/`offsetHeight`) —
  *    those are cached on refresh. Reading them per tick forces a reflow.
  *  - A scene is built inside the driver's `matchMedia` and may return a
- *    teardown for whatever `gsap.context` cannot see: rAF loops, WebGL
- *    resources, DOM it injected, SplitText instances, plain listeners, and
- *    inline styles written from a trigger callback rather than from setup.
+ *    teardown for whatever `gsap.context` cannot see: rAF loops, DOM it
+ *    injected, SplitText instances, plain listeners, and inline styles written
+ *    from a trigger callback rather than from setup.
  *
  * Every scene below the hero is an adaptation of a named external source; the
  * URL and what was and was not adapted are at the top of each module.
@@ -23,8 +23,6 @@
 export { createHeureBleueScene } from './heureBleue';
 export { createCapsulesScene } from './capsules';
 export { createEverlasSpotlightScene } from './everlasSpotlight';
-export { createTurboDissolveScene } from './turboDissolve';
 export { createGalleryMosaicScene } from './galleryMosaic';
 export { createVideoGrowScene } from './videoGrow';
 export { createStickyCardsScene } from './stickyCards';
-export { createBookingRevealerScene } from './bookingRevealer';

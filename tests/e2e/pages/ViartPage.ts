@@ -1,19 +1,18 @@
 import type { Page } from '@playwright/test';
 import { settle, wheelTo } from '../support/scroll';
 
-/** The pinned or scrubbed scenes, in document order. */
+/** The pinned or scrubbed scenes, in document order, plus the closing panel. */
 export const SCENES = [
   '.hb-scene',
   '.cap-scene',
   '.spot-scene',
-  '.dissolve-scene',
   '.mosaic-scene',
   '.grow-scene',
   '.deck-scene',
-  '.wipe-story',
+  '.wipe-booking',
 ] as const;
 
-/** The four boxes ScrollTrigger pins, and how long each stays fixed. */
+/** The boxes ScrollTrigger pins, and how long each stays fixed. */
 export const PINNED = ['.cap-scene', '.spot-scene', '.deck-scene'] as const;
 
 export type Probe = {
@@ -43,7 +42,7 @@ export class ViartPage {
   /**
    * Layout shift, in two figures.
    *
-   * `raw` is what the browser reports. On a page with four pinned sections that
+   * `raw` is what the browser reports. On a page with three pinned sections that
    * number is meaningless: the moment ScrollTrigger swaps a section to
    * `position: fixed` it leaves the scrolling contents, and Chrome accounts for
    * that as an element with no previous box appearing at full viewport size — a

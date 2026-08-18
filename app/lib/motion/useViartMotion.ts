@@ -22,13 +22,11 @@ import Lenis from 'lenis';
 import { HEADER_OFFSET, VIDEO_GROW } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
 import {
-  createBookingRevealerScene,
   createCapsulesScene,
   createEverlasSpotlightScene,
   createGalleryMosaicScene,
   createHeureBleueScene,
   createStickyCardsScene,
-  createTurboDissolveScene,
   createVideoGrowScene,
 } from './scenes';
 
@@ -131,17 +129,15 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
 
         // The chapter scenes, in document order. Each is scoped to the page
         // root and returns a teardown for whatever this context cannot revert
-        // by itself — a rAF loop, a WebGL context, injected DOM, a SplitText,
-        // a plain listener. Everything they build with GSAP is recorded here,
-        // so the pins and their spacers go away with the context.
+        // by itself — a rAF loop, injected DOM, a SplitText, a plain listener.
+        // Everything they build with GSAP is recorded here, so the pins and
+        // their spacers go away with the context.
         const teardowns = [
           createCapsulesScene(pageRoot),
           createEverlasSpotlightScene(pageRoot),
-          createTurboDissolveScene(pageRoot, lenis),
           createGalleryMosaicScene(pageRoot),
           wideRig ? createVideoGrowScene(pageRoot) : undefined,
           createStickyCardsScene(pageRoot),
-          createBookingRevealerScene(pageRoot),
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
 
         return () => teardowns.forEach((teardown) => teardown());
@@ -199,6 +195,19 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
   }, []);
 
   /**
+   * Re-measure every trigger after the page's own content has changed height.
+   *
+   * The scenes below a section that grows or shrinks keep the start/end they
+   * were built with — the price list swapping between a twenty-one-row category
+   * and a four-row one moves everything under it by hundreds of pixels, and the
+   * pins would fire against the document as it used to be. `refresh(true)` is
+   * the debounced form, so several changes in one frame still cost one pass.
+   */
+  const refresh = useCallback(() => {
+    ScrollTrigger.refresh(true);
+  }, []);
+
+  /**
    * Locking the page while the mobile menu is open. `overflow: hidden` on the
    * body does not stop Lenis — it drives scroll itself, so the menu overlay
    * would sit still while the page kept moving underneath it.
@@ -210,5 +219,5 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     document.body.style.overflow = locked ? 'hidden' : '';
   }, []);
 
-  return { scrollTo, setScrollLocked };
+  return { scrollTo, setScrollLocked, refresh };
 }

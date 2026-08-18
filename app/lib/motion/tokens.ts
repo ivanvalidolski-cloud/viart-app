@@ -75,21 +75,8 @@ export const SPOTLIGHT = {
   /** Pinned/scrubbed runway of the EVERLAS spotlight, in viewport heights. */
   viewports: 5,
   scrub: 1,
-  /** Opacity of an image that is not crossing the viewport midline. */
+  /** Opacity of an image whose stage is not the active one. */
   dimOpacity: 0.5,
-} as const;
-
-export const DISSOLVE = {
-  /** Height of the TURBO scene, in svh — the shader's scroll range. */
-  sceneHeight: 175,
-  /** Dissolve fill colour: must match the section's own ground. */
-  color: '#100905',
-  /** How far the fbm noise perturbs the dissolve edge. */
-  spread: 0.5,
-  /** scroll→progress multiplier; the sweep completes in the first half. */
-  speed: 2,
-  /** Progress is clamped here so the fill overshoots the top edge. */
-  clamp: 1.1,
 } as const;
 
 export const MOSAIC = {
@@ -126,19 +113,6 @@ export const STICKY_CARDS = {
   cardRotation: 10,
   /** Its photograph counter-zooms while the card shrinks. */
   imageScale: 1.5,
-} as const;
-
-export const REVEALER = {
-  /** Full turn of the cross across the pinned runway. */
-  rotation: 360,
-  /** Clip-path half-width travel: 45%→0% left, 55%→100% right. */
-  clipEdge: 45,
-  /** Horizontal drift of the cross, in % of the pinned section. */
-  driftFrom: 35,
-  driftTo: 50,
-  /** Final scale of the solid square that wipes the screen. */
-  scaleTo: 13,
-  scrub: 1,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */

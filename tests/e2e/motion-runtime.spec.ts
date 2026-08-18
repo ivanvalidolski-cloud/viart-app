@@ -17,9 +17,8 @@ import { framesAcross, idleDrift, settle } from './support/scroll';
  * of the page became unreachable, and the only visible symptom was that
  * scrolling stopped.
  *
- * A full pass is expensive (Lenis has to settle at every stop, and the WebGL
- * dissolve renders in software on a headless box), so the properties that share
- * one sweep are asserted from one sweep.
+ * A full pass is expensive — Lenis has to settle at every stop — so the
+ * properties that share one sweep are asserted from one sweep.
  */
 
 const STEPS = 16;
@@ -208,14 +207,20 @@ test.describe('reduced motion', () => {
       ).filter((element) => Number(getComputedStyle(element).opacity) < 0.9);
       return {
         hidden: hidden.length,
-        runwayHeight:
-          document.querySelector('.wipe-runway')?.getBoundingClientRect().height ?? 0,
+        // A pin spacer is the box ScrollTrigger inserts to hold a pinned
+        // section's scroll. Under reduced motion no scene is built, so there is
+        // nothing to pin and none of them may exist — and unlike a named
+        // scaffolding selector, this cannot pass vacuously.
+        pinSpacers: document.querySelectorAll('.pin-spacer').length,
+        heroSpacer:
+          document.querySelector('.hb-ws')?.getBoundingClientRect().height ?? -1,
       };
     });
 
     // No scene is built, so none of the boxes that exist only to hold scroll may
-    // survive: the wipe runway alone is three screens of nothing.
-    expect(state.runwayHeight).toBe(0);
+    // survive: the hero's spacer alone is two and a half screens of nothing.
+    expect(state.pinSpacers, 'a pin spacer survived with no scene to pin').toBe(0);
+    expect(state.heroSpacer, 'the hero scroll spacer did not collapse').toBe(0);
     expect(state.hidden, 'reveal targets left hidden with no animation to show them').toBe(0);
     expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
   });

@@ -3443,12 +3443,12 @@ h3,
 /* ==========================================================================
    ViART Motion Chapters (v13)
 
-   The scene scaffolding for the eight chapters below the hero. Every block is
-   the CSS half of a scene in `app/lib/motion/scenes/`; the source it is adapted
-   from is named at the top of that module, and the geometry here is transcribed
-   from it — a capsule column is 50% wide, the spotlight column carries 50svh of
-   padding, the dissolve section is 175svh, the wipe runway is 300vh. Those are
-   progress mapping, not taste, and cannot be nudged.
+   The scene scaffolding for the chapters below the hero. Every block is the CSS
+   half of a scene in `app/lib/motion/scenes/`; the source it is adapted from is
+   named at the top of that module, and the geometry here is transcribed from it
+   — a capsule column is 50% wide, the spotlight column carries 50svh of padding,
+   the deck stage is one viewport tall. Those are progress mapping, not taste,
+   and cannot be nudged.
 
    What *is* ours: the palette, the type, the copy, the media and the
    responsive/reduced-motion composition at the end.
@@ -3888,137 +3888,6 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   04 TURBO G8 — WebGL dissolve
-   -------------------------------------------------------------------------- */
-.dissolve-scene {
-  position: relative;
-  width: 100%;
-  height: 175svh;
-  overflow: hidden;
-  background: var(--warm-black);
-  color: var(--ivory);
-}
-
-.dissolve-img {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-}
-
-/* The photograph is graded here rather than in the file — this is what ties an
-   ordinary frame to the warm palette the dissolve sweeps in with. */
-.dissolve-img::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: linear-gradient(
-    180deg,
-    rgba(201, 168, 76, 0.32) 0%,
-    rgba(122, 74, 26, 0.6) 55%,
-    rgba(16, 9, 5, 1) 130%
-  );
-  mix-blend-mode: multiply;
-}
-
-.dissolve-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  display: flex;
-  height: 100svh;
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 0 var(--page-gutter);
-  text-align: center;
-}
-
-.dissolve-header h2 {
-  margin: 0;
-  font-size: clamp(2.8rem, 8vw, 7rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 0.94;
-}
-
-.dissolve-header > p:last-child {
-  max-width: 34ch;
-  margin: 0;
-  color: rgba(244, 236, 216, 0.86);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.dissolve-header .tech-label {
-  margin: 0;
-  color: var(--bronze-soft);
-}
-
-/* Transparent, and above the photograph and the header: the fill is what
-   blots them out. */
-.dissolve-canvas {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  height: 100%;
-  width: 100%;
-  pointer-events: none;
-}
-
-.dissolve-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 3;
-  display: flex;
-  height: 125svh;
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 0 var(--page-gutter);
-  text-align: center;
-}
-
-/* Keeps the paragraph readable during the crossover, before the fill arrives. */
-.dissolve-content::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: radial-gradient(62% 46% at 50% 50%, rgba(16, 9, 5, 0.74), transparent 72%);
-  pointer-events: none;
-}
-
-.dissolve-mark {
-  position: relative;
-  color: var(--bronze-soft);
-  font-family: var(--font-martian), "Courier New", monospace;
-  opacity: 0.55;
-}
-
-.dissolve-copy {
-  position: relative;
-  max-width: 22ch;
-  margin: 0;
-  color: var(--ivory);
-  font-size: clamp(1.7rem, 4vw, 3.9rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.06;
-}
-
-.dissolve-content .text-button {
-  position: relative;
-  margin-top: 1rem;
-}
-
-/* --------------------------------------------------------------------------
    05 GALLERY — 3×3 clip-path mosaic
    -------------------------------------------------------------------------- */
 .mosaic-scene {
@@ -4367,166 +4236,10 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   09 REVIEWS → BOOKING — the cross that opens and wipes
+   09 BOOKING — the closing panel
    -------------------------------------------------------------------------- */
-.wipe-story {
-  position: relative;
-  width: 100%;
-}
-
-.wipe-lead {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--page-gutter);
-  background: var(--warm-black);
-  text-align: center;
-}
-
-.wipe-lead h2 {
-  max-width: 18ch;
-  margin: 0;
-  color: var(--ivory);
-  font-size: clamp(3rem, 8vw, 7.5rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 0.94;
-}
-
-.wipe-rows {
-  position: relative;
-  z-index: 1;
-  height: 150vh;
-  width: 100%;
-  background: var(--warm-black);
-}
-
-.wipe-row {
-  display: flex;
-  height: 250px;
-  width: 100%;
-  align-items: center;
-  padding: 0 var(--page-gutter);
-}
-
-.wipe-row--start {
-  justify-content: flex-start;
-}
-
-.wipe-row--end {
-  justify-content: flex-end;
-}
-
-.wipe-row p {
-  margin: 0;
-  color: rgba(244, 236, 216, 0.13);
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(3.5rem, 12vw, 11rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-/* Pinned behind the cross for the whole runway. */
-.wipe-editorial {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(4rem, 7vw, 7rem) var(--page-gutter);
-  background: var(--espresso);
-}
-
-.wipe-editorial__inner {
-  max-width: 48ch;
-}
-
-.wipe-editorial__inner > p:last-child {
-  margin: 0;
-  color: rgba(244, 236, 216, 0.86);
-  font-size: clamp(1.05rem, 1.7vw, 1.5rem);
-  line-height: 1.55;
-}
-
-.wipe-thumbs {
-  display: grid;
-  height: 250px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--grid-gap);
-}
-
-.wipe-thumb {
-  position: relative;
-  overflow: hidden;
-  border-radius: 0.5rem;
-}
-
-.wipe-runway {
-  position: relative;
-  z-index: 0;
-  height: 300vh;
-  width: 100%;
-  background: var(--warm-black);
-}
-
-.wipe-pinned {
-  position: absolute;
-  top: 100vh;
-  left: 0;
-  z-index: 2;
-  height: 250vh;
-  width: 100%;
-  /* At 13x the square is far wider than the viewport; clipping it here keeps the
-     page from gaining a horizontal scrollbar without a rule on html/body. When
-     the section is pinned this box is exactly the viewport's width, so the wipe
-     still covers the screen edge to edge. */
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* Centred on the viewport, not on an offset inside the pinned box. While the
-   section is pinned its top edge *is* the viewport top, so `50vh` puts the
-   cross on the screen's own centre — which is what lets the square cover the
-   frame evenly as it scales. Anchored 65px above centre, as it was, the square
-   ran out of travel at the bottom edge first and left a black band there for
-   most of the wipe. */
-.wipe-revealer {
-  position: absolute;
-  top: 50vh;
-  left: 35%;
-  height: 120px;
-  width: 120px;
-  transform: translate(-50%, -50%);
-  will-change: transform;
-}
-
-/* Two bars, one rotated: a thin plus that the scroll opens into a solid square
-   and then scales up to wipe the screen. Its colour is the closing panel's, or
-   the handoff would show a seam. */
-.wipe-bar {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-  background: var(--ivory);
-  clip-path: polygon(45% 0%, 55% 0%, 55% 100%, 45% 100%);
-}
-
-.wipe-bar--2 {
-  transform: rotate(90deg);
-}
-
 .wipe-booking {
   position: relative;
-  z-index: 10;
   min-height: 150vh;
   width: 100%;
   padding: clamp(5rem, 8vw, 9rem) var(--page-gutter) clamp(4rem, 6vw, 7rem);
@@ -4721,19 +4434,6 @@ p.cap-tag {
   .wipe-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .wipe-thumbs {
-    height: 150px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .wipe-thumbs .wipe-thumb:nth-child(n + 3) {
-    display: none;
-  }
-
-  .wipe-row {
-    height: 150px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -4844,8 +4544,7 @@ p.cap-tag {
     width: 95%;
   }
 
-  .deck-intro h2,
-  .wipe-lead h2 {
+  .deck-intro h2 {
     font-size: clamp(2.4rem, 8vw, 4rem);
   }
 }
@@ -4927,11 +4626,6 @@ p.cap-tag {
   font-size: var(--display-chapter);
 }
 
-.dissolve-header h2,
-.wipe-lead h2 {
-  font-size: var(--display-statement);
-}
-
 .rating-anchor > strong {
   font-size: var(--display-stat);
 }
@@ -4939,10 +4633,6 @@ p.cap-tag {
 /* Sub-display: the two voices that answer a chapter heading. */
 .active-review blockquote {
   font-size: clamp(1.45rem, 2.05vw, 2.1rem);
-}
-
-.dissolve-copy {
-  font-size: clamp(1.6rem, 3.2vw, 2.9rem);
 }
 
 /* 9.9px was below the floor for a readable label; every tag, eyebrow and
@@ -4977,18 +4667,16 @@ p.cap-tag {
   padding-bottom: var(--chapter-space-tight);
 }
 
-/* --- section proportions --------------------------------------------------
-   The dissolve's closing block is centred in a box anchored to the bottom of a
-   175svh section, which left roughly half a screen of dead ground between the
-   statement and the next chapter. The box keeps its height — the word-by-word
-   fade is triggered off it — and the copy is moved down inside it instead. */
-.dissolve-content {
-  padding-top: 30svh;
+/* Reviews used to be followed by a full-screen statement, which is what carried
+   the chapter's own bottom space. The next thing after it is now the ivory
+   closing panel, and its top padding is nearly the same figure again — the two
+   stacked into a band of empty dark ground at a hard colour change. The joint
+   measures the tight rhythm instead; the panel is unchanged. */
+.reviews-chapter {
+  padding-bottom: var(--chapter-space-tight);
 }
 
-.dissolve-content::before {
-  background: radial-gradient(62% 40% at 50% 64%, rgba(16, 9, 5, 0.74), transparent 72%);
-}
+/* --- section proportions -------------------------------------------------- */
 
 /* The mosaic's closing frame was the tallest single image on the page. */
 .mosaic-feature img {
@@ -5041,6 +4729,16 @@ p.cap-tag {
   }
 }
 
+/* The phone width sets `width: 100%` above, but the `max-width: 1000px` block
+   that follows it declares `width: 95%` at the same specificity and matches at
+   the same time — so the full-width card never applied on a phone. Restated
+   here, where nothing outranks it. */
+@media (max-width: 640px) {
+  .deck-container {
+    width: 100%;
+  }
+}
+
 /* Mobile keeps a tighter rhythm than a scaled-down desktop one. */
 @media (max-width: 899px) {
   :root {
@@ -5052,7 +4750,7 @@ p.cap-tag {
 @media (max-width: 1000px) {
   /* At this width the stage names cross the frames they describe. The plate is
      the same warm ground the section already uses for the same purpose in the
-     hero and the dissolve — it travels with the line, because each name is
+     hero — it travels with the line, because each name is
      transformed on its own. */
   .spot-name {
     justify-items: stretch;
@@ -5127,9 +4825,9 @@ p.cap-tag {
    Reduced motion
 
    No scene is built at all, so every box that exists only to hold scroll has to
-   collapse — a pin that never happens still leaves 5svh of section, and the wipe
-   runway would be five and a half screens of nothing. Everything readable stays
-   readable, and every control stays reachable.
+   collapse — a pin that never happens still leaves a viewport of section, and
+   the hero's own spacer is two and a half screens of nothing. Everything
+   readable stays readable, and every control stays reachable.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   /* --- services: four plates in a static two-column grid --- */
@@ -5236,36 +4934,6 @@ p.cap-tag {
     background: none;
   }
 
-  /* --- TURBO G8: no canvas, no 175svh, the photograph simply stands --- */
-  .dissolve-scene {
-    height: auto;
-  }
-
-  .dissolve-img {
-    position: relative;
-    height: clamp(20rem, 46vw, 38rem);
-  }
-
-  .dissolve-header {
-    position: relative;
-    height: auto;
-    padding: clamp(3rem, 5vw, 5rem) var(--page-gutter) clamp(1.5rem, 3vw, 2.5rem);
-  }
-
-  .dissolve-canvas {
-    display: none;
-  }
-
-  .dissolve-content {
-    position: relative;
-    height: auto;
-    padding: 0 var(--page-gutter) clamp(4rem, 6vw, 6rem);
-  }
-
-  .dissolve-content::before {
-    display: none;
-  }
-
   /* --- video: the plate is already where it belongs --- */
   .grow-container {
     transform: none;
@@ -5303,27 +4971,7 @@ p.cap-tag {
     aspect-ratio: 16 / 10;
   }
 
-  /* --- the wipe: keep the statement and the panel, drop the scaffolding --- */
-  .wipe-lead {
-    height: auto;
-    padding: clamp(5rem, 8vw, 8rem) var(--page-gutter);
-  }
-
-  .wipe-rows,
-  .wipe-runway,
-  .wipe-pinned {
-    display: none;
-  }
-
-  .wipe-editorial {
-    height: auto;
-    gap: clamp(2rem, 4vw, 3rem);
-  }
-
-  .wipe-thumbs {
-    height: clamp(9rem, 18vw, 15rem);
-  }
-
+  /* --- the closing panel keeps its content, drops its reserved screen --- */
   .wipe-booking {
     min-height: 0;
   }
