@@ -3548,11 +3548,17 @@ h3,
   background: var(--warm-black);
 }
 
+/* The stage clips its own columns. Two of them wait a full stage-height below,
+   which lands them in the strip the section keeps for the CTA row — without
+   this they show through underneath the buttons for the whole scene, and the
+   off-stage photograph reads as a layout error rather than as something
+   waiting to slide in. */
 .cap-wrapper {
   position: relative;
   flex: 1;
   min-height: 0;
   width: 100%;
+  overflow: hidden;
 }
 
 /* 50% is load-bearing: every phase moves a column by a full 100% of its own
@@ -4486,14 +4492,19 @@ p.cap-tag {
   pointer-events: none;
 }
 
+/* Centred on the viewport, not on an offset inside the pinned box. While the
+   section is pinned its top edge *is* the viewport top, so `50vh` puts the
+   cross on the screen's own centre — which is what lets the square cover the
+   frame evenly as it scales. Anchored 65px above centre, as it was, the square
+   ran out of travel at the bottom edge first and left a black band there for
+   most of the wipe. */
 .wipe-revealer {
   position: absolute;
-  top: 0;
+  top: 50vh;
   left: 35%;
   height: 120px;
   width: 120px;
-  margin-top: 325px;
-  transform: translate(-50%, 0%);
+  transform: translate(-50%, -50%);
   will-change: transform;
 }
 

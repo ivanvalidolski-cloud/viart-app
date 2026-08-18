@@ -62,10 +62,22 @@ export function createCapsulesScene(root: HTMLElement) {
   // --- 2. off-stage positions ----------------------------------------------
   // Same values the CSS carries for the pre-JS state, restated in GSAP's
   // percentage channels so the phase tweens animate a known quantity.
-  gsap.set(col2, { xPercent: 100, yPercent: 0, opacity: 1, scale: 1 });
-  gsap.set(col3, { xPercent: 100, yPercent: 100 });
-  gsap.set(col4, { xPercent: 100, yPercent: 100 });
-  gsap.set(col1, { opacity: 1, scale: 1 });
+  //
+  // `x: 0, y: 0` is load-bearing, not tidiness. The columns arrive carrying the
+  // stylesheet's own `translateX(100%) translateY(100%)`, and GSAP can only read
+  // that back as a resolved matrix — in pixels, on the `x`/`y` channels, with no
+  // way to tell it was written as a percentage. Setting `xPercent`/`yPercent`
+  // fills a *second*, independent channel, so every column started one full
+  // width right and one full height low, and every phase below animated only the
+  // percentage half back to zero. The scene then played out with a column-width
+  // of horizontal error and a column-height of vertical error: the middle
+  // columns landed on the half they were supposed to be leaving, and the
+  // swapping text column sat a whole plate below the stage, over the CTA row.
+  // Zeroing the pixel channels here hands GSAP the same geometry the CSS states.
+  gsap.set(col2, { x: 0, y: 0, xPercent: 100, yPercent: 0, opacity: 1, scale: 1 });
+  gsap.set(col3, { x: 0, y: 0, xPercent: 100, yPercent: 100 });
+  gsap.set(col4, { x: 0, y: 0, xPercent: 100, yPercent: 100 });
+  gsap.set(col1, { x: 0, y: 0, opacity: 1, scale: 1 });
   gsap.set(photo1, { scale: 1 });
   gsap.set(photo2, { scale: 1.25 });
   gsap.set(capsule2, { clipPath: CAPSULES.clipClosed });

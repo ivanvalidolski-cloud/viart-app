@@ -37,11 +37,13 @@ export function createBookingRevealerScene(root: HTMLElement) {
   const bars = gsap.utils.toArray<HTMLElement>(story.querySelectorAll('.wipe-bar'));
   if (!pinned || !editorial || !runway || !revealer || !bars.length) return;
 
-  // The cross is centred on its own `left` by the CSS `translate(-50%, 0%)`.
-  // GSAP is about to own this transform for the rotation and the scale, so the
-  // centring is restated in its percentage channel rather than left to be read
-  // back out of a matrix in pixels.
-  gsap.set(revealer, { xPercent: -50, yPercent: 0 });
+  // The cross is centred on its own `left`/`top` by the CSS
+  // `translate(-50%, -50%)`. GSAP is about to own this transform for the
+  // rotation and the scale, so the centring is restated in its percentage
+  // channels — and the pixel channels are zeroed in the same call, because GSAP
+  // can only read the stylesheet's percentage translate back as a resolved
+  // matrix and would otherwise stack that pixel offset under the percentages.
+  gsap.set(revealer, { x: 0, y: 0, xPercent: -50, yPercent: -50 });
 
   // --- the write pass -------------------------------------------------------
   // Four of the six triggers below drive a value straight off scroll progress.
@@ -134,10 +136,16 @@ export function createBookingRevealerScene(root: HTMLElement) {
   });
 
   // 6. And the white-out.
+  //
+  // It ends on `bottom top`, the same edge the two pins release on, so the
+  // square reaches full scale in the frame the closing panel takes over the
+  // viewport. `bottom bottom` finished the wipe one whole viewport earlier and
+  // left that screen pinned, solid and empty — a full screen of blank ivory to
+  // scroll past between the end of the animation and the start of the panel.
   ScrollTrigger.create({
     trigger: runway,
     start: 'top 50%',
-    end: 'bottom bottom',
+    end: 'bottom top',
     scrub: REVEALER.scrub,
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
