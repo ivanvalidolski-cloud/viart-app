@@ -1,10 +1,11 @@
 import type { Page } from '@playwright/test';
 import { settle, wheelTo } from '../support/scroll';
 
-/** The pinned or scrubbed scenes, in document order, plus the closing panel. */
+/** Every chapter shell below the hero, in document order. */
 export const SCENES = [
   '.hb-scene',
   '.cap-scene',
+  '.ev-stage',
   '.spot-scene',
   '.mosaic-scene',
   '.grow-scene',
@@ -12,8 +13,21 @@ export const SCENES = [
   '.wipe-booking',
 ] as const;
 
-/** The boxes ScrollTrigger pins, and how long each stays fixed. */
-export const PINNED = ['.cap-scene', '.spot-scene', '.deck-scene'] as const;
+/**
+ * The boxes ScrollTrigger pins.
+ *
+ * `.ev-stage` is the second half's one signature moment and it is pinned on a
+ * desktop only — a phone gets the same composition as a short transformation in
+ * ordinary flow, so the list is viewport-dependent.
+ */
+export const PINNED = ['.cap-scene', '.spot-scene'] as const;
+export const PINNED_WIDE = ['.ev-stage'] as const;
+
+/** The width the scenes switch composition on, in both the CSS and the driver. */
+export const WIDE_BREAKPOINT = 900;
+
+export const pinnedFor = (width: number) =>
+  width >= WIDE_BREAKPOINT ? [...PINNED, ...PINNED_WIDE] : [...PINNED];
 
 export type Probe = {
   scrollY: number;

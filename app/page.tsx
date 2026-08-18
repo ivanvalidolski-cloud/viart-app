@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
 import { usePointerFine } from './lib/usePointerFine';
-import { AnimatedBeam } from './components/ui/animated-beam';
 import { Backlight } from './components/ui/backlight';
 import { BorderBeam } from './components/ui/border-beam';
 import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
@@ -156,7 +155,7 @@ const reviews: Review[] = [
   },
 ];
 
-/** The four states of an EVERLAS course, one image and one line each. */
+/** The four states of the procedure, one image and one line each. */
 const everlasStages = [
   {
     index: '01',
@@ -209,6 +208,7 @@ export default function Home() {
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviewDirection, setReviewDirection] = useState(1);
   const [videoState, setVideoState] = useState<VideoState>('poster');
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const videoStateRef = useRef<VideoState>('poster');
@@ -217,10 +217,8 @@ export default function Home() {
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
 
-  // The Animated Beam measures between two nodes inside one container.
-  const beamFieldRef = useRef<HTMLDivElement | null>(null);
-  const beamSourceRef = useRef<HTMLSpanElement | null>(null);
-  const beamTargetRef = useRef<HTMLSpanElement | null>(null);
+  // Where a review swipe started, so a vertical flick is never read as one.
+  const reviewTouchRef = useRef<{ x: number; y: number } | null>(null);
 
   const pointerFine = usePointerFine();
 
@@ -266,7 +264,29 @@ export default function Home() {
   };
 
   const changeReview = (direction: number) => {
+    setReviewDirection(direction);
     setReviewIndex((current) => (current + direction + reviews.length) % reviews.length);
+  };
+
+  const onReviewTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.changedTouches[0];
+    reviewTouchRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  /**
+   * A horizontal flick is the same control as the two arrows. Nothing here
+   * calls `preventDefault` — the vertical axis belongs to Lenis, and a gesture
+   * that is mostly vertical is a scroll, not a swipe.
+   */
+  const onReviewTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = reviewTouchRef.current;
+    reviewTouchRef.current = null;
+    if (!start) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy)) return;
+    changeReview(dx < 0 ? 1 : -1);
   };
 
   const playMasterVideo = () => {
@@ -598,45 +618,54 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* EVERLAS — four states under a pinned spotlight.                  */}
-        {/* Mechanics: motionprompts.dev/component/prototypestudio-scroll-animation */}
+        {/* EVERLAS — the one signature moment of the second half. A single  */}
+        {/* spatial scene: the machine comes forward out of its own depth,   */}
+        {/* the manipula detail arrives behind it, the copy only drifts.     */}
+        {/* The procedure sequence below continues out of it — same chapter, */}
+        {/* no heading, no second opening.                                    */}
         {/* ---------------------------------------------------------------- */}
         <section id="everlas" className="everlas-chapter">
-          <div className="spot-intro">
-            <div className="spot-intro__copy" data-reveal="">
-              <p className="eyebrow">Оборудование</p>
-              <h2>Лазерная эпиляция<br />на EVERLAS</h2>
-              <p className="spot-intro__lead">
-                Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
-                Четыре состояния одного курса — от подготовки до интервалов между процедурами.
-              </p>
-            </div>
+          <div className="ev-stage">
+            <div className="ev-stage__inner">
+              <div className="ev-copy">
+                <p className="eyebrow">Оборудование</p>
+                <h2>Лазерная эпиляция<br />на EVERLAS</h2>
+                <p className="ev-copy__lead">
+                  Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
+                  Четыре состояния одного курса — от подготовки до интервалов между процедурами.
+                </p>
+              </div>
 
-            {/* Animated Beam: a light accent between the machine and the zone,
-                not a section of its own. */}
-            <div className="spot-beam" ref={beamFieldRef} aria-hidden="true">
-              <span className="spot-node tech-label" ref={beamSourceRef}>EVERLAS</span>
-              <span className="spot-node tech-label" ref={beamTargetRef}>Зона</span>
-              <AnimatedBeam
-                containerRef={beamFieldRef}
-                fromRef={beamSourceRef}
-                toRef={beamTargetRef}
-                curvature={38}
-                pathColor="rgba(201, 168, 76, 0.24)"
-                pathWidth={1}
-                pathOpacity={1}
-                gradientStartColor="#c9a84c"
-                gradientStopColor="#d3b561"
-                duration={6}
-              />
+              <div className="ev-media">
+                <div className="ev-frame">
+                  <div className="ev-glow" aria-hidden="true" />
+                  <figure className="ev-plate ev-plate--main">
+                    <Image
+                      src="/images/gallery/6.jpg"
+                      alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
+                      fill
+                      sizes="(max-width: 899px) 76vw, 34vw"
+                      className="cover-image"
+                    />
+                  </figure>
+                  <figure className="ev-plate ev-plate--detail">
+                    <Image
+                      src="/images/gallery/7.jpg"
+                      alt="Манипула аппарата EVERLAS на подготовленной коже руки"
+                      fill
+                      sizes="(max-width: 899px) 36vw, 16vw"
+                      className="cover-image"
+                    />
+                  </figure>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* The four states. One frame is centred and one line is shown at a
+              time, both derived from the same scroll position, so the picture
+              and the words can never disagree. */}
           <div className="spot-scene">
-            <div className="spot-index">
-              <span className="spot-counter">01/04</span>
-            </div>
-
             <div className="spot-images">
               {everlasStages.map((stage) => (
                 <figure className="spot-img" key={stage.index}>
@@ -741,8 +770,8 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* VIDEO — the plate grows from a floating thumbnail into the frame. */}
-        {/* Mechanics: motionprompts.dev/component/vucko-scroll-animation-javascript */}
+        {/* VIDEO — the second half of the studio chapter. Ordinary flow: the */}
+        {/* plate sits where it belongs and only fades in.                    */}
         {/* ---------------------------------------------------------------- */}
         <section id="video" className="grow-scene">
           <div className="grow-container">
@@ -751,7 +780,7 @@ export default function Home() {
               <div className="grow-backlight__plate" aria-hidden="true" />
             </Backlight>
 
-            <div className="grow-preview">
+            <div className="grow-preview" data-reveal="media">
               <div className="master-media">
                 <video
                   ref={masterVideoRef}
@@ -836,8 +865,8 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* COMPLEXES — the first-visit deck, one card per complex.          */}
-        {/* Mechanics: motionprompts.dev/component/sticky-cards-ashfall-rebuild-js */}
+        {/* COMPLEXES — the first-visit deck, one card per complex. Nearly    */}
+        {/* static by now: the four cards arrive once, as one block.          */}
         {/* ---------------------------------------------------------------- */}
         <section id="promo" className="deck-chapter">
           <div className="deck-intro">
@@ -856,7 +885,9 @@ export default function Home() {
           </div>
 
           <div className="deck-scene">
-            <div className="deck-container">
+            {/* One reveal on the container, not one per card: the deck is a
+                group by this point in the page, not four separate arrivals. */}
+            <div className="deck-container" data-reveal="">
               {epilationComplexes.women.map((complex, index) => (
                 <article className="deck-card" key={complex.name}>
                   <Image
@@ -909,7 +940,13 @@ export default function Home() {
               <span>Хорошее место<br />2026</span>
             </div>
           </div>
-          <div className="active-review" key={reviewIndex}>
+          <div
+            className="active-review"
+            key={reviewIndex}
+            data-review-dir={reviewDirection > 0 ? 'next' : 'prev'}
+            onTouchStart={onReviewTouchStart}
+            onTouchEnd={onReviewTouchEnd}
+          >
             <div className="quote-mark">“</div>
             <blockquote>{activeReview.text}</blockquote>
             <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
