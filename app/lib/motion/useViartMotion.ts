@@ -19,15 +19,14 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
-import { HEADER_OFFSET, VIDEO_GROW } from './tokens';
+import { HEADER_OFFSET, SCENE } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
 import {
   createCapsulesScene,
-  createEverlasSpotlightScene,
+  createEverlasStageScene,
   createGalleryMosaicScene,
   createHeureBleueScene,
-  createStickyCardsScene,
-  createVideoGrowScene,
+  createProcedureSequenceScene,
 } from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -40,6 +39,9 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
  * position against the new numbers: the page jumps mid-flick, every time the
  * bar appears or disappears. `ignoreMobileResize` makes ScrollTrigger ignore a
  * height-only change on touch devices, which is exactly what this is.
+ *
+ * (Written when the page carried four pins; it carries three now, and the
+ * failure it prevents is the same one at any count.)
  */
 ScrollTrigger.config({ ignoreMobileResize: true });
 
@@ -82,22 +84,23 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     /**
      * The scenes carry one extra condition the entrances must not share.
      *
-     * `.grow-container` is pulled up and scaled to a quarter by a
-     * `@media (min-width: 900px)` block, and the video rig is the only thing
-     * that animates it back — so the rig's gate has to be *that* media query,
-     * live, not a width read once at build time. Declaring it here means GSAP
-     * tears the scenes down and rebuilds them when the breakpoint flips, the
-     * same moment the stylesheet swaps composition.
+     * A phone is not a smaller desktop here: the EVERLAS stage is pinned above
+     * this width and simply transforms in place below it, and the procedure
+     * sequence reads the same four states over a shorter runway. That gate has
+     * to be a live media query — the same one the stylesheet switches
+     * composition on — not a width read once at build time. Declaring it here
+     * means GSAP tears the scenes down and rebuilds them when the breakpoint
+     * flips, in the same moment the stylesheet changes underneath them.
      *
      * The entrances stay on the two-key object on purpose: rebuilding them on a
      * resize would re-hide every element that has already revealed itself.
      */
     const SCENE_QUERIES = {
       ...QUERIES,
-      wideRig: `(min-width: ${VIDEO_GROW.minWidth}px)`,
+      wide: `(min-width: ${SCENE.mobileBreakpoint}px)`,
     };
     type Conditions = { motionOk: boolean; motionReduced: boolean };
-    type SceneConditions = Conditions & { wideRig: boolean };
+    type SceneConditions = Conditions & { wide: boolean };
 
     // --- phase 1: entrances, before the first paint ------------------------
     // Hiding a reveal target has to happen in the same frame its markup lands.
@@ -121,7 +124,7 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
       if (cancelled) return;
 
       media.add(SCENE_QUERIES, (context) => {
-        const { motionReduced, wideRig } = context.conditions as SceneConditions;
+        const { motionReduced, wide } = context.conditions as SceneConditions;
         if (motionReduced) return;
 
         createHeureBleueScene(sequenceRoot);
@@ -129,15 +132,16 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
 
         // The chapter scenes, in document order. Each is scoped to the page
         // root and returns a teardown for whatever this context cannot revert
-        // by itself — a rAF loop, injected DOM, a SplitText, a plain listener.
-        // Everything they build with GSAP is recorded here, so the pins and
-        // their spacers go away with the context.
+        // by itself — injected DOM, a SplitText, a plain listener, an inline
+        // style written from a trigger callback. Everything they build with
+        // GSAP is recorded here, so the pins and their spacers go away with the
+        // context. Nothing below the mosaic pins or scrubs: past the studio the
+        // page is ordinary flow.
         const teardowns = [
           createCapsulesScene(pageRoot),
-          createEverlasSpotlightScene(pageRoot),
+          createEverlasStageScene(pageRoot, { pinned: wide }),
+          createProcedureSequenceScene(pageRoot, { wide }),
           createGalleryMosaicScene(pageRoot),
-          wideRig ? createVideoGrowScene(pageRoot) : undefined,
-          createStickyCardsScene(pageRoot),
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
 
         return () => teardowns.forEach((teardown) => teardown());

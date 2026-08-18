@@ -3720,21 +3720,40 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   03 EVERLAS — pinned spotlight
+   03 EVERLAS — the signature stage
+
+   One pinned composition, not four screens: a dominant plate that comes forward
+   out of its own depth, a manipula detail behind it, and copy that only drifts.
+   The scene owns every transform in here — nothing in `.ev-stage` may carry a
+   `data-reveal`.
    -------------------------------------------------------------------------- */
-.spot-intro {
+.ev-stage {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  /* The fixed header paints over the first band of a pinned scene. */
+  padding: calc(var(--header-h) + 1.25rem) var(--page-gutter) clamp(2rem, 4vw, 3.5rem);
+  background: var(--espresso);
+}
+
+.ev-stage__inner {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--grid-gap);
-  align-items: end;
-  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+  align-items: center;
+  height: 100%;
 }
 
-.spot-intro__copy {
-  grid-column: 1 / span 7;
+.ev-copy {
+  position: relative;
+  z-index: 2;
+  grid-column: 1 / span 5;
+  will-change: transform;
 }
 
-.spot-intro__copy h2 {
+.ev-copy h2 {
   max-width: 13ch;
   margin: 0 0 1.25rem;
   color: var(--ivory);
@@ -3744,63 +3763,86 @@ p.cap-tag {
   line-height: 1;
 }
 
-.spot-intro__lead {
-  max-width: 46ch;
+.ev-copy__lead {
+  max-width: 42ch;
   margin: 0;
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.7;
 }
 
-/* The beam's SVG is absolutely positioned against this box. */
-.spot-beam {
+.ev-media {
   position: relative;
-  grid-column: 9 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 7.5rem;
-}
-
-.spot-node {
-  display: inline-grid;
-  min-width: 5.5rem;
+  z-index: 1;
+  grid-column: 6 / -1;
+  display: grid;
+  height: 100%;
   place-items: center;
-  border: 1px solid var(--hairline);
-  border-radius: 0.3rem;
-  padding: 0.55rem 0.85rem;
-  background: var(--cocoa);
-  color: var(--bronze-soft);
 }
 
+/* Both plates are anchored to this box, so the detail keeps its relationship to
+   the machine at every viewport size instead of drifting off on a short screen. */
+.ev-frame {
+  position: relative;
+  height: min(72svh, 46rem);
+  aspect-ratio: 3 / 4;
+}
+
+.ev-glow {
+  position: absolute;
+  inset: -16%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 46% at 50% 48%,
+    rgba(201, 168, 76, 0.3),
+    rgba(42, 28, 17, 0.16) 58%,
+    transparent 76%
+  );
+  will-change: transform, opacity;
+}
+
+.ev-plate {
+  position: absolute;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0.9rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  will-change: transform;
+}
+
+.ev-plate--main {
+  inset: 0;
+  z-index: 1;
+}
+
+/* Overlapping the machine's lower-left corner and hanging a little below it —
+   the layer that gives the composition its depth once it arrives. */
+.ev-plate--detail {
+  left: -32%;
+  bottom: -8%;
+  z-index: 2;
+  width: 44%;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.7rem;
+  will-change: transform, opacity;
+}
+
+/* --------------------------------------------------------------------------
+   04 PROCEDURE — the four states, continuing out of the stage above
+   -------------------------------------------------------------------------- */
 .spot-scene {
   position: relative;
   width: 100%;
   height: 100svh;
   overflow: hidden;
-  /* The JS reads this padding to derive the counter and name travel. */
+  /* The JS reads this padding to find the band the frames are centred in. */
   padding: 2rem;
 }
 
-.spot-index {
-  position: relative;
-  z-index: 2;
-}
-
-.spot-counter {
-  display: inline-block;
-  color: var(--ivory);
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(3rem, 5vw, 7rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  will-change: transform;
-}
-
-/* Half a viewport of padding top and bottom is what puts the first and last
-   frame near mid-screen at the two ends of the scrub. */
+/* The column is positioned frame by frame from script — its own height and
+   offset are free, because every stop is measured rather than assumed. */
 .spot-images {
   position: absolute;
   top: 0;
@@ -3810,11 +3852,12 @@ p.cap-tag {
   width: 35%;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 50svh 0;
   transform: translateX(-50%);
   will-change: transform;
 }
 
+/* No transition: the opacity is a continuous function of the scroll position,
+   and a 0.3s ease on top of a scrub is a frame of lag on every one of them. */
 .spot-img {
   position: relative;
   width: 100%;
@@ -3823,32 +3866,46 @@ p.cap-tag {
   margin: 0;
   border-radius: 0.5rem;
   opacity: 0.5;
-  transition: opacity 0.3s ease;
 }
 
+/* One slot, four states stacked in it, level with the frame they describe.
+   `min-height` stops the block resizing under a longer line mid-swap, and the
+   clip is what turns the swap into a wipe: the outgoing line leaves the slot
+   instead of lying across the one arriving. */
 .spot-names {
   position: absolute;
   right: 2rem;
-  bottom: 2rem;
+  /* Level with the centred frame, so the line reads as its caption. The
+     translate is the container's own — the scene writes on the lines inside. */
+  top: calc(var(--header-h) / 2 + 50%);
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.1rem;
+  display: grid;
+  width: min(26rem, 44%);
+  height: 12rem;
+  align-content: center;
+  overflow: hidden;
+  transform: translateY(-50%);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .spot-name {
+  grid-area: 1 / 1;
+  align-self: center;
   display: grid;
-  max-width: 26rem;
   justify-items: end;
-  gap: 0.2rem;
-  color: var(--muted);
+  gap: 0.25rem;
+  color: var(--ivory);
   text-align: right;
-  transition: color 0.3s ease;
-  will-change: transform;
+  will-change: transform, opacity;
+}
+
+/* Pre-script state: the first line only. The scene writes an inline opacity
+   over this on its first frame, and the reduced-motion block puts them all
+   back — there the four are a list, not a slot. */
+.spot-name + .spot-name {
+  opacity: 0;
 }
 
 .spot-name__index {
@@ -3869,13 +3926,14 @@ p.cap-tag {
   line-height: 1.5;
 }
 
+/* No rule above it: the sequence releases into this block, and a hairline is
+   exactly the hard cut the release exists to avoid. */
 .spot-outro {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  border-top: 1px solid var(--hairline);
   padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
 }
 
@@ -3955,11 +4013,13 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   06 VIDEO — the plate grows into the frame
+   06 VIDEO — the second half of the studio chapter
+
+   No rig and no border: the studio is one calm beat, and the plate is an
+   ordinary block in flow that fades in once. There is nothing scrubbed here.
    -------------------------------------------------------------------------- */
 .grow-scene {
   position: relative;
-  border-top: 1px solid var(--hairline);
   padding: clamp(5rem, 7vw, 8rem) var(--page-gutter);
   background: var(--espresso);
 }
@@ -3968,17 +4028,7 @@ p.cap-tag {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2em;
-}
-
-/* The quarter-scale thumbnail pulled above its own section. The JS takes the
-   same value from its breakpoint table on the first frame, so a wide screen
-   never jumps. Below the gate the plate is an ordinary block in flow. */
-@media (min-width: 900px) {
-  .grow-container {
-    transform: translateY(-105%) scale(0.25);
-    will-change: transform;
-  }
+  gap: 1.5rem;
 }
 
 /* Sized off the plate it sits behind, not off the whole container — the caption
@@ -4044,8 +4094,8 @@ p.cap-tag {
   position: relative;
   margin: 0;
   font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  /* The JS owns this from the first frame; the value only matters pre-script. */
-  font-size: 78px;
+  /* The size the caption used to settle at once the rig had finished with it. */
+  font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -4075,7 +4125,10 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   07 COMPLEXES — sticky deck
+   07 COMPLEXES — the first-visit deck, as a deck
+
+   Nearly static by this point in the page: four cards laid out at once, arriving
+   together on one entrance. No pin, no stack, no per-card stagger.
    -------------------------------------------------------------------------- */
 .deck-chapter {
   background: var(--ink);
@@ -4114,31 +4167,22 @@ p.cap-tag {
 
 .deck-scene {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  padding: 2rem;
+  padding: 0 var(--page-gutter);
   background: var(--ink);
 }
 
-/* The clip is what hides the card waiting one container-height below. */
 .deck-container {
   position: relative;
-  height: 50%;
-  width: 50%;
-  overflow: hidden;
-  border-radius: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
 }
 
 .deck-card {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
+  position: relative;
   overflow: hidden;
+  aspect-ratio: 16 / 10;
   border-radius: 0.5rem;
   background: var(--cocoa);
 }
@@ -4339,14 +4383,17 @@ p.cap-tag {
    the edge at one of their two stops. Widen the content, never the column.
    -------------------------------------------------------------------------- */
 @media (max-width: 1100px) {
-  .spot-intro__copy {
-    grid-column: 1 / span 12;
+  /* The copy gives up a column to the machine before the stage stacks. */
+  .ev-copy {
+    grid-column: 1 / span 5;
   }
 
-  .spot-beam {
-    grid-column: 1 / span 12;
-    height: 6rem;
-    margin-top: 2rem;
+  .ev-media {
+    grid-column: 6 / -1;
+  }
+
+  .ev-frame {
+    height: min(58svh, 34rem);
   }
 }
 
@@ -4373,15 +4420,25 @@ p.cap-tag {
     padding: 2rem;
   }
 
-  /* Near-full-width frames spaced far apart, so one still owns the midline. */
+  /* Near-full-width frames spaced far apart. The column is positioned frame by
+     frame, so any gap is safe here — the active one is centred either way. */
   .spot-images {
     width: calc(100% - 4rem);
     gap: 25svh;
   }
 
-  /* At this size the dim/active distinction stops earning its keep. */
+  /* The frames are near-full-width here, so the caption cannot sit beside one.
+     It goes back to the foot of the stage, on its own readability plate. */
+  .spot-names {
+    top: auto;
+    bottom: 2rem;
+    height: 13rem;
+    align-content: end;
+    transform: none;
+  }
+
   .spot-name {
-    color: var(--ivory) !important;
+    align-self: end;
   }
 
   .spot-name__copy {
@@ -4390,6 +4447,46 @@ p.cap-tag {
 }
 
 @media (max-width: 899px) {
+  /* A phone gets a short transformation, not a held screen: the stage is an
+     ordinary block that stacks copy over media and transforms as it passes. */
+  .ev-stage {
+    height: auto;
+    padding: var(--chapter-space) var(--page-gutter) var(--chapter-space-tight);
+  }
+
+  .ev-stage__inner {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(2rem, 7vw, 3rem);
+    height: auto;
+  }
+
+  .ev-copy,
+  .ev-media {
+    grid-column: 1 / -1;
+  }
+
+  .ev-copy h2,
+  .ev-copy__lead {
+    max-width: none;
+  }
+
+  .ev-media {
+    height: auto;
+  }
+
+  .ev-frame {
+    height: auto;
+    width: min(74%, 22rem);
+  }
+
+  /* The detail keeps clear of the gutter at this width. */
+  .ev-plate--detail {
+    left: auto;
+    right: -14%;
+    bottom: -6%;
+    width: 42%;
+  }
+
   .deck-intro > div:first-child,
   .deck-intro > p {
     grid-column: 1 / span 12;
@@ -4400,7 +4497,6 @@ p.cap-tag {
     max-width: none;
   }
 
-  /* No script below 900px, so this is the size the caption actually ships at. */
   .grow-title p {
     font-size: 1.05rem;
   }
@@ -4517,19 +4613,23 @@ p.cap-tag {
     display: none;
   }
 
+  /* `width: auto` matters: left, right and a width together over-constrain an
+     absolutely positioned box, and the width would win over the right edge. */
   .spot-names {
     right: 1rem;
     bottom: 1rem;
     left: 1rem;
+    width: auto;
+    height: 13.5rem;
   }
 
-  .spot-name {
-    max-width: none;
-  }
-
+  /* One card per row: four complexes are read, not compared side by side. */
   .deck-container {
-    height: 60%;
-    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deck-card {
+    aspect-ratio: 3 / 2;
   }
 
   .wipe-facts {
@@ -4537,13 +4637,7 @@ p.cap-tag {
   }
 }
 
-/* The mosaic cell is a background image, so it has no intrinsic ratio to keep
-   the row honest below 1000px — the source relaxes the whole grid instead. */
 @media (max-width: 1000px) {
-  .deck-container {
-    width: 95%;
-  }
-
   .deck-intro h2 {
     font-size: clamp(2.4rem, 8vw, 4rem);
   }
@@ -4597,10 +4691,9 @@ p.cap-tag {
 /* --- viewport fit ---------------------------------------------------------
    A pinned scene is exactly one viewport tall, and the header is painted over
    its first 4rem. Each of these reserves that band so no plate, heading or
-   scrubbed line is read through the header. The spotlight's travel is derived
-   from its own `padding-top`, so reserving the band there also shortens the
-   travel by the same amount — the first stage name now stops below the header
-   instead of sliding under it. */
+   scrubbed line is read through the header. The sequence centres its frames in
+   the band left between its own paddings, so reserving the header here also
+   moves the whole column down by half of it. */
 .cap-scene {
   padding-top: calc(var(--header-h) + 0.5rem);
 }
@@ -4621,7 +4714,7 @@ p.cap-tag {
 .chapter-heading h2,
 .gallery-topline h2,
 .deck-intro h2,
-.spot-intro__copy h2,
+.ev-copy h2,
 .wipe-booking h2 {
   font-size: var(--display-chapter);
 }
@@ -4650,7 +4743,6 @@ p.cap-tag {
   padding-bottom: var(--chapter-space);
 }
 
-.spot-intro,
 .deck-intro {
   padding-top: var(--chapter-space);
   padding-bottom: var(--chapter-space-tight);
@@ -4701,42 +4793,17 @@ p.cap-tag {
   justify-content: center;
 }
 
-@media (min-width: 900px) {
-  /* The video plate floats a quarter-scale above its own section — by design —
-     but the gallery ends directly above it, so the thumbnail and its caption
-     were rendered on top of the mosaic's closing frame. This reserves the ground
-     the plate actually occupies.
-
-     How much that is: the plate rises `translateY` of its own height and then
-     shrinks about its centre, so its top sits `(translateY - 0.375) × height`
-     above where it would otherwise start, less the gallery's bottom padding.
-     `translateY` is the scene's breakpoint table (-1.35 at 900px easing to -1.05
-     from 1300px up) and the height follows the 16:9 plate, so the two move
-     against each other and the requirement stays between 460px and 505px across
-     every width from 900 up. One flat 36rem clears all of them with room to spare. */
-  .grow-scene {
-    padding-top: 36rem;
-  }
+/* The studio's two halves are one chapter now: the mosaic ends and the video
+   plate begins on the same ground, at the same rhythm, with nothing floating
+   between them. */
+.grow-scene {
+  padding-top: var(--chapter-space-tight);
 }
 
-/* The deck card was half the stage in both axes, which read as a thumbnail on a
-   wide screen and left its own price line cramped against the bottom edge. The
-   narrower breakpoints already have their own container sizes above. */
-@media (min-width: 1001px) {
-  .deck-container {
-    height: 62%;
-    width: min(46rem, 54%);
-  }
-}
-
-/* The phone width sets `width: 100%` above, but the `max-width: 1000px` block
-   that follows it declares `width: 95%` at the same specificity and matches at
-   the same time — so the full-width card never applied on a phone. Restated
-   here, where nothing outranks it. */
-@media (max-width: 640px) {
-  .deck-container {
-    width: 100%;
-  }
+/* The sequence releases into the outro and the outro carries the joint, so the
+   chapter does not pay for the space twice. */
+.spot-outro {
+  padding-top: var(--chapter-space);
 }
 
 /* Mobile keeps a tighter rhythm than a scaled-down desktop one. */
@@ -4748,20 +4815,38 @@ p.cap-tag {
 }
 
 @media (max-width: 1000px) {
-  /* At this width the stage names cross the frames they describe. The plate is
-     the same warm ground the section already uses for the same purpose in the
-     hero — it travels with the line, because each name is
-     transformed on its own. */
+  /* At this width the state's line crosses the frame it describes. The plate is
+     the same warm ground the hero uses for the same purpose — it travels with
+     the line, because the line is transformed on its own. */
   .spot-name {
     justify-items: stretch;
     padding: 0.55rem 0.75rem;
     border-radius: 0.4rem;
     background: linear-gradient(90deg, rgba(16, 9, 5, 0), rgba(16, 9, 5, 0.86) 10%);
   }
+}
 
-  .spot-names {
-    gap: 0.75rem;
-  }
+/* --- reviews: one voice, one short directional change ---------------------
+   The Global Correction layer switched the review's entrance off; this puts a
+   deliberate one back, and only a directional one. The block is keyed on the
+   index, so React remounts it and the animation runs once per change — there is
+   no carousel, no track and no second card on screen. */
+@keyframes reviewSwapNext {
+  from { opacity: 0; transform: translate3d(1.25rem, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes reviewSwapPrev {
+  from { opacity: 0; transform: translate3d(-1.25rem, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.active-review[data-review-dir="next"] {
+  animation: reviewSwapNext 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.active-review[data-review-dir="prev"] {
+  animation: reviewSwapPrev 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 @media (max-width: 899px) {
@@ -4830,6 +4915,17 @@ p.cap-tag {
    readable stays readable, and every control stays reachable.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  /* --- the hero's own spacer, restated where it holds --------------------
+     The Global Correction layer already collapses `.hb-ws`, but the unconditional
+     `height: 150vh` that reserves the zoom's scroll budget is declared *after*
+     that block at the same specificity, so it won — and with no scene built,
+     a screen and a half of deliberately empty space sat between the hero and
+     the rest of the page. This is the same rule, in the layer that has the
+     last word. */
+  .hb-ws {
+    height: 0;
+  }
+
   /* --- services: four plates in a static two-column grid --- */
   .cap-scene {
     display: block;
@@ -4890,14 +4986,38 @@ p.cap-tag {
     box-shadow: inset 0 0 0 1px var(--hairline);
   }
 
-  /* --- EVERLAS: the stage list beside a static strip of frames --- */
+  /* --- EVERLAS: the stage is a plain composition, no depth to travel --- */
+  /* The clip stays: the detail plate hangs off the frame by design, and on a
+     narrow screen that is the difference between a bleed and a horizontal axis
+     on the whole page. */
+  .ev-stage {
+    height: auto;
+    padding: var(--chapter-space) var(--page-gutter) var(--chapter-space-tight);
+  }
+
+  .ev-stage__inner {
+    height: auto;
+    align-items: center;
+  }
+
+  .ev-media {
+    height: auto;
+  }
+
+  .ev-frame {
+    height: auto;
+    width: min(100%, 26rem);
+  }
+
+  /* The glow is the scene's own depth cue and has nothing to do without it. */
+  .ev-glow {
+    display: none;
+  }
+
+  /* --- the procedure: the four states as a static strip and a list --- */
   .spot-scene {
     height: auto;
     padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
-  }
-
-  .spot-index {
-    display: none;
   }
 
   .spot-images {
@@ -4906,7 +5026,6 @@ p.cap-tag {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--grid-gap);
-    padding: 0;
     transform: none;
   }
 
@@ -4914,61 +5033,34 @@ p.cap-tag {
     opacity: 1;
   }
 
+  /* Back to a list: four lines under the frames, all of them present. */
   .spot-names {
     position: static;
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    transform: none;
     margin-top: clamp(2rem, 4vw, 3rem);
   }
 
-  .spot-name {
+  .spot-name,
+  .spot-name + .spot-name {
+    grid-area: auto;
+    align-self: stretch;
     max-width: none;
     justify-items: start;
-    color: var(--ivory) !important;
-    text-align: left;
-  }
-
-  /* Nothing overlaps here — the frames are a static grid above the list, so the
-     narrow-screen readability plate has nothing to protect. */
-  .spot-name {
     padding: 0;
     background: none;
+    text-align: left;
+    opacity: 1;
   }
 
-  /* --- video: the plate is already where it belongs --- */
-  .grow-container {
-    transform: none;
-    gap: 1.5rem;
-  }
-
-  /* Nothing floats above the section, so the ground reserved for the floating
-     plate is scroll against nothing. */
-  .grow-scene {
-    padding-top: var(--chapter-space);
-  }
-
-  .grow-title p {
-    font-size: 1.15rem;
-  }
-
-  /* --- complexes: the deck unstacks into a list --- */
-  .deck-scene {
-    height: auto;
-    padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
-  }
-
-  .deck-container {
-    display: grid;
-    height: auto;
-    width: 100%;
-    gap: var(--grid-gap);
-    overflow: visible;
-  }
-
-  .deck-card {
-    position: relative;
-    inset: auto;
-    height: auto;
-    aspect-ratio: 16 / 10;
+  /* --- reviews: the change is instant, the controls are unchanged --- */
+  .active-review[data-review-dir] {
+    animation: none;
   }
 
   /* --- the closing panel keeps its content, drops its reserved screen --- */

@@ -71,12 +71,93 @@ export const CAPSULES = {
   clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
 } as const;
 
-export const SPOTLIGHT = {
-  /** Pinned/scrubbed runway of the EVERLAS spotlight, in viewport heights. */
-  viewports: 5,
+/**
+ * The EVERLAS stage — the single signature moment of the second half.
+ *
+ * One controlled spatial scene: the machine comes forward out of its own depth
+ * while the picture inside the frame counter-zooms, the manipula detail arrives
+ * from behind it, and the copy only drifts. Every number is a starting offset
+ * of that one composition; nothing here is a separate animation screen.
+ */
+export const EVERLAS_STAGE = {
+  /**
+   * Pinned scroll budget, in viewport heights. Desktop only.
+   *
+   * This is the page's one held moment below the price list, so it is worth
+   * more than a glance — but it is one composition, not four, and it must stay
+   * shorter than the sequence that has four states to get through.
+   */
+  viewports: 2.2,
   scrub: 1,
-  /** Opacity of an image whose stage is not the active one. */
+  /** How far back the dominant plate starts, and how far it rides. */
+  plateScaleFrom: 0.74,
+  plateYFrom: 8,
+  plateYTo: -3,
+  /** Counter-zoom inside the plate — the frame grows, the picture settles. */
+  pictureScaleFrom: 1.2,
+  /** The detail plate rises out from behind the dominant one. */
+  detailScaleFrom: 0.84,
+  detailXFrom: 12,
+  detailYFrom: 16,
+  /** The copy is readable on every frame; only its position moves. */
+  copyYFrom: 24,
+  copyYTo: -18,
+  glowScaleFrom: 0.62,
+  glowOpacityFrom: 0.18,
+} as const;
+
+/**
+ * The procedure sequence — the four states, continuing out of the stage above.
+ *
+ * One scroll position drives everything: the frame that is centred, the line
+ * that is shown and the dimming of the other three are all read off it, so the
+ * media, the text and the active state cannot drift apart at any width.
+ */
+export const SPOTLIGHT = {
+  /** Pinned/scrubbed runway, in viewport heights. */
+  viewports: 4,
+  /** A phone reads the same four states over a shorter runway. */
+  mobileViewports: 3,
+  scrub: 1,
+  /** Opacity of a frame whose state is not the active one. */
   dimOpacity: 0.5,
+  /**
+   * The four states occupy this fraction of the scrub. The rest is the release:
+   * the sequence stops stepping, the composition opens back up and drifts into
+   * the document flow instead of being cut off by the unpin.
+   */
+  statesEnd: 0.86,
+  /** What the dimmed frames rise to through the release. */
+  releaseOpacity: 0.68,
+  /**
+   * Extra upward drift through the release: column, in viewport heights…
+   *
+   * Small on purpose. A long drift empties the bottom of the stage before the
+   * pin lets go, which reads as a hole rather than as a hand-off.
+   */
+  releaseDrift: 0.03,
+  /** …and the line, in px. */
+  releaseLift: 10,
+  /**
+   * Travel of a state's line as it takes and leaves its slot, in px.
+   *
+   * Large enough that the outgoing line is most of the way out of the clipped
+   * slot by the time the incoming one is readable — two multi-line captions
+   * crossfading on the same spot are a tangle, not a transition.
+   */
+  nameTravel: 90,
+  /**
+   * Presence of a state falls from 1 to 0 between `stateFadeEnd - stateFadeSpan`
+   * and `stateFadeEnd` of a state's distance from the current position.
+   *
+   * `stateFadeSpan = 2 × stateFadeEnd - 1` is load-bearing: it is what makes two
+   * neighbouring states sum to exactly 1 everywhere between them, so the swap
+   * never dips to an empty slot in the middle. Within that constraint the span
+   * is kept short, so each state holds for most of its slice and the exchange is
+   * a brief, deliberate move.
+   */
+  stateFadeEnd: 0.56,
+  stateFadeSpan: 0.12,
 } as const;
 
 export const MOSAIC = {
@@ -87,32 +168,6 @@ export const MOSAIC = {
   stagger: 0.1,
   ease: 'power2.out',
   start: 'top 75%',
-} as const;
-
-export const VIDEO_GROW = {
-  /** The whole rig is desktop-only, gated on this width. */
-  minWidth: 900,
-  scaleFrom: 0.25,
-  gapFrom: 2,
-  gapTo: 1,
-  /** Two-phase title size: 80 → 40 over the first 40%, then 40 → 20. */
-  fontFrom: 80,
-  fontMid: 40,
-  fontTo: 20,
-  fontSplit: 0.4,
-  /** Lerp factor of the mouse parallax follow. */
-  mouseLerp: 0.05,
-  /** Above this scale the parallax target snaps back to centre. */
-  parallaxCutoff: 0.95,
-} as const;
-
-export const STICKY_CARDS = {
-  scrub: 0.5,
-  /** Outgoing card. */
-  cardScale: 0.5,
-  cardRotation: 10,
-  /** Its photograph counter-zooms while the card shrinks. */
-  imageScale: 1.5,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */
