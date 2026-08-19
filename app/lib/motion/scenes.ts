@@ -15,7 +15,8 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
-import { EASE, SCENE } from './tokens';
+import { EASE, SCENE, STEP } from './tokens';
+import { trackScrollSteps } from './steps';
 
 const clamp = gsap.utils.clamp(0, 1);
 const interpolate = gsap.utils.interpolate;
@@ -154,4 +155,184 @@ export function createVoyeurScene(scene: HTMLElement) {
       }
     },
   });
+}
+
+/**
+ * The second half's staged scenes.
+ *
+ * Every one of them is built on `trackScrollSteps`: a sticky (`position:
+ * sticky`, never a GSAP pin) viewport holding a fixed number of states, and a
+ * boundary-crossing detector that fires once per state change. What each
+ * scene does in response falls into one of two shapes:
+ *
+ *  - a **crossfade-stack** (Procedure, Process): states are absolutely
+ *    stacked panels, and a state change plays one autoplaying timeline that
+ *    fades the old panel out and the new one in together — the panel is a
+ *    single composition, so its photo and its copy always move as one.
+ *  - a **slot swap** (Equipment, Studio, Video): a fixed number of persistent
+ *    elements carry a `data-role` (`dominant`, `secondary-N`, `hidden`), and a
+ *    state change simply reassigns those roles. The animation is a plain CSS
+ *    transition already declared on the element — the same technique the
+ *    site's click-driven gallery used before this rebuild — so it finishes on
+ *    its own the instant the class changes, with nothing to scrub.
+ *
+ * Both shapes are declared as ordinary composed states in the CSS at rest, so
+ * under `prefers-reduced-motion` (where none of this file runs) the section
+ * still renders as a valid static composition — see the matching block in
+ * globals.css.
+ */
+
+/** 01 — Procedure: context → process → exit, one composition at a time. */
+export function createProcedureScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.procedure-scene');
+  const panels = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.procedure-panel'));
+  if (!scene || panels.length < 2) return;
+
+  gsap.set(panels, { opacity: 0, scale: 1.045 });
+  gsap.set(panels[0], { opacity: 1, scale: 1 });
+
+  trackScrollSteps(scene, panels.length, (next, prev) => {
+    gsap.killTweensOf([panels[next], panels[prev]]);
+    gsap.set(panels[next], { zIndex: 2 });
+    gsap.set(panels[prev], { zIndex: 1 });
+    gsap.fromTo(
+      panels[next],
+      { opacity: 0, scale: 1.045 },
+      { opacity: 1, scale: 1, duration: STEP.duration, ease: STEP.ease },
+    );
+    gsap.to(panels[prev], { opacity: 0, duration: STEP.duration * 0.82, ease: STEP.ease });
+  });
+
+  return () => gsap.set(panels, { clearProps: 'opacity,transform,zIndex' });
+}
+
+/** 03 — Process/Experience: one cinematic poster at a time. */
+export function createProcessScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.process-scene');
+  const posters = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.process-poster'));
+  if (!scene || posters.length < 2) return;
+
+  gsap.set(posters, { opacity: 0, scale: 1.045 });
+  gsap.set(posters[0], { opacity: 1, scale: 1 });
+
+  trackScrollSteps(scene, posters.length, (next, prev) => {
+    gsap.killTweensOf([posters[next], posters[prev]]);
+    gsap.set(posters[next], { zIndex: 2 });
+    gsap.set(posters[prev], { zIndex: 1 });
+    gsap.fromTo(
+      posters[next],
+      { opacity: 0, scale: 1.045 },
+      { opacity: 1, scale: 1, duration: STEP.duration, ease: STEP.ease },
+    );
+    gsap.to(posters[prev], { opacity: 0, duration: STEP.duration * 0.82, ease: STEP.ease });
+  });
+
+  return () => gsap.set(posters, { clearProps: 'opacity,transform,zIndex' });
+}
+
+type SlotRole = 'dominant' | 'secondary-1' | 'secondary-2' | 'secondary-3' | 'hidden';
+
+const slotRoleFor = (distance: number): SlotRole => {
+  const magnitude = Math.abs(distance);
+  if (magnitude === 0) return 'dominant';
+  if (magnitude <= 3) return `secondary-${magnitude}` as SlotRole;
+  return 'hidden';
+};
+
+/** 02 — Equipment: EVERLAS and TURBO G8 swap which one holds the primary slot. */
+export function createEquipmentScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.equipment-scene');
+  const items = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.eq-item'));
+  if (!scene || items.length !== 2) return;
+
+  trackScrollSteps(scene, items.length, (next) => {
+    items.forEach((item, index) => {
+      item.dataset.role = index === next ? 'dominant' : 'secondary-1';
+    });
+  });
+
+  return () => items.forEach((item, index) => { item.dataset.role = index === 0 ? 'dominant' : 'secondary-1'; });
+}
+
+/** 04 — Studio gallery: the dominant photo and its secondary sequence. */
+export function createStudioScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.studio-scene');
+  const tiles = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.studio-tile'));
+  if (!scene || tiles.length < 2) return;
+
+  const applyRoles = (active: number) => {
+    tiles.forEach((tile, index) => {
+      tile.dataset.role = slotRoleFor(index - active);
+    });
+  };
+
+  applyRoles(0);
+  trackScrollSteps(scene, tiles.length, (next) => applyRoles(next));
+
+  return () => applyRoles(0);
+}
+
+/** 05 — Studio → Video: the last still reframes into the Video 01 poster. */
+export function createStudioVideoHandoffScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.studio-video-handoff-scene');
+  const states = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.studio-handoff-state'));
+  if (!scene || states.length !== 2) return;
+
+  trackScrollSteps(scene, states.length, (next) => {
+    states.forEach((state, index) => {
+      state.dataset.role = index === next ? 'dominant' : 'receding';
+    });
+  });
+
+  return () => states.forEach((state, index) => { state.dataset.role = index === 0 ? 'dominant' : 'receding'; });
+}
+
+/** 06 — Video 01 → 02 → 03: the active video keeps the primary slot, the
+ * immediate neighbours stay only as directional spatial cues either side. */
+export function createVideoScene(root: HTMLElement) {
+  const scene = root.querySelector<HTMLElement>('.video-scene');
+  const slots = gsap.utils.toArray<HTMLElement>(root.querySelectorAll('.video-slot'));
+  if (!scene || slots.length < 2) return;
+
+  const applyRoles = (active: number) => {
+    slots.forEach((slot, index) => {
+      const wasDominant = slot.dataset.role === 'dominant';
+      slot.dataset.role = index === active ? 'dominant' : index === active - 1 ? 'previous' : index === active + 1 ? 'next' : 'hidden';
+      // A video playing off in the secondary layer would keep its audio
+      // going while the frame it belongs to is no longer the one on screen.
+      if (wasDominant && index !== active) slot.querySelector('video')?.pause();
+    });
+  };
+
+  applyRoles(0);
+  trackScrollSteps(scene, slots.length, (next) => applyRoles(next));
+
+  return () => applyRoles(0);
+}
+
+/**
+ * 07 — Video 03 → Complexes. Not a staged scene: a single fade triggered
+ * once, the same self-completing shape as everything above it, handing off
+ * to the existing Complexes section (`.first-visit-chapter`) without a new
+ * composition of its own.
+ */
+export function createVideoComplexesBridge(root: HTMLElement) {
+  const bridge = root.querySelector<HTMLElement>('.video-complexes-bridge');
+  // `.video-frame` is tweened, not `.video-slot` — the slot already carries a
+  // CSS `transform: translate(...) scale(...)` for its dominant/secondary
+  // position, and an inline transform GSAP writes would replace that
+  // centring outright rather than combine with it.
+  const lastVideoFrame = root.querySelector<HTMLElement>('.video-slot:last-child .video-frame');
+  if (!bridge || !lastVideoFrame) return;
+
+  ScrollTrigger.create({
+    trigger: bridge,
+    start: 'top bottom',
+    end: 'bottom center',
+    invalidateOnRefresh: true,
+    onEnter: () => gsap.to(lastVideoFrame, { opacity: 0.24, scale: 0.92, duration: STEP.duration, ease: STEP.ease }),
+    onLeaveBack: () => gsap.to(lastVideoFrame, { opacity: 1, scale: 1, duration: STEP.duration, ease: STEP.ease }),
+  });
+
+  return () => gsap.set(lastVideoFrame, { clearProps: 'opacity,transform' });
 }

@@ -45,5 +45,70 @@ export const SCENE = {
   mobileBreakpoint: 900,
 } as const;
 
+/**
+ * Staged scenes — the second half's discrete state machine.
+ *
+ * These replace continuous scrub with a step model: one intentional scroll
+ * gesture advances the state index by exactly one, and the visual change that
+ * follows is an autoplaying timeline of fixed `STEP.duration`, not a value
+ * scrubbed against scroll position. Once triggered, it finishes on its own —
+ * stopping the mouse mid-gesture does not leave the composition half-built.
+ *
+ * A state's container reserves `100vh` (the sticky viewport that holds the
+ * current state readable) plus one scroll distance per transition between
+ * states. Every per-section distance below is that *transition* distance in
+ * viewport heights, the number a reader actually scrolls to move on to the
+ * next state — not the total height of the container.
+ */
+export const STEP = {
+  /** Autoplay timeline length for a state swap. */
+  duration: 0.7,
+  ease: EASE.inOut,
+  /** Viewport width under which the mobile distances/layouts apply. */
+  mobileBreakpoint: 900,
+} as const;
+
+/** 01 — Procedure: context → process → exit, 3 states, 2 transitions. */
+export const PROCEDURE = {
+  transition: 0.68,
+  mobileTransition: 0.58,
+} as const;
+
+/** 02 — Equipment: EVERLAS ⇄ TURBO G8, 2 states, 1 transition. */
+export const EQUIPMENT = {
+  transition: 0.6,
+  mobileTransition: 0.55,
+} as const;
+
+/** 03 — Process/Experience: 4 posters, 3 transitions, plus scene in/out. */
+export const PROCESS = {
+  transition: 0.6,
+  mobileTransition: 0.5,
+  /** Reserved beyond the transitions for the scene's own entry/exit. */
+  entryExit: 0.25,
+  mobileEntryExit: 0.2,
+} as const;
+
+/** 04–05 — Studio gallery states, ending in the transform into Video 01. */
+export const STUDIO = {
+  transition: 0.65,
+  mobileTransition: 0.5,
+  /** The still → portrait-video reframe that closes the scene. */
+  videoTransition: 0.7,
+  mobileVideoTransition: 0.6,
+} as const;
+
+/** 06 — Video 01 → 02 → 03, 2 transitions. */
+export const VIDEO = {
+  transition: 0.65,
+  mobileTransition: 0.55,
+} as const;
+
+/** 07 — Video 03 → Complexes hand-off (a single fade, not a staged scene). */
+export const VIDEO_COMPLEXES = {
+  transition: 0.7,
+  mobileTransition: 0.55,
+} as const;
+
 /** Fixed header height in px — anchor scrolling must clear it. */
 export const HEADER_OFFSET = 80;

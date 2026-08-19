@@ -21,7 +21,17 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { HEADER_OFFSET } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
-import { createHeureBleueScene, createVoyeurScene } from './scenes';
+import {
+  createEquipmentScene,
+  createHeureBleueScene,
+  createProcedureScene,
+  createProcessScene,
+  createStudioScene,
+  createStudioVideoHandoffScene,
+  createVideoComplexesBridge,
+  createVideoScene,
+  createVoyeurScene,
+} from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -94,6 +104,22 @@ export function useViartMotion({ sequence, voyeur, page }: MotionRefs) {
         createHeureBleueScene(sequenceRoot);
         createVoyeurScene(voyeurScene);
         createMaskReveals(pageRoot);
+
+        // The second half's staged scenes. Each returns a teardown for the
+        // plain `dataset.role` / inline-style mutations a matchMedia revert
+        // cannot see on its own — gsap.context only auto-clears tweens and
+        // triggers it created, not attributes a callback wrote later.
+        const teardowns = [
+          createProcedureScene(pageRoot),
+          createEquipmentScene(pageRoot),
+          createProcessScene(pageRoot),
+          createStudioScene(pageRoot),
+          createStudioVideoHandoffScene(pageRoot),
+          createVideoScene(pageRoot),
+          createVideoComplexesBridge(pageRoot),
+        ].filter((teardown): teardown is () => void => typeof teardown === 'function');
+
+        return () => teardowns.forEach((teardown) => teardown());
       });
 
       // Late-loading images change every trigger's start/end. next/image below

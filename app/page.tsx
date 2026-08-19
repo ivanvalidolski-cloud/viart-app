@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
 
 const bookingUrl = 'https://n1177049.yclients.com';
@@ -95,7 +95,6 @@ const massagePrices = [
 
 type Review = { name: string; rating: number; text: string; date?: string };
 type VideoState = 'poster' | 'preview' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
-type GalleryRole = 'active' | 'support-one' | 'support-two' | 'support-three';
 
 const reviews: Review[] = [
   {
@@ -148,37 +147,21 @@ const reviews: Review[] = [
   },
 ];
 
-const galleryImages = [
-  '/images/gallery/4.jpg',
-  '/images/gallery/3.jpg',
-  '/images/gallery/5.jpg',
-  '/images/gallery/6.jpg',
-];
-const initialGalleryOrder = [0, 1, 2, 3];
-
-const galleryRoleAt = (position: number): GalleryRole => {
-  if (position === 0) return 'active';
-  if (position === 1) return 'support-one';
-  if (position === 2) return 'support-two';
-  if (position === 3) return 'support-three';
-  return 'support-three';
-};
+const studioGalleryImages = ['/images/gallery/4.jpg', '/images/gallery/3.jpg', '/images/gallery/5.jpg', '/images/gallery/8.jpg'];
+const studioHandoffImage = '/images/gallery/8.jpg';
+const VIDEO_SRC = '/videos/viart-procedure-prep.mp4';
+const VIDEO_SLOT_COUNT = 3;
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderSolid, setIsHeaderSolid] = useState(false);
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
-  const [galleryOrder, setGalleryOrder] = useState(initialGalleryOrder);
   const [reviewIndex, setReviewIndex] = useState(0);
-  const [videoState, setVideoState] = useState<VideoState>('poster');
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const galleryOrderRef = useRef(initialGalleryOrder);
-  const galleryTouchLockUntilRef = useRef(0);
-  const galleryTouchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const videoStateRef = useRef<VideoState>('poster');
-  const intentionalAudioRef = useRef(false);
-  const masterVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoSlotStates, setVideoSlotStates] = useState<VideoState[]>(
+    Array.from({ length: VIDEO_SLOT_COUNT }, () => 'poster'),
+  );
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
   const voyeurSceneRef = useRef<HTMLElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
@@ -211,82 +194,31 @@ export default function Home() {
     scrollTo('#pricing');
   };
 
-  const commitGalleryOrder = (nextOrder: number[]) => {
-    galleryOrderRef.current = nextOrder;
-    setGalleryOrder(nextOrder);
-  };
-
-  const promoteGalleryMedia = (index: number) => {
-    const currentOrder = galleryOrderRef.current;
-    const currentPosition = currentOrder.indexOf(index);
-    if (currentPosition <= 0) return;
-    const nextOrder = [...currentOrder];
-    [nextOrder[0], nextOrder[currentPosition]] = [nextOrder[currentPosition], nextOrder[0]];
-    commitGalleryOrder(nextOrder);
-  };
-
-  const stepGallery = (direction: number) => {
-    const currentIndex = galleryOrderRef.current[0];
-    promoteGalleryMedia((currentIndex + direction + galleryImages.length) % galleryImages.length);
-  };
-
-  const handleGalleryTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    const touch = event.touches[0];
-    galleryTouchStartRef.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
-  };
-
-  const handleGalleryTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const start = galleryTouchStartRef.current;
-    const touch = event.changedTouches[0];
-    galleryTouchStartRef.current = null;
-    if (!start || !touch) return;
-
-    const deltaX = touch.clientX - start.x;
-    const deltaY = touch.clientY - start.y;
-    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
-    // `event.timeStamp` shares its time origin with `performance.now()`, which
-    // the click guard below reads. A wall-clock reading would also drift if the
-    // system clock changed between the swipe and the click it suppresses.
-    galleryTouchLockUntilRef.current = event.timeStamp + 420;
-    stepGallery(deltaX < 0 ? 1 : -1);
-  };
-
-  const handleGalleryKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-    event.preventDefault();
-    stepGallery(event.key === 'ArrowRight' ? 1 : -1);
-  };
-
   const changeReview = (direction: number) => {
     setReviewIndex((current) => (current + direction + reviews.length) % reviews.length);
   };
 
-  const playMasterVideo = () => {
-    const video = masterVideoRef.current;
+  const setVideoSlotState = (index: number, state: VideoState) => {
+    setVideoSlotStates((states) => states.map((current, i) => (i === index ? state : current)));
+  };
+
+  const playVideoSlot = (index: number) => {
+    const video = videoRefs.current[index];
     if (!video) return;
-    if (videoState === 'error') video.load();
-    if (videoState === 'ended' || videoState === 'preview') video.currentTime = 0;
-    intentionalAudioRef.current = true;
-    setIsAudioEnabled(true);
+    // Only one of the three slots plays audio at a time.
+    videoRefs.current.forEach((other, otherIndex) => {
+      if (other && otherIndex !== index && !other.paused) other.pause();
+    });
+    if (videoSlotStates[index] === 'error') video.load();
+    if (videoSlotStates[index] === 'ended') video.currentTime = 0;
     video.muted = false;
-    videoStateRef.current = 'loading';
-    setVideoState('loading');
+    setVideoSlotState(index, 'loading');
     video.play()
-      .then(() => {
-        videoStateRef.current = 'playing';
-        setVideoState('playing');
-      })
-      .catch(() => {
-        intentionalAudioRef.current = false;
-        setIsAudioEnabled(false);
-        videoStateRef.current = 'error';
-        setVideoState('error');
-      });
+      .then(() => setVideoSlotState(index, 'playing'))
+      .catch(() => setVideoSlotState(index, 'error'));
   };
 
   const activeReview = reviews[reviewIndex];
-  const galleryIndex = galleryOrder[0];
-  const galleryActiveSource = galleryImages[galleryIndex];
 
   return (
     <div className="viart-site">
@@ -511,161 +443,207 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="everlas" className="chapter everlas-chapter">
-          <div className="everlas-stage">
-            <div className="everlas-media" data-reveal="media">
-              <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
-            </div>
-            <div className="everlas-copy">
-              <div className="technology-heading" data-reveal="">
-                <h2>Лазерная эпиляция на EVERLAS</h2>
-                <p>Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
+        <section className="chapter procedure-chapter">
+          <div className="chapter-heading" data-reveal="">
+            <div><h2>Как проходит<br />процедура</h2></div>
+            <p>Три момента одного визита — от подготовки до завершения сеанса.</p>
+          </div>
+          <div className="procedure-scene">
+            <div className="procedure-stage">
+              <div className="procedure-panel">
+                <figure className="procedure-media" aria-hidden="true">
+                  <Image src="/images/gallery/2.jpg" alt="" fill sizes="100vw" className="cover-image" />
+                </figure>
+                <div className="procedure-copy">
+                  <span className="tech-label">01 · Контекст</span>
+                  <h3>Перед процедурой</h3>
+                  <p>Мастер уточняет противопоказания, осматривает выбранную зону и объясняет ход процедуры.</p>
+                </div>
               </div>
-              <ol className="fact-stages" data-reveal="group">
-                <li data-reveal-item=""><span className="fact-title">Подготовка</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Настройка</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Процедура</span><p>Во время процедуры используются защитные очки.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Курс</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
-              </ol>
-              <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
+              <div className="procedure-panel">
+                <figure className="procedure-media" aria-hidden="true">
+                  <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="" fill sizes="100vw" className="cover-image" />
+                </figure>
+                <div className="procedure-copy">
+                  <span className="tech-label">02 · Процесс</span>
+                  <h3>Во время процедуры</h3>
+                  <p>Параметры аппарата подбираются мастером индивидуально; во время работы используются защитные очки.</p>
+                </div>
+              </div>
+              <div className="procedure-panel">
+                <figure className="procedure-media" aria-hidden="true">
+                  <Image src="/images/gallery/6.jpg" alt="" fill sizes="100vw" className="cover-image" />
+                </figure>
+                <div className="procedure-copy">
+                  <span className="tech-label">03 · Завершение</span>
+                  <h3>После процедуры</h3>
+                  <p>Мастер даёт рекомендации по уходу и подсказывает, когда планировать следующий визит.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="chapter turbo-chapter">
-          <div className="turbo-heading" data-reveal="">
-            <h2>Аппаратный массаж<br />на TURBO G8</h2>
+        <section id="everlas" className="chapter equipment-chapter">
+          <div className="chapter-heading" data-reveal="">
+            <div><h2>Оборудование<br />ViART</h2></div>
+            <p>Два аппарата сопровождают визит — EVERLAS для лазерной эпиляции и TURBO G8 для аппаратного массажа.</p>
           </div>
-          <div className="turbo-media" data-reveal="media">
-            <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Процедура аппаратного массажа на TURBO G8" fill sizes="(max-width: 767px) 100vw, 70vw" className="cover-image" />
-          </div>
-          <div className="turbo-copy" data-reveal="" data-reveal-delay="0.08">
-            <p>Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.</p>
-            <ul>
-              <li>Работа с выбранными зонами</li>
-              <li>Регулируемая интенсивность</li>
-              <li>Программы для живота, ягодиц и двух зон</li>
-            </ul>
-            <button type="button" className="text-button" onClick={() => openPriceTab(2)}>Программы и цены <span>↗</span></button>
+          <div className="equipment-scene">
+            <div className="equipment-stage">
+              <div className="eq-item" data-role="dominant">
+                <figure className="eq-figure">
+                  <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Аппарат EVERLAS во время процедуры лазерной эпиляции" fill sizes="(max-width: 767px) 100vw, 68vw" className="cover-image" />
+                </figure>
+                <div className="eq-copy">
+                  <span className="tech-label">Аппарат 01</span>
+                  <h3>EVERLAS</h3>
+                  <p className="eq-copy__purpose">Лазерная эпиляция</p>
+                  <div className="eq-cta">
+                    <p className="eq-copy__note">Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
+                    <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
+                  </div>
+                </div>
+              </div>
+              <div className="eq-item" data-role="secondary-1">
+                <figure className="eq-figure">
+                  <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Аппарат TURBO G8 во время аппаратного массажа" fill sizes="(max-width: 767px) 100vw, 32vw" className="cover-image" />
+                </figure>
+                <div className="eq-copy">
+                  <span className="tech-label">Аппарат 02</span>
+                  <h3>TURBO G8</h3>
+                  <p className="eq-copy__purpose">Аппаратный массаж</p>
+                  <div className="eq-cta">
+                    <p className="eq-copy__note">Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.</p>
+                    <button type="button" className="text-button" onClick={() => openPriceTab(2)}>Программы и цены <span>↗</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section id="gallery" className="chapter gallery-chapter">
-          <div className="gallery-topline" data-reveal="">
-            <div><h2>Студия<br />в деталях</h2></div>
-            <p>Реальные кадры пространства, оборудования и процесса.</p>
+        <section className="chapter process-chapter">
+          <div className="chapter-heading" data-reveal="">
+            <div><h2>Что входит<br />в визит</h2></div>
+            <p>Четыре шага одного курса — от подготовки зоны до накопленного результата.</p>
           </div>
-          <div
-            className="gallery-stage"
-            role="group"
-            aria-label="Фотографии пространства студии ViART"
-            aria-roledescription="интерактивная галерея"
-            tabIndex={0}
-            onKeyDown={handleGalleryKeyDown}
-            onTouchStart={handleGalleryTouchStart}
-            onTouchEnd={handleGalleryTouchEnd}
-          >
-            {galleryImages.map((src, index) => {
-              const position = galleryOrder.indexOf(index);
-              const role = galleryRoleAt(position);
-              const isActive = role === 'active';
+          <div className="process-scene">
+            <div className="process-stage">
+              <div className="process-poster">
+                <figure className="process-media" aria-hidden="true"><Image src="/images/gallery/1.jpg" alt="" fill sizes="100vw" className="cover-image" /></figure>
+                <div className="process-copy">
+                  <span className="process-index">01</span>
+                  <h3>Подготовка</h3>
+                  <p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p>
+                </div>
+              </div>
+              <div className="process-poster">
+                <figure className="process-media" aria-hidden="true"><Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="" fill sizes="100vw" className="cover-image" /></figure>
+                <div className="process-copy">
+                  <span className="process-index">02</span>
+                  <h3>Настройка</h3>
+                  <p>Параметры аппарата подбираются мастером индивидуально.</p>
+                </div>
+              </div>
+              <div className="process-poster">
+                <figure className="process-media" aria-hidden="true"><Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="" fill sizes="100vw" className="cover-image" /></figure>
+                <div className="process-copy">
+                  <span className="process-index">03</span>
+                  <h3>Процедура</h3>
+                  <p>Во время процедуры используются защитные очки.</p>
+                </div>
+              </div>
+              <div className="process-poster">
+                <figure className="process-media" aria-hidden="true"><Image src="/images/gallery/7.jpg" alt="" fill sizes="100vw" className="cover-image" /></figure>
+                <div className="process-copy">
+                  <span className="process-index">04</span>
+                  <h3>Курс</h3>
+                  <p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-              return (
-                <button
-                  key={src}
-                  type="button"
-                  className={`gallery-media gallery-media--${role}`}
-                  aria-label={isActive ? `Выбран кадр ${index + 1} из ${galleryImages.length}` : `Выбрать кадр ${index + 1} из ${galleryImages.length}`}
-                  aria-pressed={isActive}
-                  onClick={() => {
-                    if (performance.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
-                  }}
-                >
-                  <Image
-                    src={src}
-                    alt={isActive ? `Пространство студии ViART — кадр ${index + 1}` : ''}
-                    fill
-                    sizes={isActive ? '(max-width: 899px) 100vw, 64vw' : '(max-width: 899px) 33vw, 24vw'}
-                    className="cover-image"
-                  />
-                </button>
-              );
-            })}
+        <section id="studio-gallery" className="chapter studio-gallery-chapter">
+          <div className="chapter-heading" data-reveal="">
+            <div><h2>Студия<br />в деталях</h2></div>
+            <p>Реальные кадры пространства и оборудования студии ViART.</p>
+          </div>
+          <div className="studio-scene" aria-hidden="true">
+            <div className="studio-stage">
+              {studioGalleryImages.map((src, index) => (
+                <figure className="studio-tile" data-role={index === 0 ? 'dominant' : `secondary-${index}`} key={src}>
+                  <Image src={src} alt="" fill sizes="(max-width: 899px) 100vw, 64vw" className="cover-image" />
+                </figure>
+              ))}
+            </div>
+          </div>
+
+          <div className="studio-video-handoff-scene">
+            <div className="studio-video-handoff-stage">
+              <div className="studio-handoff-state" data-role="dominant">
+                <figure className="studio-handoff-media"><Image src={studioHandoffImage} alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 50vw" className="cover-image" /></figure>
+              </div>
+              <div className="studio-handoff-state studio-handoff-state--portrait" data-role="receding">
+                <figure className="studio-handoff-media studio-handoff-media--portrait"><Image src={studioHandoffImage} alt="" aria-hidden="true" fill sizes="(max-width: 767px) 90vw, 32vw" className="cover-image" /></figure>
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="video" className="chapter video-chapter">
-          <div className="video-gallery">
-            <div className="master-media">
-              <video
-                ref={masterVideoRef}
-                src="/videos/viart-procedure-prep.mp4"
-                poster={galleryActiveSource}
-                playsInline
-                muted={!isAudioEnabled}
-                preload="metadata"
-                controls={videoState === 'playing'}
-                onPlay={() => {
-                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onPlaying={() => {
-                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onWaiting={() => {
-                  if (!intentionalAudioRef.current) return;
-                  videoStateRef.current = 'loading';
-                  setVideoState('loading');
-                }}
-                onPause={(event) => {
-                  if (event.currentTarget.ended) return;
-                  const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
-                    ? 'paused'
-                    : 'poster';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onEnded={() => {
-                  intentionalAudioRef.current = false;
-                  setIsAudioEnabled(false);
-                  videoStateRef.current = 'ended';
-                  setVideoState('ended');
-                }}
-                onError={() => {
-                  intentionalAudioRef.current = false;
-                  setIsAudioEnabled(false);
-                  videoStateRef.current = 'error';
-                  setVideoState('error');
-                }}
-              />
-              {videoState !== 'playing' && videoState !== 'error' && (
-                <button
-                  type="button"
-                  className="master-play"
-                  onClick={playMasterVideo}
-                  aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
-                  disabled={videoState === 'loading'}
-                >
-                  <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                </button>
-              )}
-              {videoState === 'error' && (
-                <div className="master-error" role="alert">
-                  <p>Видео временно недоступно.</p>
-                  <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
-                </div>
-              )}
+          <div className="video-scene">
+            <div className="video-stage">
+              {Array.from({ length: VIDEO_SLOT_COUNT }, (_, index) => {
+                const state = videoSlotStates[index];
+                const playLabel = state === 'paused' ? 'Продолжить видео' : state === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео';
+                return (
+                  <div className="video-slot" data-role={index === 0 ? 'dominant' : index === 1 ? 'next' : 'hidden'} key={index}>
+                    <div className="video-frame">
+                      <video
+                        ref={(element) => { videoRefs.current[index] = element; }}
+                        src={VIDEO_SRC}
+                        playsInline
+                        muted={state !== 'playing'}
+                        preload="metadata"
+                        controls={state === 'playing'}
+                        onPlaying={() => setVideoSlotState(index, 'playing')}
+                        onWaiting={() => setVideoSlotState(index, 'loading')}
+                        onPause={(event) => { if (!event.currentTarget.ended) setVideoSlotState(index, 'paused'); }}
+                        onEnded={() => setVideoSlotState(index, 'ended')}
+                        onError={() => setVideoSlotState(index, 'error')}
+                      />
+                      {state !== 'playing' && state !== 'error' && (
+                        <button
+                          type="button"
+                          className="master-play"
+                          onClick={() => playVideoSlot(index)}
+                          aria-label={playLabel}
+                          disabled={state === 'loading'}
+                        >
+                          <span>{state === 'loading' ? '···' : state === 'ended' ? '↻' : '▶'}</span>
+                        </button>
+                      )}
+                      {state === 'error' && (
+                        <div className="master-error" role="alert">
+                          <p>Видео временно недоступно.</p>
+                          <button type="button" className="text-button" onClick={() => playVideoSlot(index)}>Попробовать снова <span>↻</span></button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="video-caption">
+                      <span className="tech-label">Часть {String(index + 1).padStart(2, '0')} из {VIDEO_SLOT_COUNT}</span>
+                      <h3>Знакомство с ViART</h3>
+                      <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="video-context" data-reveal="">
-              <h2>Знакомство с ViART</h2>
-              <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
-            </div>
-
           </div>
+          <div className="video-complexes-bridge" aria-hidden="true" />
         </section>
 
         <section id="promo" className="chapter first-visit-chapter">
