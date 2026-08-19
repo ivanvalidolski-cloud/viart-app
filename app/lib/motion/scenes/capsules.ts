@@ -102,6 +102,12 @@ export function createCapsulesScene(root: HTMLElement, lenis: Lenis) {
   const phase = (target: gsap.TweenTarget, vars: gsap.TweenVars) =>
     gsap.to(target, { duration, overwrite: 'auto', ...vars });
 
+  // Total on-screen runtime of each phase, for the gesture gate below. Phase
+  // two's text swap runs its incoming/outgoing line behind `textDelay`, so it
+  // settles later than every other tween in the same phase.
+  const PHASE_ONE_RUNTIME = duration;
+  const PHASE_TWO_RUNTIME = duration + textDelay;
+
   const phaseOneIn = () => {
     phase(col1, { opacity: 0, scale: 0.75 });
     phase(col2, { xPercent: 0 });
@@ -147,10 +153,16 @@ export function createCapsulesScene(root: HTMLElement, lenis: Lenis) {
   // `locked` closes the instant one phase fires. `killMomentum` collapses
   // Lenis's target onto its current position at that same instant, so the
   // coast that would have carried the gesture into the next threshold is cut
-  // off rather than merely ignored. `locked` only reopens once real
-  // wheel/touch input has gone quiet for `gestureIdleMs` — i.e. once the
-  // gesture that caused it is actually over. A new gesture is what reopens
-  // it, not the passage of time alone.
+  // off rather than merely ignored. `locked` only reopens once BOTH: real
+  // wheel/touch input has gone quiet for `gestureIdleMs`, and the phase tween
+  // that fired has actually finished (`animating`, cleared by its own total
+  // runtime — phase two's is longer than `duration` because `linesA`/`linesB`
+  // carry `textDelay`). A quiet flick releases input well before a 0.75–1.25s
+  // tween settles; unlocking on idle alone let a second, genuinely separate
+  // gesture land mid-tween and start the next phase on top of the one still
+  // playing — the exact "next transition starts before this one settles" the
+  // acceptance criteria rule out. A new gesture, after the current one has
+  // both gone quiet and finished animating, is what reopens the gate.
   //
   // Ordinary scrolling — no phase fired, nothing locked — must reach the
   // idle gap between two unrelated notches too, and killing momentum there
@@ -159,23 +171,44 @@ export function createCapsulesScene(root: HTMLElement, lenis: Lenis) {
   // cleaning up after a lock, so it stays conditional on one having fired.
   let locked = false;
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
+  let idleReached = false;
+  let animating = false;
 
   const killMomentum = () => {
     lenis.scrollTo(lenis.animatedScroll, { immediate: true, force: true });
   };
 
+  const attemptUnlock = () => {
+    if (!locked || animating || !idleReached) return;
+    locked = false;
+    killMomentum();
+  };
+
   const armIdleRelease = () => {
+    idleReached = false;
     if (idleTimer !== null) clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
       idleTimer = null;
-      if (locked) {
-        locked = false;
-        killMomentum();
-      }
+      idleReached = true;
+      attemptUnlock();
     }, CAPSULES.gestureIdleMs);
   };
 
   const onGestureActivity = () => armIdleRelease();
+
+  /** Runs a phase's tweens and holds the gate until they have actually
+   *  finished, not just until input goes quiet. */
+  const runPhase = (fire: () => void, totalDuration: number) => {
+    animating = true;
+    fire();
+    if (settleTimer !== null) clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      settleTimer = null;
+      animating = false;
+      attemptUnlock();
+    }, totalDuration * 1000);
+  };
 
   let gestureListenersActive = false;
   const addGestureListeners = () => {
@@ -197,6 +230,12 @@ export function createCapsulesScene(root: HTMLElement, lenis: Lenis) {
       clearTimeout(idleTimer);
       idleTimer = null;
     }
+    if (settleTimer !== null) {
+      clearTimeout(settleTimer);
+      settleTimer = null;
+    }
+    animating = false;
+    idleReached = false;
     locked = false;
   };
 
@@ -229,36 +268,37 @@ export function createCapsulesScene(root: HTMLElement, lenis: Lenis) {
     invalidateOnRefresh: true,
     onUpdate: ({ progress }) => {
       // A gesture already spent its one transition — hold the phase where it
-      // is until the input that drove it goes quiet. `return`s below also
-      // stop a single call from resolving more than one threshold, which is
-      // what let one frame fire both phases back to back.
+      // is until the tween has settled and the input that drove it has gone
+      // quiet (see `attemptUnlock`). `return`s below also stop a single call
+      // from resolving more than one threshold, which is what let one frame
+      // fire both phases back to back.
       if (locked) return;
 
       if (progress >= CAPSULES.phaseOne && currentPhase === 0) {
         currentPhase = 1;
         locked = true;
-        phaseOneIn();
+        runPhase(phaseOneIn, PHASE_ONE_RUNTIME);
         killMomentum();
         return;
       }
       if (progress >= CAPSULES.phaseTwo && currentPhase === 1) {
         currentPhase = 2;
         locked = true;
-        phaseTwoIn();
+        runPhase(phaseTwoIn, PHASE_TWO_RUNTIME);
         killMomentum();
         return;
       }
       if (progress < CAPSULES.phaseTwo && currentPhase === 2) {
         currentPhase = 1;
         locked = true;
-        phaseTwoOut();
+        runPhase(phaseTwoOut, PHASE_TWO_RUNTIME);
         killMomentum();
         return;
       }
       if (progress < CAPSULES.phaseOne && currentPhase === 1) {
         currentPhase = 0;
         locked = true;
-        phaseOneOut();
+        runPhase(phaseOneOut, PHASE_ONE_RUNTIME);
         killMomentum();
       }
     },
