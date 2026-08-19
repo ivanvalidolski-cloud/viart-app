@@ -499,23 +499,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PRICES — an ordinary interface. Never pinned, never scrubbed. */}
+        {/* PRICES — an ordinary interface. Never pinned, never scrubbed.
+            No intro screen: the last capsule state hands off straight into
+            the filters and the price list. */}
         <section id="pricing" className="chapter pricing-chapter">
-          <div className="chapter-heading">
-            <div>
-              <TextAnimate
-                as="h2"
-                by="line"
-                animation="slideUp"
-                once
-                duration={0.5}
-              >
-                {'Открытые цены.\nТочный выбор.'}
-              </TextAnimate>
-            </div>
-            <p data-reveal="">Выберите направление — состав и стоимость всегда остаются перед глазами.</p>
-          </div>
-
           <div className="pricing-layout">
             <aside className="price-controls" aria-label="Фильтры прайс-листа" data-reveal="" data-reveal-delay="0.08">
               <div className="control-group">

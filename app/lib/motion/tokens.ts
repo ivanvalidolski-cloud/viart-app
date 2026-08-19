@@ -48,20 +48,19 @@ export const SCENE = {
 /**
  * Budgets and constants of the adapted external scenes.
  *
- * Every number below is transcribed from the scene's own source (the
- * MotionPrompts prompt named in the scene module) and is part of that scene's
- * progress mapping — it is not a taste value to tune. Changing one changes
- * where a phase fires, so they live here only so the whole page's scroll cost
- * can be read in one place.
+ * The clip-paths, tween duration and text delay below are transcribed from
+ * the scene's own source (the MotionPrompts prompt named in the scene
+ * module) and are part of that scene's animation, not a taste value to tune.
+ * The gesture constants are this site's own addition — the source scrubs the
+ * swap against scroll position, this site steps it one wheel/touch gesture
+ * at a time instead — and live here for the same reason: so the whole page's
+ * scroll cost can be read in one place.
  */
 export const CAPSULES = {
-  /** Pin length of the capsule section, in viewport heights. */
-  pinViewports: 5,
-  /** Progress-trigger length — deliberately longer than the pin. */
-  progressViewports: 6,
-  /** Phase thresholds on the progress trigger. */
-  phaseOne: 0.33,
-  phaseTwo: 0.66,
+  /** Pin length of the capsule section, in viewport heights. Kept to one
+   *  screen: nothing scrubs against this distance any more, it only has to
+   *  be enough for the pin/unpin machinery to have room to work in. */
+  pinViewports: 1,
   /** Every phase tween in the source runs at this length, default ease. */
   duration: 0.75,
   /** The incoming text block waits this long before dropping in. */
@@ -71,10 +70,16 @@ export const CAPSULES = {
   clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
   /**
    * Silence, in ms, after the last wheel/touch input before a gesture counts
-   * as finished. One gesture may fire at most one phase transition; the next
-   * transition waits for this much quiet before it will fire again.
+   * as finished. One gesture may fire at most one state change; the next one
+   * waits for this much quiet, and for the current tween to finish, before it
+   * will fire again.
    */
   gestureIdleMs: 140,
+  /** Vertical drag, in px, a touch swipe needs before it counts as a gesture. */
+  touchThreshold: 40,
+  /** How far past the pin's start/end the exit scroll aims — just enough that
+   *  the crossing is unambiguous, not a distance the reader ever feels. */
+  exitOvershoot: 2,
 } as const;
 
 /**
