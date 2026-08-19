@@ -601,40 +601,6 @@ a {
   grid-template-columns: minmax(14rem, 1.3fr) minmax(1rem, 0.3fr) minmax(12rem, auto) 2rem;
 }
 
-/* EVERLAS / narrow scan */
-.everlas-chapter {
-  background: var(--espresso);
-}
-
-.everlas-stage {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
-  align-items: stretch;
-}
-
-.everlas-media {
-  position: relative;
-  grid-column: 1 / span 7;
-  min-height: clamp(42rem, 66vw, 58rem);
-  overflow: hidden;
-  border: 1px solid rgba(241, 234, 223, 0.1);
-  background: var(--cocoa);
-}
-
-.everlas-media::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: linear-gradient(180deg, transparent 55%, rgba(12, 9, 7, 0.58));
-  pointer-events: none;
-}
-
-.everlas-media img {
-  object-position: center 52%;
-  filter: saturate(0.7) sepia(0.1) contrast(1.08) brightness(0.9);
-}
-
 .scan-line {
   position: absolute;
   z-index: 2;
@@ -661,11 +627,6 @@ a {
   display: flex;
   justify-content: space-between;
   color: rgba(241, 234, 223, 0.62);
-}
-
-.everlas-copy {
-  grid-column: 9 / -1;
-  padding-block: clamp(2rem, 4vw, 4rem) 0;
 }
 
 .technology-heading h2 {
@@ -815,14 +776,6 @@ a {
   to { transform: translate3d(-2%, -1.5%, 0) scale(1.04); border-radius: 44% 56% 48% 52%; }
 }
 
-/* Gallery / warm material continuity */
-.gallery-chapter {
-  padding-bottom: clamp(1.5rem, 2vw, 2.5rem);
-  background:
-    radial-gradient(circle at 84% 70%, rgba(93, 53, 34, 0.16), transparent 30%),
-    var(--warm-black);
-}
-
 .gallery-topline {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -838,162 +791,11 @@ a {
   grid-column: 10 / -1;
 }
 
-.gallery-stage {
-  position: relative;
-  height: clamp(42rem, 62vw, 59rem);
-  margin-top: clamp(3rem, 6vw, 6rem);
-  isolation: isolate;
-  outline: none;
-  touch-action: pan-y;
-}
-
-.gallery-stage:focus-visible {
-  outline: 1px solid rgba(192, 154, 120, 0.74);
-  outline-offset: 0.65rem;
-}
-
-.gallery-media {
-  position: absolute;
-  z-index: 1;
-  display: block;
-  overflow: hidden;
-  border: 1px solid rgba(192, 154, 120, 0.18);
-  border-radius: 0.35rem;
-  padding: 0;
-  background: var(--cocoa);
-  cursor: pointer;
-  transition:
-    left 620ms cubic-bezier(0.2, 0.72, 0.2, 1),
-    top 620ms cubic-bezier(0.2, 0.72, 0.2, 1),
-    width 620ms cubic-bezier(0.2, 0.72, 0.2, 1),
-    height 620ms cubic-bezier(0.2, 0.72, 0.2, 1),
-    border-color 220ms ease,
-    opacity 260ms ease,
-    visibility 0s linear;
-}
-
-.gallery-media img {
-  object-position: center;
-  filter: saturate(0.68) sepia(0.1) contrast(1.06) brightness(0.72);
-  transform: scale(1.035);
-  transition: filter 620ms ease, transform 620ms cubic-bezier(0.2, 0.72, 0.2, 1);
-}
-
-.gallery-media::before {
-  position: absolute;
-  z-index: 2;
-  inset: -12% auto -12% -22%;
-  width: 18%;
-  content: "";
-  background: linear-gradient(90deg, transparent, rgba(218, 164, 116, 0.18), rgba(241, 234, 223, 0.07), transparent);
-  backdrop-filter: blur(0.7px) saturate(1.03);
-  opacity: 0;
-  pointer-events: none;
-  transform: skewX(-7deg) translateX(0);
-}
-
-.gallery-media--active {
-  z-index: 4;
-  left: 0;
-  top: 0;
-  width: 67%;
-  height: 88%;
-  cursor: default;
-}
-
-.gallery-media--active img {
-  filter: saturate(0.84) sepia(0.06) contrast(1.04) brightness(0.9);
-  transform: scale(1);
-}
-
-.gallery-media--support-one {
-  z-index: 3;
-  left: 73%;
-  top: 1.5%;
-  width: 27%;
-  height: 37%;
-}
-
-.gallery-media--support-two {
-  z-index: 2;
-  left: 72%;
-  top: 45%;
-  width: 18%;
-  height: 27%;
-}
-
-.gallery-media--support-three {
-  left: 82%;
-  top: 78%;
-  width: 18%;
-  height: 16%;
-}
-
-.gallery-media--hidden {
-  left: 84%;
-  top: 82%;
-  width: 14%;
-  height: 10%;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.gallery-media:not(.gallery-media--active):hover,
-.gallery-media:not(.gallery-media--active):focus-visible {
-  border-color: rgba(218, 164, 116, 0.75);
-}
-
-.gallery-media:not(.gallery-media--active):hover img,
-.gallery-media:not(.gallery-media--active):focus-visible img {
-  filter: saturate(0.82) sepia(0.08) contrast(1.05) brightness(0.86);
-  transform: scale(1.015);
-}
-
-.gallery-media__edge {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  border: 1px solid rgba(218, 164, 116, 0.84);
-  border-radius: inherit;
-  box-shadow: inset 0 0 0.85rem rgba(177, 105, 63, 0.1), 0 0 1.4rem rgba(177, 105, 63, 0.12);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease;
-}
-
-.gallery-media:not(.gallery-media--active):hover .gallery-media__edge,
-.gallery-media:not(.gallery-media--active):focus-visible .gallery-media__edge,
-.gallery-media.is-exchanging .gallery-media__edge {
-  opacity: 1;
-}
-
-.gallery-media.is-exchanging::before {
-  animation: warmOpticalExchange 640ms cubic-bezier(0.2, 0.72, 0.2, 1) both;
-}
-
 @keyframes warmOpticalExchange {
   0% { opacity: 0; transform: skewX(-7deg) translateX(0); }
   24% { opacity: 0.72; }
   76% { opacity: 0.3; }
   100% { opacity: 0; transform: skewX(-7deg) translateX(720%); }
-}
-
-.gallery-status {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  width: 67%;
-  align-items: center;
-  justify-content: flex-end;
-  border-top: 1px solid rgba(192, 154, 120, 0.3);
-  padding-top: 0.9rem;
-  color: rgba(241, 234, 223, 0.5);
-}
-
-.gallery-status span {
-  color: var(--bronze-soft);
 }
 
 .review-controls {
@@ -1124,113 +926,6 @@ a {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--grid-gap);
   align-items: end;
-}
-
-.master-media {
-  position: relative;
-  grid-column: 1 / span 8;
-  height: clamp(39rem, 65vw, 56rem);
-  overflow: hidden;
-  border: 1px solid rgba(192, 154, 120, 0.2);
-  border-radius: 0.35rem;
-  background: var(--cocoa);
-}
-
-.master-media video {
-  display: block;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(0.82) sepia(0.08) contrast(1.04) brightness(0.92);
-}
-
-.master-media::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: linear-gradient(180deg, transparent 45%, rgba(12, 9, 7, 0.48));
-  pointer-events: none;
-}
-
-.master-play {
-  position: absolute;
-  z-index: 4;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  place-items: center;
-  gap: 0.9rem;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-}
-
-.master-play small {
-  color: rgba(241, 234, 223, 0.74);
-}
-
-.master-play > span {
-  display: grid;
-  height: 5.5rem;
-  width: 5.5rem;
-  place-items: center;
-  border: 1px solid rgba(241, 234, 223, 0.62);
-  border-radius: 50%;
-  background: rgba(12, 9, 7, 0.28);
-  padding-left: 0.25rem;
-  backdrop-filter: blur(8px);
-  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.master-play:hover > span {
-  background: var(--ivory);
-  color: var(--warm-black);
-  transform: scale(1.05);
-}
-
-.master-play:disabled {
-  cursor: wait;
-}
-
-.master-play:disabled > span {
-  color: var(--bronze-soft);
-}
-
-.master-rim {
-  position: absolute;
-  z-index: 3;
-  right: 0;
-  top: 9%;
-  height: 82%;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(224, 166, 120, 0.68) 30%, rgba(224, 166, 120, 0.36) 70%, transparent);
-  box-shadow: -10px 0 34px rgba(185, 105, 62, 0.18);
-  pointer-events: none;
-}
-
-.master-error {
-  position: absolute;
-  z-index: 5;
-  left: 50%;
-  top: 50%;
-  width: min(24rem, calc(100% - 3rem));
-  padding: 1.5rem;
-  border-top: 1px solid var(--hairline-strong);
-  border-bottom: 1px solid var(--hairline-strong);
-  background: rgba(12, 9, 7, 0.84);
-  transform: translate(-50%, -50%);
-}
-
-.master-error > span {
-  color: var(--bronze-soft);
-}
-
-.master-error p {
-  margin: 1rem 0;
-}
-
-.master-error .text-button {
-  width: 100%;
 }
 
 .video-context {
@@ -1631,19 +1326,16 @@ a {
   }
 
   .chapter-heading > div,
-  .chapter-heading > p,
-  .gallery-topline > div,
-  .gallery-topline > p,
-  .price-controls,
-  .price-content,
-  .everlas-media,
-  .everlas-copy,
-  .master-media,
-  .video-context,
-  .first-visit-heading,
-  .first-visit-action,
-  .rating-anchor,
-  .active-review {
+.chapter-heading > p,
+.gallery-topline > div,
+.gallery-topline > p,
+.price-controls,
+.price-content,
+.video-context,
+.first-visit-heading,
+.first-visit-action,
+.rating-anchor,
+.active-review {
     grid-column: 1;
   }
 
@@ -1687,26 +1379,6 @@ a {
     color: var(--warm-black);
   }
 
-  .everlas-chapter {
-    min-height: auto;
-  }
-
-  .everlas-stage {
-    grid-template-columns: 1fr;
-    row-gap: 3rem;
-  }
-
-  .everlas-media {
-    position: relative;
-    top: auto;
-    height: min(120vw, 48rem);
-    min-height: 0;
-  }
-
-  .everlas-copy {
-    padding-block: 1rem 0;
-  }
-
   .fact-stages li {
     padding-bottom: 3rem;
   }
@@ -1727,47 +1399,6 @@ a {
     width: min(36rem, 92%);
     margin-top: -7rem;
     padding: 1.5rem;
-  }
-
-  .gallery-stage {
-    height: min(150vw, 62rem);
-  }
-
-  .gallery-media--active {
-    width: 100%;
-    height: 72%;
-  }
-
-  .gallery-media--support-one {
-    left: 0;
-    top: 76%;
-    width: 44%;
-    height: 17%;
-  }
-
-  .gallery-media--support-two {
-    left: 48%;
-    top: 76%;
-    width: 29%;
-    height: 14%;
-  }
-
-  .gallery-media--support-three {
-    left: 81%;
-    top: 76%;
-    width: 19%;
-    height: 11%;
-  }
-
-  .gallery-media--hidden {
-    left: 88%;
-    top: 80%;
-    width: 10%;
-    height: 7%;
-  }
-
-  .gallery-status {
-    width: 100%;
   }
 
   .video-chapter,
@@ -1792,8 +1423,7 @@ a {
     width: calc(100% - 2.5rem);
   }
 
-  .media-continuity,
-  .master-media {
+  .media-continuity {
     height: min(130vw, 48rem);
   }
 
@@ -1802,7 +1432,6 @@ a {
     row-gap: 2.5rem;
   }
 
-  .master-media,
   .video-context {
     grid-column: 1 / -1;
   }
@@ -1848,10 +1477,6 @@ a {
   .chapter {
     padding-top: 5.25rem;
     padding-bottom: 5.25rem;
-  }
-
-  .gallery-chapter {
-    padding-bottom: 2rem;
   }
 
   .video-chapter {
@@ -1946,40 +1571,7 @@ a {
     max-width: 20rem;
   }
 
-  .gallery-stage {
-    height: 154vw;
-    margin-top: 2.5rem;
-  }
-
-  .gallery-media--active {
-    height: 110vw;
-  }
-
-  .gallery-media--support-one,
-  .gallery-media--support-two,
-  .gallery-media--support-three {
-    top: 114vw;
-  }
-
-  .gallery-media--support-one {
-    height: 25vw;
-  }
-
-  .gallery-media--support-two {
-    height: 21vw;
-  }
-
-  .gallery-media--support-three {
-    height: 17vw;
-  }
-
-  .gallery-media--hidden {
-    top: 118vw;
-    height: 11vw;
-  }
-
-  .media-continuity,
-  .master-media {
+  .media-continuity {
     height: 126vw;
   }
 
@@ -2088,21 +1680,6 @@ a {
      Without the scene it would sit at its most cropped state permanently. */
   .hb-img--main img {
     transform: scale(1.15);
-  }
-}
-
-@media (hover: none) {
-  .gallery-media:not(.gallery-media--active):hover:not(:focus-visible) {
-    border-color: rgba(192, 154, 120, 0.18);
-  }
-
-  .gallery-media:not(.gallery-media--active):hover:not(:focus-visible) img {
-    filter: saturate(0.68) sepia(0.1) contrast(1.06) brightness(0.72);
-    transform: scale(1.035);
-  }
-
-  .gallery-media:not(.gallery-media--active):hover:not(:focus-visible) .gallery-media__edge {
-    opacity: 0;
   }
 }
 
@@ -2239,10 +1816,7 @@ h3,
   letter-spacing: 0;
   text-transform: none;
 }
-.everlas-media,
-.turbo-media,
-.gallery-media,
-.master-media {
+.turbo-media {
   border-radius: 0.8rem;
 }
 
@@ -2379,26 +1953,6 @@ h3,
   color: var(--bronze-soft);
 }
 
-.everlas-chapter {
-  background: var(--espresso);
-}
-
-.everlas-stage {
-  align-items: center;
-}
-
-.everlas-media {
-  grid-column: 1 / span 7;
-  height: clamp(35rem, 50vw, 46rem);
-  min-height: 0;
-  border-color: var(--hairline);
-}
-
-.everlas-copy {
-  grid-column: 8 / -1;
-  padding: 0;
-}
-
 .technology-heading h2 {
   max-width: 11ch;
   margin: 0 0 1.25rem;
@@ -2487,83 +2041,8 @@ h3,
   color: var(--muted);
 }
 
-.gallery-chapter {
-  padding-bottom: clamp(5rem, 7vw, 8rem);
-  background: var(--ink);
-}
-
 .gallery-topline {
   padding-bottom: 0;
-}
-
-.gallery-stage {
-  height: clamp(36rem, 49vw, 48rem);
-  margin-top: clamp(2.25rem, 4vw, 4rem);
-}
-
-.gallery-media {
-  border-color: rgba(201, 168, 76, 0.24);
-  border-radius: 0.75rem;
-  transition:
-    left 360ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    top 360ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    width 360ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    height 360ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-color 180ms ease;
-}
-
-.gallery-media::before {
-  display: none;
-}
-
-.gallery-media img {
-  filter: saturate(0.72) sepia(0.1) contrast(1.03) brightness(0.76);
-  transform: scale(1.015);
-  transition: filter 300ms ease, transform 360ms ease;
-}
-
-.gallery-media--active {
-  left: 0;
-  top: 0;
-  width: 60%;
-  height: 100%;
-}
-
-.gallery-media--active img {
-  filter: saturate(0.86) sepia(0.06) contrast(1.02) brightness(0.92);
-  transform: scale(1);
-}
-
-.gallery-media--support-one {
-  left: 64%;
-  top: 0;
-  width: 23%;
-  height: 45%;
-}
-
-.gallery-media--support-two {
-  left: 90%;
-  top: 0;
-  width: 10%;
-  height: 29%;
-}
-
-.gallery-media--support-three {
-  left: 64%;
-  top: 52%;
-  width: 36%;
-  height: 48%;
-}
-
-.gallery-media:not(.gallery-media--active):hover,
-.gallery-media:not(.gallery-media--active):focus-visible {
-  border-color: var(--bronze-soft);
-}
-
-.gallery-media:not(.gallery-media--active):hover img,
-.gallery-media:not(.gallery-media--active):focus-visible img {
-  filter: saturate(0.82) sepia(0.06) contrast(1.02) brightness(0.88);
-  transform: scale(1);
 }
 
 .video-chapter {
@@ -2577,26 +2056,6 @@ h3,
 
 .video-gallery {
   align-items: center;
-}
-
-.master-media {
-  grid-column: 1 / span 8;
-  height: clamp(34rem, 50vw, 46rem);
-  border-color: var(--hairline);
-}
-
-.master-play > span {
-  height: 4.5rem;
-  width: 4.5rem;
-  border-color: rgba(228, 204, 137, 0.72);
-  background: rgba(13, 7, 4, 0.52);
-  color: var(--bronze-soft);
-}
-
-.master-play:hover > span {
-  background: var(--bronze-soft);
-  color: var(--warm-black);
-  transform: none;
 }
 
 .video-context {
@@ -2800,33 +2259,29 @@ h3,
   .chapter {
     padding: clamp(4.5rem, 12vw, 6rem) var(--page-gutter);
   }
-  .everlas-stage,
   .turbo-chapter,
-  .video-gallery,
-  .first-visit-chapter,
-  .reviews-chapter,
-  .chapter-heading,
-  .gallery-topline,
-  .pricing-layout {
+.video-gallery,
+.first-visit-chapter,
+.reviews-chapter,
+.chapter-heading,
+.gallery-topline,
+.pricing-layout {
     grid-template-columns: 1fr;
   }
-  .everlas-media,
-  .everlas-copy,
   .turbo-heading,
-  .turbo-media,
-  .turbo-copy,
-  .master-media,
-  .video-context,
-  .first-visit-heading,
-  .first-visit-action,
-  .rating-anchor,
-  .active-review,
-  .chapter-heading > div,
-  .chapter-heading > p,
-  .gallery-topline > div,
-  .gallery-topline > p,
-  .price-controls,
-  .price-content {
+.turbo-media,
+.turbo-copy,
+.video-context,
+.first-visit-heading,
+.first-visit-action,
+.rating-anchor,
+.active-review,
+.chapter-heading > div,
+.chapter-heading > p,
+.gallery-topline > div,
+.gallery-topline > p,
+.price-controls,
+.price-content {
     grid-column: 1;
   }
 
@@ -2858,22 +2313,9 @@ h3,
     color: var(--ivory);
   }
 
-  .everlas-stage {
-    display: grid;
-    gap: 2.5rem;
-  }
-
-  .everlas-media {
-    height: min(120vw, 40rem);
-  }
-
   .technology-heading h2,
   .video-context h2 {
     font-size: clamp(2.8rem, 10vw, 4.5rem);
-  }
-
-  .everlas-copy .button {
-    width: 100%;
   }
 
   .turbo-heading {
@@ -2903,44 +2345,6 @@ h3,
     padding-bottom: 0;
   }
 
-  .gallery-stage {
-    --gallery-main-height: min(92vw, 32rem);
-    --gallery-support-height: min(28vw, 9rem);
-    height: calc(var(--gallery-main-height) + var(--gallery-support-height) + 0.8rem);
-    margin-top: 2rem;
-  }
-
-  .gallery-media--active {
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: var(--gallery-main-height);
-  }
-
-  .gallery-media--support-one,
-  .gallery-media--support-two,
-  .gallery-media--support-three {
-    top: calc(var(--gallery-main-height) + 0.8rem);
-    height: var(--gallery-support-height);
-  }
-
-  .gallery-media--support-one {
-    left: 0;
-    width: 46%;
-  }
-
-  .gallery-media--support-two {
-    left: 49%;
-    width: 29%;
-    height: calc(var(--gallery-support-height) * 0.82);
-  }
-
-  .gallery-media--support-three {
-    left: 81%;
-    width: 19%;
-    height: calc(var(--gallery-support-height) * 0.66);
-  }
-
   .video-chapter {
     padding-block: clamp(4.5rem, 12vw, 6rem);
   }
@@ -2948,11 +2352,6 @@ h3,
   .video-gallery {
     display: grid;
     gap: 2rem;
-  }
-
-  .master-media {
-    grid-row: 1;
-    height: min(118vw, 40rem);
   }
 
   .video-context {
@@ -3058,15 +2457,6 @@ h3,
     grid-row: 1;
   }
 
-  .gallery-stage {
-    --gallery-main-height: min(112vw, 31rem);
-    --gallery-support-height: min(30vw, 8.5rem);
-  }
-
-  .master-media {
-    height: min(126vw, 36rem);
-  }
-
   .first-visit-action .button,
   .closure-message .button {
     width: 100%;
@@ -3097,13 +2487,11 @@ h3,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gallery-media,
-  .gallery-media img,
   .site-header,
-  .mobile-menu,
-  .button,
-  .text-link,
-  .text-button {
+.mobile-menu,
+.button,
+.text-link,
+.text-button {
     transition: none !important;
   }
 }
@@ -3313,7 +2701,6 @@ h3,
     width: 100%;
   }
 }
-
 
 /* Services / two directions */
 .services-chapter {
@@ -3530,598 +2917,6 @@ h3,
   --cta-border: var(--warm-black);
   --cta-fill: var(--bronze);
   --cta-fill-ink: var(--warm-black);
-}
-
-/* --------------------------------------------------------------------------
-   02 SERVICES — capsule columns
-   -------------------------------------------------------------------------- */
-.cap-scene {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  border-top: 1px solid var(--hairline);
-  padding: 0.5rem;
-  background: var(--warm-black);
-}
-
-/* The stage clips its own columns. Two of them wait a full stage-height below,
-   which lands them in the strip the section keeps for the CTA row — without
-   this they show through underneath the buttons for the whole scene, and the
-   off-stage photograph reads as a layout error rather than as something
-   waiting to slide in. */
-.cap-wrapper {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* 50% is load-bearing: every phase moves a column by a full 100% of its own
-   width, so at half width it lands exactly on the other half. Widen it and the
-   two middle columns hang off the edge at one of their two stops. */
-.cap-col {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  will-change: transform;
-}
-
-/* Off-stage positions for the frame before the scene is built — and the whole
-   composition when motion is reduced. */
-.cap-col--2 {
-  transform: translateX(100%);
-}
-
-.cap-col--3 {
-  padding: 0.5rem;
-  transform: translateX(100%) translateY(100%);
-}
-
-.cap-col--4 {
-  transform: translateX(100%) translateY(100%);
-}
-
-.cap-content,
-.cap-img {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  padding: 0.5rem;
-}
-
-.cap-plate {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 1.1rem;
-  background: var(--cocoa);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-}
-
-.cap-plate--text {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(1.5rem, 2.4vw, 2.6rem);
-}
-
-/* Sits exactly on top of the first text plate, with no surface of its own. */
-.cap-text--b {
-  position: absolute;
-  /* Not `inset: 0` — absolute offsets resolve against the column's padding box,
-     which would leave this block 0.5rem wider than the plate it stacks on and
-     shift its copy outward mid-swap. */
-  inset: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(1.5rem, 2.4vw, 2.6rem);
-}
-
-.cap-img--1,
-.cap-img--2 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-}
-
-/* A zero-height sliver at the top edge: the second photograph starts hidden and
-   the phase-one wipe grows it to the full plate. */
-.cap-img--2 {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
-}
-
-/* `transform`, not the `scale` property — GSAP writes the same channel, so the
-   two cannot compound. */
-.cap-img--2 img {
-  transform: scale(1.25);
-}
-
-.cap-plate--text h2,
-.cap-plate--text h3 {
-  max-width: 16ch;
-  margin: 0;
-  color: var(--ivory);
-  font-size: clamp(1.9rem, 3.2vw, 3.4rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1.02;
-}
-
-.cap-kicker {
-  margin: 0 0 0.9rem;
-  color: var(--bronze-soft);
-}
-
-.cap-lead {
-  max-width: 26ch;
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.cap-points {
-  display: grid;
-  max-width: 34ch;
-  gap: 0.7rem;
-}
-
-.cap-points p {
-  margin: 0;
-  color: rgba(244, 236, 216, 0.82);
-  font-size: 0.95rem;
-  line-height: 1.55;
-}
-
-p.cap-tag {
-  position: absolute;
-  left: 1rem;
-  bottom: 1rem;
-  margin: 0;
-  border-radius: 0.3rem;
-  padding: 0.45rem 0.7rem;
-  background: rgba(13, 7, 4, 0.74);
-  color: var(--bronze-soft);
-  white-space: nowrap;
-}
-
-/* One span per line, clipped by the line: the swap is two stacks of line masks
-   passing each other. */
-.cap-line {
-  overflow: hidden;
-  /* Same reason as .reveal-line — at this leading a mask clips Cyrillic
-     descenders without it. */
-  padding-bottom: 0.14em;
-}
-
-.cap-line span {
-  display: block;
-  will-change: transform;
-}
-
-.cap-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0 0.25rem;
-}
-
-/* --------------------------------------------------------------------------
-   03 EVERLAS — the signature stage
-
-   One pinned composition, not four screens: a dominant plate that comes forward
-   out of its own depth, a manipula detail behind it, and copy that only drifts.
-   The scene owns every transform in here — nothing in `.ev-stage` may carry a
-   `data-reveal`.
-   -------------------------------------------------------------------------- */
-.ev-stage {
-  position: relative;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  /* The fixed header paints over the first band of a pinned scene. */
-  padding: calc(var(--header-h) + 1.25rem) var(--page-gutter) clamp(2rem, 4vw, 3.5rem);
-  background: var(--espresso);
-}
-
-.ev-stage__inner {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
-  align-items: center;
-  height: 100%;
-}
-
-.ev-copy {
-  position: relative;
-  z-index: 2;
-  grid-column: 1 / span 5;
-  will-change: transform;
-}
-
-.ev-copy h2 {
-  max-width: 13ch;
-  margin: 0 0 1.25rem;
-  color: var(--ivory);
-  font-size: clamp(2.8rem, 4.2vw, 4.7rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.ev-copy__lead {
-  max-width: 42ch;
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-.ev-media {
-  position: relative;
-  z-index: 1;
-  grid-column: 6 / -1;
-  display: grid;
-  height: 100%;
-  place-items: center;
-}
-
-/* Both plates are anchored to this box, so the detail keeps its relationship to
-   the machine at every viewport size instead of drifting off on a short screen. */
-.ev-frame {
-  position: relative;
-  height: min(72svh, 46rem);
-  aspect-ratio: 3 / 4;
-}
-
-.ev-glow {
-  position: absolute;
-  inset: -16%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    50% 46% at 50% 48%,
-    rgba(201, 168, 76, 0.3),
-    rgba(42, 28, 17, 0.16) 58%,
-    transparent 76%
-  );
-  will-change: transform, opacity;
-}
-
-.ev-plate {
-  position: absolute;
-  overflow: hidden;
-  margin: 0;
-  border-radius: 0.9rem;
-  background: var(--cocoa);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  will-change: transform;
-}
-
-.ev-plate--main {
-  inset: 0;
-  z-index: 1;
-}
-
-/* Overlapping the machine's lower-left corner and hanging a little below it —
-   the layer that gives the composition its depth once it arrives. */
-.ev-plate--detail {
-  left: -32%;
-  bottom: -8%;
-  z-index: 2;
-  width: 44%;
-  aspect-ratio: 3 / 4;
-  border-radius: 0.7rem;
-  will-change: transform, opacity;
-}
-
-/* --------------------------------------------------------------------------
-   04 PROCEDURE — the four states, continuing out of the stage above
-   -------------------------------------------------------------------------- */
-.spot-scene {
-  position: relative;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  /* The JS reads this padding to find the band the frames are centred in. */
-  padding: 2rem;
-}
-
-/* The column is positioned frame by frame from script — its own height and
-   offset are free, because every stop is measured rather than assumed. */
-.spot-images {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  z-index: 0;
-  display: flex;
-  width: 35%;
-  flex-direction: column;
-  gap: 0.5rem;
-  transform: translateX(-50%);
-  will-change: transform;
-}
-
-/* No transition: the opacity is a continuous function of the scroll position,
-   and a 0.3s ease on top of a scrub is a frame of lag on every one of them. */
-.spot-img {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  margin: 0;
-  border-radius: 0.5rem;
-  opacity: 0.5;
-}
-
-/* One slot, four states stacked in it, level with the frame they describe.
-   `min-height` stops the block resizing under a longer line mid-swap, and the
-   clip is what turns the swap into a wipe: the outgoing line leaves the slot
-   instead of lying across the one arriving. */
-.spot-names {
-  position: absolute;
-  right: 2rem;
-  /* Level with the centred frame, so the line reads as its caption. The
-     translate is the container's own — the scene writes on the lines inside. */
-  top: calc(var(--header-h) / 2 + 50%);
-  z-index: 2;
-  display: grid;
-  width: min(26rem, 44%);
-  height: 12rem;
-  align-content: center;
-  overflow: hidden;
-  transform: translateY(-50%);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.spot-name {
-  grid-area: 1 / 1;
-  align-self: center;
-  display: grid;
-  justify-items: end;
-  gap: 0.25rem;
-  color: var(--ivory);
-  text-align: right;
-  will-change: transform, opacity;
-}
-
-/* Pre-script state: the first line only. The scene writes an inline opacity
-   over this on its first frame, and the reduced-motion block puts them all
-   back — there the four are a list, not a slot. */
-.spot-name + .spot-name {
-  opacity: 0;
-}
-
-.spot-name__index {
-  color: var(--bronze-soft);
-}
-
-.spot-name__title {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(1.4rem, 2.2vw, 2.1rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.spot-name__copy {
-  max-width: 34ch;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-/* No rule above it: the sequence releases into this block, and a hairline is
-   exactly the hard cut the release exists to avoid. */
-.spot-outro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
-}
-
-.spot-outro > p {
-  max-width: 44ch;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-/* --------------------------------------------------------------------------
-   05 GALLERY — 3×3 clip-path mosaic
-   -------------------------------------------------------------------------- */
-.mosaic-scene {
-  background: var(--warm-black);
-}
-
-.mosaic-row {
-  display: flex;
-  width: 100%;
-  gap: var(--grid-gap);
-}
-
-.gallery-topline + .mosaic-row {
-  margin-top: clamp(3rem, 6vw, 6rem);
-}
-
-.mosaic-row + .mosaic-row,
-.mosaic-feature + .mosaic-row {
-  margin-top: clamp(2rem, 4vw, 4rem);
-}
-
-.mosaic-cell {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-}
-
-/* All nine masks in a cell carry the same full-cover picture; the 3×3 grid is
-   entirely a matter of clip-path, so a tile uncovers its own ninth of one
-   continuous photograph. A cell with no `--mosaic-src` resolves to no image and
-   tiles in empty — that is what makes the row read as a gappy editorial grid. */
-.mosaic-cell .mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background-image: var(--mosaic-src);
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  background-size: cover;
-}
-
-.mosaic-feature {
-  position: relative;
-  margin: clamp(2rem, 4vw, 4rem) 0 0;
-}
-
-.mosaic-feature > div {
-  border-radius: 0.8rem;
-}
-
-.mosaic-feature img {
-  display: block;
-  height: clamp(18rem, 42vw, 40rem);
-  width: 100%;
-  border-radius: 0.8rem;
-  object-fit: cover;
-}
-
-.mosaic-feature figcaption {
-  margin-top: 0.9rem;
-  color: var(--muted);
-}
-
-/* --------------------------------------------------------------------------
-   06 VIDEO — the second half of the studio chapter
-
-   No rig and no border: the studio is one calm beat, and the plate is an
-   ordinary block in flow that fades in once. There is nothing scrubbed here.
-   -------------------------------------------------------------------------- */
-.grow-scene {
-  position: relative;
-  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter);
-  background: var(--espresso);
-}
-
-.grow-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Sized off the plate it sits behind, not off the whole container — the caption
-   below should not glow. */
-.grow-backlight {
-  position: absolute;
-  top: -6%;
-  left: -4%;
-  right: -4%;
-  z-index: 0;
-  aspect-ratio: 16 / 9;
-  pointer-events: none;
-}
-
-.grow-backlight svg {
-  position: absolute;
-}
-
-.grow-backlight > div:last-child {
-  height: 100%;
-  width: 100%;
-}
-
-.grow-backlight__plate {
-  height: 100%;
-  width: 100%;
-  border-radius: 2.5rem;
-  background: radial-gradient(
-    58% 54% at 50% 46%,
-    rgba(201, 168, 76, 0.34),
-    rgba(42, 28, 17, 0.16) 62%,
-    transparent 78%
-  );
-}
-
-.grow-preview {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 1.5rem;
-  background: var(--cocoa);
-}
-
-/* .master-media is laid out for a 12-column grid elsewhere; inside the plate it
-   is simply the full frame. */
-.grow-preview .master-media {
-  position: absolute;
-  inset: 0;
-  grid-column: auto;
-  height: 100%;
-  border-radius: 1.5rem;
-}
-
-.grow-title {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-
-.grow-title p {
-  position: relative;
-  margin: 0;
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  /* The size the caption used to settle at once the rig had finished with it. */
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.grow-title p:last-child {
-  color: var(--muted);
-  text-align: right;
-}
-
-.grow-context {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.25rem;
-  max-width: 68ch;
-  margin-top: clamp(2rem, 4vw, 4rem);
-}
-
-.grow-context > p {
-  max-width: 46ch;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.7;
 }
 
 /* --------------------------------------------------------------------------
@@ -4374,118 +3169,7 @@ p.cap-tag {
   filter: saturate(0.82);
 }
 
-/* --------------------------------------------------------------------------
-   Responsive composition
-
-   Mobile is a different composition, not a smaller desktop — with one hard
-   exception. The capsule columns stay at 50%: the phase tweens move a column by
-   100% of its own width, so any other width lands the two middle columns off
-   the edge at one of their two stops. Widen the content, never the column.
-   -------------------------------------------------------------------------- */
-@media (max-width: 1100px) {
-  /* The copy gives up a column to the machine before the stage stacks. */
-  .ev-copy {
-    grid-column: 1 / span 5;
-  }
-
-  .ev-media {
-    grid-column: 6 / -1;
-  }
-
-  .ev-frame {
-    height: min(58svh, 34rem);
-  }
-}
-
-@media (max-width: 1000px) {
-  .cap-plate--text h2,
-  .cap-plate--text h3 {
-    font-size: 1.25rem;
-  }
-
-  .cap-plate--text h2,
-  .cap-plate--text h3,
-  .cap-lead,
-  .cap-points {
-    max-width: 100%;
-  }
-
-  .cap-lead,
-  .cap-points p {
-    font-size: 0.85rem;
-  }
-
-  .cap-plate--text,
-  .cap-text--b {
-    padding: 2rem;
-  }
-
-  /* Near-full-width frames spaced far apart. The column is positioned frame by
-     frame, so any gap is safe here — the active one is centred either way. */
-  .spot-images {
-    width: calc(100% - 4rem);
-    gap: 25svh;
-  }
-
-  /* The frames are near-full-width here, so the caption cannot sit beside one.
-     It goes back to the foot of the stage, on its own readability plate. */
-  .spot-names {
-    top: auto;
-    bottom: 2rem;
-    height: 13rem;
-    align-content: end;
-    transform: none;
-  }
-
-  .spot-name {
-    align-self: end;
-  }
-
-  .spot-name__copy {
-    max-width: 40ch;
-  }
-}
-
 @media (max-width: 899px) {
-  /* A phone gets a short transformation, not a held screen: the stage is an
-     ordinary block that stacks copy over media and transforms as it passes. */
-  .ev-stage {
-    height: auto;
-    padding: var(--chapter-space) var(--page-gutter) var(--chapter-space-tight);
-  }
-
-  .ev-stage__inner {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: clamp(2rem, 7vw, 3rem);
-    height: auto;
-  }
-
-  .ev-copy,
-  .ev-media {
-    grid-column: 1 / -1;
-  }
-
-  .ev-copy h2,
-  .ev-copy__lead {
-    max-width: none;
-  }
-
-  .ev-media {
-    height: auto;
-  }
-
-  .ev-frame {
-    height: auto;
-    width: min(74%, 22rem);
-  }
-
-  /* The detail keeps clear of the gutter at this width. */
-  .ev-plate--detail {
-    left: auto;
-    right: -14%;
-    bottom: -6%;
-    width: 42%;
-  }
 
   .deck-intro > div:first-child,
   .deck-intro > p {
@@ -4495,31 +3179,6 @@ p.cap-tag {
   .deck-intro > p {
     margin-top: 1.5rem;
     max-width: none;
-  }
-
-  .grow-title p {
-    font-size: 1.05rem;
-  }
-
-  .grow-title {
-    flex-wrap: wrap;
-    gap: 0.35rem;
-  }
-
-  .grow-title p:last-child {
-    text-align: left;
-  }
-
-  .grow-preview {
-    border-radius: 0.8rem;
-  }
-
-  .grow-preview .master-media {
-    border-radius: 0.8rem;
-  }
-
-  .mosaic-feature img {
-    height: clamp(15rem, 60vw, 24rem);
   }
 
   .wipe-booking__lead,
@@ -4532,96 +3191,7 @@ p.cap-tag {
   }
 }
 
-@media (max-width: 768px) {
-  /* Give the fixed header its own band instead of letting the wordmark sit on
-     the capsule's own eyebrow. Costs ~54px of plate height. */
-  .cap-scene {
-    padding-top: 3.4rem;
-  }
-
-  .cap-plate {
-    border-radius: 0.8rem;
-  }
-
-  .cap-plate--text h2,
-  .cap-plate--text h3 {
-    font-size: 1.1rem;
-    line-height: 1.2;
-  }
-
-  .cap-lead,
-  .cap-points p {
-    font-size: 0.8125rem;
-  }
-
-  /* The desktop split — heading at the top, copy at the bottom — leaves a dead
-     middle two thirds of a plate this narrow, and parks the copy below the fold
-     while the section is still settling into the pin. */
-  .cap-plate--text,
-  .cap-text--b {
-    justify-content: center;
-    gap: 1rem;
-    padding: 1.5rem 1.15rem;
-  }
-
-  .cap-points {
-    gap: 0.5rem;
-  }
-
-  /* Type plus class, matching the base rule — a bare `.cap-tag` override loses
-     the specificity contest and the tag silently keeps nowrap and truncates. */
-  p.cap-tag {
-    left: 0.6rem;
-    bottom: 0.6rem;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.55rem;
-    white-space: normal;
-  }
-
-  /* The plates are roughly 1:4 here, so `cover` crops the width, not the
-     height: the vertical half of object-position has nothing to do. */
-  .cap-plate img {
-    object-position: 40% 50%;
-  }
-
-  .cap-actions {
-    gap: 0.5rem;
-  }
-
-  .cap-actions .viart-cta {
-    flex: 1 1 100%;
-    padding: 0.7rem 1rem;
-    font-size: 0.62rem;
-  }
-}
-
 @media (max-width: 640px) {
-  .mosaic-row {
-    gap: 0.5rem;
-  }
-
-  /* Four 4:5 cells across a phone is a 20%-wide sliver; two rows of two read. */
-  .mosaic-row {
-    flex-wrap: wrap;
-  }
-
-  .mosaic-cell {
-    flex: 1 1 calc(50% - 0.25rem);
-  }
-
-  .mosaic-cell--void {
-    display: none;
-  }
-
-  /* `width: auto` matters: left, right and a width together over-constrain an
-     absolutely positioned box, and the width would win over the right edge. */
-  .spot-names {
-    right: 1rem;
-    bottom: 1rem;
-    left: 1rem;
-    width: auto;
-    height: 13.5rem;
-  }
 
   /* One card per row: four complexes are read, not compared side by side. */
   .deck-container {
@@ -4646,9 +3216,6 @@ p.cap-tag {
 /* Pointer-only embellishments. The lens and the magnet are also gated in JS —
    this is the belt to that pair of braces. */
 @media (hover: none) {
-  .mosaic-feature > div {
-    pointer-events: none;
-  }
 
   .wipe-magnet > div {
     transform: none !important;
@@ -4688,20 +3255,6 @@ p.cap-tag {
   --header-h: 4rem;
 }
 
-/* --- viewport fit ---------------------------------------------------------
-   A pinned scene is exactly one viewport tall, and the header is painted over
-   its first 4rem. Each of these reserves that band so no plate, heading or
-   scrubbed line is read through the header. The sequence centres its frames in
-   the band left between its own paddings, so reserving the header here also
-   moves the whole column down by half of it. */
-.cap-scene {
-  padding-top: calc(var(--header-h) + 0.5rem);
-}
-
-.spot-scene {
-  padding: calc(var(--header-h) + 1rem) 2rem 2rem;
-}
-
 /* --- type scale ----------------------------------------------------------- */
 .hb-intro__copy h1 {
   /* One rank down and one line wider: the same headline in four lines instead
@@ -4714,7 +3267,6 @@ p.cap-tag {
 .chapter-heading h2,
 .gallery-topline h2,
 .deck-intro h2,
-.ev-copy h2,
 .wipe-booking h2 {
   font-size: var(--display-chapter);
 }
@@ -4737,8 +3289,7 @@ p.cap-tag {
 /* --- chapter rhythm -------------------------------------------------------
    Six different chapter shells were each carrying their own top and bottom
    padding. They are the same joint and now measure the same. */
-.chapter,
-.grow-scene {
+.chapter {
   padding-top: var(--chapter-space);
   padding-bottom: var(--chapter-space);
 }
@@ -4748,7 +3299,6 @@ p.cap-tag {
   padding-bottom: var(--chapter-space-tight);
 }
 
-.spot-outro,
 .deck-outro {
   padding-top: var(--chapter-space-tight);
   padding-bottom: var(--chapter-space);
@@ -4766,13 +3316,6 @@ p.cap-tag {
    measures the tight rhythm instead; the panel is unchanged. */
 .reviews-chapter {
   padding-bottom: var(--chapter-space-tight);
-}
-
-/* --- section proportions -------------------------------------------------- */
-
-/* The mosaic's closing frame was the tallest single image on the page. */
-.mosaic-feature img {
-  height: clamp(16rem, 34vw, 32rem);
 }
 
 /* The closing panel reserved a screen and a half and its content never filled
@@ -4793,36 +3336,11 @@ p.cap-tag {
   justify-content: center;
 }
 
-/* The studio's two halves are one chapter now: the mosaic ends and the video
-   plate begins on the same ground, at the same rhythm, with nothing floating
-   between them. */
-.grow-scene {
-  padding-top: var(--chapter-space-tight);
-}
-
-/* The sequence releases into the outro and the outro carries the joint, so the
-   chapter does not pay for the space twice. */
-.spot-outro {
-  padding-top: var(--chapter-space);
-}
-
 /* Mobile keeps a tighter rhythm than a scaled-down desktop one. */
 @media (max-width: 899px) {
   :root {
     --chapter-space: clamp(2.75rem, 9vw, 4.5rem);
     --chapter-space-tight: clamp(1.75rem, 5vw, 2.5rem);
-  }
-}
-
-@media (max-width: 1000px) {
-  /* At this width the state's line crosses the frame it describes. The plate is
-     the same warm ground the hero uses for the same purpose — it travels with
-     the line, because the line is transformed on its own. */
-  .spot-name {
-    justify-items: stretch;
-    padding: 0.55rem 0.75rem;
-    border-radius: 0.4rem;
-    background: linear-gradient(90deg, rgba(16, 9, 5, 0), rgba(16, 9, 5, 0.86) 10%);
   }
 }
 
@@ -4886,23 +3404,917 @@ p.cap-tag {
   }
 }
 
-@media (max-width: 768px) {
-  /* Half a plate is 170px wide here, and the copy inside it was two ranks below
-     the rest of the page's body text. */
-  .cap-plate--text h2,
-  .cap-plate--text h3 {
-    font-size: 1.25rem;
-    line-height: 1.15;
+/* ==========================================================================
+   Second Half (v15) — laser chapter, equipment, slides, gallery, video
+
+   What this block replaces and why:
+
+     the capsule scene        five viewports of pinned column swapping for two
+                              directions → one sticky viewport plus 0.9 of
+                              scroll for three states of one direction
+     the EVERLAS stage        one pinned composition of one machine → two
+                              editorial scenes, one per machine, no pin at all
+     the procedure sequence   four viewports of scrubbed column → one sticky
+                              viewport plus 1.1 for three picture-and-caption
+                              states
+     the 3×3 clip-path mosaic → a horizontal gallery with an index and a caption
+                              on every frame and no hover anywhere
+     the 16:9 video plate     → a row of portrait frames, played by hand
+
+   Two rules hold the whole block together. **A state is one node**: its picture
+   and its copy are siblings in the markup and are driven by one number in the
+   scene, so they cannot arrive or leave apart. **A phone is not a short
+   desktop**: below 900px neither sticky viewport is built and neither reserves
+   scroll — the same states are ordinary blocks in flow, which is also exactly
+   what the reduced-motion block at the end of the file falls back to.
+
+   It sits after the v14 correction and before the reduced-motion block, so an
+   unconditional rule here beats the scale correction and the reduced-motion
+   block still has the last word.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   02 LASER — «Лазерная эпиляция» as three states of one sticky viewport
+
+   Desktop geometry, and it is the requirement rather than taste: the stage is
+   exactly one viewport and the scene pins it for 0.9 more, so the block costs
+   ~1.9 screens. Inside it the text zone is 38% and the media zone 56%; the 6%
+   left over is the gutter, which is why the columns are declared as two
+   explicit tracks with `space-between` rather than as a gap.
+   -------------------------------------------------------------------------- */
+.laser-scene {
+  position: relative;
+  border-top: 1px solid var(--hairline);
+  background: var(--warm-black);
+}
+
+.laser-stage {
+  position: relative;
+  display: flex;
+  height: 100svh;
+  align-items: center;
+  overflow: hidden;
+  /* The fixed header paints over the first band of a sticky viewport. */
+  padding: calc(var(--header-h) + 1rem) var(--page-gutter) clamp(1.5rem, 3vw, 3rem);
+}
+
+.laser-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38% 56%;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* No box of its own on a desktop: the two children below are placed straight
+   into the stage's grid, which is what stacks all three copies in one cell and
+   all three pictures in the other. */
+.laser-state {
+  display: contents;
+}
+
+.laser-copy {
+  grid-area: 1 / 1;
+  align-self: center;
+  display: grid;
+  gap: clamp(0.75rem, 1.4vw, 1.15rem);
+  will-change: transform, opacity;
+}
+
+.laser-kicker {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  color: var(--bronze-soft);
+}
+
+.laser-index {
+  color: var(--muted);
+}
+
+.laser-copy h2 {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1.9rem, 2.9vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+}
+
+.laser-lines {
+  display: grid;
+  max-width: 38ch;
+  gap: 0.6rem;
+}
+
+.laser-lines p {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Height-led, not width-led: every photograph in the studio's library is
+   portrait, so the frame is sized off the screen it has to fit inside and the
+   crop is a stated focal point on the image rather than whatever `cover`
+   happens to keep. */
+.laser-frame {
+  grid-area: 1 / 2;
+  position: relative;
+  /* As tall as the stage can afford — 72svh plus the header band and the two
+     paddings still clears a 720px screen. Height is what decides how much of a
+     portrait photograph survives `cover` in a frame this wide, so it is spent
+     rather than saved. */
+  height: min(72svh, 38rem);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  will-change: transform, opacity;
+}
+
+/* The frame before the scene has written its first value. Only the first state
+   is present; the reduced-motion block and the mobile composition both put the
+   rest back, because there neither of them is a slot. */
+@media (min-width: 900px) {
+  .laser-state + .laser-state .laser-copy,
+  .laser-state + .laser-state .laser-frame {
+    opacity: 0;
+  }
+}
+
+.laser-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--chapter-space-tight) var(--page-gutter) var(--chapter-space);
+}
+
+/* --------------------------------------------------------------------------
+   03 EQUIPMENT — two machines, two procedures, two equal scenes
+
+   Deliberately not a scene in the motion sense. Each block is ~80svh of
+   ordinary flow with a one-shot entrance; the second is the first mirrored, and
+   neither is larger, brighter or higher in the page than the other.
+   -------------------------------------------------------------------------- */
+.rig-chapter {
+  background: var(--espresso);
+}
+
+.rig-intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  border-top: 1px solid var(--hairline);
+  padding: var(--chapter-space) var(--page-gutter) var(--chapter-space-tight);
+}
+
+.rig-intro > div:first-child {
+  grid-column: 1 / span 7;
+}
+
+.rig-intro > p {
+  grid-column: 9 / -1;
+  max-width: 30rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.rig-intro h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: var(--display-chapter);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.rig-scene {
+  display: grid;
+  grid-template-columns: 46% 44%;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 80svh;
+  padding: var(--chapter-space-tight) var(--page-gutter);
+}
+
+/* The mirror is a column swap, not a direction change: both scenes keep their
+   media first in the markup, so a phone reads picture-then-copy either way. */
+.rig-scene--mirrored .rig-media {
+  grid-column: 2;
+}
+
+.rig-scene--mirrored .rig-copy {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.rig-media {
+  position: relative;
+  height: min(62svh, 32rem);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.rig-copy {
+  display: grid;
+  justify-items: start;
+  gap: clamp(0.75rem, 1.4vw, 1.15rem);
+}
+
+.rig-kicker {
+  margin: 0;
+  color: var(--bronze-soft);
+}
+
+.rig-name {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(2.1rem, 3.4vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.rig-lead {
+  max-width: 38ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+/* The specialist's part of the procedure, labelled as such — it is a different
+   claim from what the machine is, and it reads as one. */
+.rig-master {
+  display: grid;
+  max-width: 40ch;
+  gap: 0.35rem;
+  margin: 0;
+  border-left: 1px solid var(--hairline-strong);
+  padding-left: 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rig-master .tech-label {
+  color: var(--bronze-soft);
+}
+
+/* --------------------------------------------------------------------------
+   04 SLIDES — the visit, as picture-and-caption states
+
+   One sticky viewport plus 1.1 of scroll: ~2.1 screens for three states. The
+   picture is the scene, so its width is the requirement (~64vw) and its height
+   is whatever the screen has left after the header, the caption slot and the
+   paddings — the two are tied together by `--slide-h`, which is why the caption
+   can never be pushed out of the viewport by a tall frame.
+   -------------------------------------------------------------------------- */
+.slide-scene {
+  position: relative;
+  background: var(--warm-black);
+}
+
+.slide-stage {
+  --slide-h: calc(100svh - 16rem);
+  /* 1.25 is the widest the frame may be relative to its own height before a
+     portrait photograph — and every photograph in the studio's library is
+     portrait — is cropped past its subject. Below that ceiling the frame is the
+     requested ~64vw; above it the screen is too short to pay for the width, and
+     it is the width that gives way rather than the crop. */
+  --slide-w: min(64vw, calc(var(--slide-h) * 1.25));
+
+  position: relative;
+  display: flex;
+  height: 100svh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: calc(var(--header-h) + 1rem) var(--page-gutter) clamp(1.5rem, 3vw, 3rem);
+}
+
+.slide-inner {
+  display: grid;
+  /* Two rows, and the caption row is what the frame height is measured against
+     — the picture can never grow into the caption's space, so a caption is
+     never pushed out of the viewport by it. */
+  grid-template-rows: var(--slide-h) minmax(5.5rem, auto);
+  justify-items: center;
+  align-items: start;
+  row-gap: clamp(1.25rem, 2.4vw, 2rem);
+}
+
+/* No box of its own: the picture and the caption below are placed straight into
+   the stage's two rows, which is what stacks all three of each. */
+.slide-state {
+  display: contents;
+}
+
+.slide-frame {
+  grid-area: 1 / 1;
+  position: relative;
+  height: var(--slide-h);
+  width: var(--slide-w);
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  will-change: transform, opacity;
+}
+
+.slide-caption {
+  grid-area: 2 / 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  width: var(--slide-w);
+  max-width: 100%;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  color: var(--ivory);
+  will-change: transform, opacity;
+}
+
+.slide-index {
+  grid-row: 1 / span 2;
+  color: var(--bronze-soft);
+}
+
+.slide-title {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.slide-copy {
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 900px) {
+  .slide-state + .slide-state .slide-frame,
+  .slide-state + .slide-state .slide-caption {
+    opacity: 0;
+  }
+}
+
+.slide-outro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: var(--chapter-space-tight) var(--page-gutter) var(--chapter-space);
+}
+
+.slide-outro > p {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   05 STUDIO — the horizontal gallery
+
+   No mosaic and no hover. The track is a native horizontal scroller with snap
+   points, which is what makes trackpad, touch, keyboard and the two buttons all
+   arrive at the same position; the JS only reads which card is nearest the
+   middle and drags for the mouse.
+
+   Desktop proportion: the active card is ~48vw and centre-snapped, so what is
+   left over on each side — (100 - 48) / 2 minus the gap — is the ~22vw preview
+   of the neighbouring frame. Change one and the other follows.
+   -------------------------------------------------------------------------- */
+.studio-chapter {
+  background: var(--warm-black);
+  /* The track runs edge to edge, so the chapter cannot carry the page gutter
+     for it — the two blocks that are not the track carry their own. A negative
+     margin was the other option and is not available: `calc(max(…) * -1)` is
+     dropped by the parser, which is a silent no-op rather than an error. */
+  padding-inline: 0;
+}
+
+.studio-chapter .gallery-topline,
+.studio-chapter .shot-controls {
+  padding-inline: var(--page-gutter);
+}
+
+.shot-gallery {
+  /* Height first, then width from it. A card is ~48vw where the screen is tall
+     enough to pay for that width at a sane ratio, and gives the width up rather
+     than the ratio where it is not — a 48vw card on a 1080p screen would be a
+     2:1 letterbox of a portrait photograph. What is left over on each side,
+     minus the gap, is the ~22vw preview of the neighbouring frame. */
+  --shot-h: min(54svh, 34rem);
+  --shot-w: min(48vw, calc(var(--shot-h) * 1.5));
+  --shot-gap: clamp(1rem, 1.8vw, 1.75rem);
+
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.75rem);
+}
+
+.shot-track {
+  display: flex;
+  gap: var(--shot-gap);
+  /* The track is the only horizontally scrolling box on the page; it starts and
+     ends inside its own overflow, so the document never gains an axis. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* Full-bleed: the chapter's gutter is pulled back so the row runs edge to
+     edge and the preview of the next frame is a real preview rather than three
+     pixels of it caught between two paddings. */
+  margin-inline: calc(var(--page-gutter) * -1);
+  /* Lenis owns the vertical axis and passes a purely horizontal gesture
+     through; this is the one scroller allowed its own smooth behaviour, and it
+     is set from script so `prefers-reduced-motion` can drop it. */
+  padding-inline: calc((100% - var(--shot-w)) / 2);
+  padding-block: 0.25rem;
+  scrollbar-width: none;
+}
+
+.shot-track::-webkit-scrollbar {
+  display: none;
+}
+
+.shot-track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+.shot-card {
+  flex: 0 0 var(--shot-w);
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  scroll-snap-align: center;
+}
+
+.shot-frame {
+  position: relative;
+  /* Height-led, not aspect-led: a 48vw card at a portrait ratio is taller than
+     the screen, and its caption — which is the whole reason this is not a
+     mosaic — would sit below the fold. */
+  height: var(--shot-h);
+  overflow: hidden;
+  border-radius: 0.7rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  /* The neighbouring frames are legible but not competing with the one being
+     read. This is state, not hover — a touch reader gets exactly the same. */
+  opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+
+.shot-card.is-active .shot-frame {
+  opacity: 1;
+}
+
+.shot-frame img {
+  user-select: none;
+}
+
+.shot-caption {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.75rem;
+  opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+
+.shot-card.is-active .shot-caption {
+  opacity: 1;
+}
+
+.shot-index {
+  color: var(--bronze-soft);
+}
+
+.shot-text {
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.shot-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.shot-counter {
+  margin: 0;
+  color: var(--muted);
+}
+
+.shot-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.shot-buttons button {
+  display: flex;
+  height: 2.8rem;
+  width: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--ivory);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.shot-buttons button:hover:not(:disabled) {
+  background: var(--bronze-soft);
+  color: var(--warm-black);
+}
+
+.shot-buttons button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+/* --------------------------------------------------------------------------
+   06 VIDEO — portrait clips, one row, equal weight
+
+   `9 / 16` on the frame and `cover` on a 1080×1920 file means there is nothing
+   to crop: a vertical clip is shown vertically. The three cards are one size
+   and one row — no hero clip, no thumbnails standing in for two of them — and
+   nothing in this block reads the scroll position.
+   -------------------------------------------------------------------------- */
+.reel-chapter {
+  padding: var(--chapter-space) var(--page-gutter);
+  background: var(--espresso);
+}
+
+.reel-topline {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  padding-bottom: var(--chapter-space-tight);
+}
+
+.reel-topline > div:first-child {
+  grid-column: 1 / span 7;
+}
+
+.reel-topline h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: var(--display-chapter);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.reel-topline > p {
+  grid-column: 9 / -1;
+  max-width: 30rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.reel-wall {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+}
+
+.reel-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.reel-card {
+  display: grid;
+  width: 17.5rem;
+  gap: 0.75rem;
+}
+
+.reel-frame {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.reel-frame video {
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  background: var(--ink);
+}
+
+.reel-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: linear-gradient(180deg, rgba(13, 7, 4, 0.16) 0%, rgba(13, 7, 4, 0.62) 100%);
+  color: var(--ivory);
+  cursor: pointer;
+}
+
+.reel-play > span {
+  display: grid;
+  height: 3.6rem;
+  width: 3.6rem;
+  place-items: center;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: rgba(13, 7, 4, 0.72);
+  font-size: 1.1rem;
+  padding-left: 0.15em;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.reel-play:hover > span {
+  background: var(--bronze-soft);
+  color: var(--warm-black);
+}
+
+.reel-play:disabled {
+  cursor: progress;
+}
+
+.reel-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: rgba(13, 7, 4, 0.86);
+  text-align: center;
+}
+
+.reel-error p {
+  margin: 0;
+  color: var(--ivory);
+  font-size: 0.95rem;
+}
+
+.reel-meta {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reel-title {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.reel-note {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* The selector row only exists below the three-up breakpoint; above it every
+   clip is already on screen and a second way to reach them is noise. */
+.reel-select {
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.reel-thumb {
+  position: relative;
+  height: 5rem;
+  width: 3rem;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 0.35rem;
+  background: var(--cocoa);
+  cursor: pointer;
+  padding: 0;
+}
+
+.reel-thumb.is-active {
+  border-color: var(--bronze);
+}
+
+.reel-thumb > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.2rem;
+  color: var(--ivory);
+  text-shadow: 0 1px 3px rgba(13, 7, 4, 0.9);
+}
+
+.reel-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-top: var(--chapter-space-tight);
+}
+
+.reel-context > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   Below 1180px the wall is one player and an explicit row of selectors.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1179px) {
+  .reel-card {
+    display: none;
+    width: min(70vw, 20rem);
   }
 
-  .cap-lead,
-  .cap-points p {
-    font-size: 0.875rem;
-    line-height: 1.5;
+  .reel-card.is-active {
+    display: grid;
   }
 
-  p.cap-tag {
-    font-size: 0.62rem;
+  .reel-wall:not(.reel-wall--single) .reel-select {
+    display: flex;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile composition (< 900px)
+
+   Neither sticky viewport is built below this width and neither reserves any
+   scroll: the states are stacked blocks, media first, and the reader moves
+   through them by scrolling. This is the same composition the reduced-motion
+   block falls back to, which is why there is only one of it to maintain.
+   -------------------------------------------------------------------------- */
+@media (max-width: 899px) {
+  .laser-stage {
+    display: block;
+    height: auto;
+    overflow: visible;
+    padding: var(--chapter-space) var(--page-gutter) 0;
+  }
+
+  .laser-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    gap: var(--chapter-space);
+  }
+
+  .laser-state {
+    display: grid;
+    gap: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .laser-copy,
+  .laser-frame {
+    grid-area: auto;
+    opacity: 1;
+  }
+
+  .laser-frame {
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+  .laser-copy h2,
+  .laser-lines {
+    max-width: none;
+  }
+
+  .rig-intro > div:first-child,
+  .rig-intro > p {
+    grid-column: 1 / span 12;
+  }
+
+  .rig-intro > p {
+    margin-top: 1.25rem;
+    max-width: none;
+  }
+
+  .rig-scene {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    gap: clamp(1rem, 4vw, 1.5rem);
+    padding-block: var(--chapter-space-tight);
+  }
+
+  /* The mirror is a desktop composition; stacked, both scenes read the same
+     way round, and the explicit placements above have to be undone or the
+     copy would sit in a column that no longer exists. */
+  .rig-scene--mirrored .rig-media,
+  .rig-scene--mirrored .rig-copy {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .rig-media {
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+  .slide-stage {
+    display: block;
+    height: auto;
+    overflow: visible;
+    padding: var(--chapter-space) var(--page-gutter) 0;
+  }
+
+  .slide-inner {
+    grid-template-rows: none;
+    justify-items: stretch;
+    row-gap: var(--chapter-space);
+  }
+
+  .slide-state {
+    display: grid;
+    gap: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .slide-frame,
+  .slide-caption {
+    grid-area: auto;
+    height: auto;
+    width: 100%;
+    opacity: 1;
+  }
+
+  .slide-frame {
+    aspect-ratio: 4 / 5;
+  }
+
+  .shot-gallery {
+    --shot-w: 86vw;
+    --shot-gap: 0.6rem;
+  }
+
+  .shot-track {
+    padding-inline: 1rem;
+    /* Start-aligned on a phone: the card sits against the gutter and the next
+       one shows an edge, which is the affordance for the swipe. The trailing
+       padding is what lets the last card reach its own snap point. */
+    padding-right: calc(100% - var(--shot-w) - 1rem);
+    scroll-padding-left: 1rem;
+  }
+
+  .shot-card {
+    scroll-snap-align: start;
+  }
+
+  .reel-topline > div:first-child,
+  .reel-topline > p {
+    grid-column: 1 / span 12;
+  }
+
+  .reel-topline > p {
+    margin-top: 1.25rem;
+    max-width: none;
+  }
+
+  .laser-actions .viart-cta,
+  .slide-outro .viart-cta,
+  .rig-copy .viart-cta {
+    width: 100%;
   }
 }
 
@@ -4926,136 +4338,86 @@ p.cap-tag {
     height: 0;
   }
 
-  /* --- services: four plates in a static two-column grid --- */
-  .cap-scene {
+  /* --- the laser chapter: three states, stacked and all present --------
+     No scene is built, so the sticky viewport reserves nothing and the slot
+     that holds one state at a time becomes what a phone already gets: a
+     picture with its copy under it, three times, in reading order. The
+     `opacity: 0` that parks states two and three above 900px is restated here
+     because this block, not that one, has the last word. */
+  .laser-stage {
     display: block;
     height: auto;
-    padding: clamp(4rem, 6vw, 6rem) var(--page-gutter);
+    overflow: visible;
+    padding: var(--chapter-space) var(--page-gutter) 0;
   }
 
-  .cap-wrapper {
+  .laser-inner {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--grid-gap);
-  }
-
-  .cap-col {
-    position: static;
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
-    width: auto;
-    padding: 0;
-    transform: none;
+    gap: var(--chapter-space);
   }
 
-  .cap-content,
-  .cap-img {
-    height: auto;
-    padding: 0;
+  .laser-state {
+    display: grid;
+    gap: clamp(1rem, 3vw, 1.5rem);
   }
 
-  .cap-img--1,
-  .cap-img--2 {
-    position: relative;
-    clip-path: none;
+  .laser-copy,
+  .laser-frame {
+    grid-area: auto;
+    opacity: 1;
   }
 
-  .cap-img--2 {
-    margin-top: var(--grid-gap);
-  }
-
-  .cap-img--2 img {
-    transform: none;
-  }
-
-  .cap-img .cap-plate {
+  .laser-frame {
     height: auto;
     aspect-ratio: 4 / 5;
-    border-radius: 0.8rem;
   }
 
-  .cap-plate--text {
-    height: auto;
-    gap: 1.75rem;
+  /* --- the equipment scenes: the same two blocks, without the reserved
+     screen height they only used for composition --- */
+  .rig-scene {
+    min-height: 0;
   }
 
-  .cap-text--b {
-    position: static;
-    margin-top: var(--grid-gap);
-    border-radius: 0.8rem;
-    background: var(--cocoa);
-    box-shadow: inset 0 0 0 1px var(--hairline);
-  }
-
-  /* --- EVERLAS: the stage is a plain composition, no depth to travel --- */
-  /* The clip stays: the detail plate hangs off the frame by design, and on a
-     narrow screen that is the difference between a bleed and a horizontal axis
-     on the whole page. */
-  .ev-stage {
-    height: auto;
-    padding: var(--chapter-space) var(--page-gutter) var(--chapter-space-tight);
-  }
-
-  .ev-stage__inner {
-    height: auto;
-    align-items: center;
-  }
-
-  .ev-media {
-    height: auto;
-  }
-
-  .ev-frame {
-    height: auto;
-    width: min(100%, 26rem);
-  }
-
-  /* The glow is the scene's own depth cue and has nothing to do without it. */
-  .ev-glow {
-    display: none;
-  }
-
-  /* --- the procedure: the four states as a static strip and a list --- */
-  .spot-scene {
-    height: auto;
-    padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
-  }
-
-  .spot-images {
-    position: static;
-    display: grid;
-    width: 100%;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--grid-gap);
-    transform: none;
-  }
-
-  .spot-img {
-    opacity: 1;
-  }
-
-  /* Back to a list: four lines under the frames, all of them present. */
-  .spot-names {
-    position: static;
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    width: auto;
+  /* --- the slides: picture, then caption, three times --- */
+  .slide-stage {
+    display: block;
     height: auto;
     overflow: visible;
-    transform: none;
-    margin-top: clamp(2rem, 4vw, 3rem);
+    padding: var(--chapter-space) var(--page-gutter) 0;
   }
 
-  .spot-name,
-  .spot-name + .spot-name {
+  .slide-inner {
+    grid-template-rows: none;
+    justify-items: stretch;
+    row-gap: var(--chapter-space);
+  }
+
+  .slide-state {
+    display: grid;
+    gap: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .slide-frame,
+  .slide-caption {
     grid-area: auto;
-    align-self: stretch;
-    max-width: none;
-    justify-items: start;
-    padding: 0;
-    background: none;
-    text-align: left;
+    height: auto;
+    width: 100%;
     opacity: 1;
+  }
+
+  .slide-frame {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* --- the gallery: still a scroller, still every control, no smoothing.
+     The component asks the same media query before it scrolls, so a button
+     press jumps instead of gliding; the snap points stay, because they are
+     what makes a swipe land on a frame rather than between two. --- */
+  .shot-frame,
+  .shot-caption {
+    transition: none;
   }
 
   /* --- reviews: the change is instant, the controls are unchanged --- */
@@ -5068,3 +4430,4 @@ p.cap-tag {
     min-height: 0;
   }
 }
+

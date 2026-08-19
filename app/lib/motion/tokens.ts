@@ -46,128 +46,62 @@ export const SCENE = {
 } as const;
 
 /**
- * Budgets and constants of the adapted external scenes.
+ * Presence — the one falloff every state-based scene in the second half shares.
  *
- * Every number below is transcribed from the scene's own source (the
- * MotionPrompts prompt named in the scene module) and is part of that scene's
- * progress mapping — it is not a taste value to tune. Changing one changes
- * where a phase fires, so they live here only so the whole page's scroll cost
- * can be read in one place.
+ * A state's presence is 1 while the scroll position is near it and ramps to 0
+ * as the position moves a `fadeEnd` away. `fadeSpan = 2 × fadeEnd - 1` is
+ * load-bearing: it is what makes two neighbouring states sum to exactly 1
+ * everywhere between them, so an exchange never dips to an empty slot. The
+ * width left over — `fadeEnd - fadeSpan` on each side — is the plateau, the
+ * stretch where a state is simply held and read.
+ *
+ * Both scenes below drive their text and their picture from this one number,
+ * which is what makes "text and media are one animation state" a property of
+ * the code rather than a thing to keep in sync by hand.
  */
-export const CAPSULES = {
-  /** Pin length of the capsule section, in viewport heights. */
-  pinViewports: 5,
-  /** Progress-trigger length — deliberately longer than the pin. */
-  progressViewports: 6,
-  /** Phase thresholds on the progress trigger. */
-  phaseOne: 0.33,
-  phaseTwo: 0.66,
-  /** Every phase tween in the source runs at this length, default ease. */
-  duration: 0.75,
-  /** The incoming text block waits this long before dropping in. */
-  textDelay: 0.5,
-  /** Collapsed and open clip-paths of the second image capsule. */
-  clipClosed: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
-  clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+export const presenceOf = (distance: number, fadeEnd: number, fadeSpan: number) =>
+  Math.min(1, Math.max(0, (fadeEnd - Math.abs(distance)) / fadeSpan));
+
+/**
+ * The laser chapter (`#services`) — three states of one direction, held in a
+ * single sticky viewport.
+ *
+ * Desktop cost: one viewport of stage plus `pinViewports` of scroll, so the
+ * whole block is ~1.9 screens — a third of what the capsule scene it replaces
+ * charged for the same information. A phone never enters this branch: there the
+ * three states are ordinary stacked blocks.
+ */
+export const LASER = {
+  /** Scroll paid *beyond* the sticky viewport, in viewport heights. */
+  pinViewports: 0.9,
+  scrub: 1,
+  /** The states occupy this fraction of the scrub; the rest is the joint. */
+  statesEnd: 0.94,
+  /** Long plateau: each state is fully readable for ~84% of its slice. */
+  fadeEnd: 0.58,
+  fadeSpan: 0.16,
+  /** Travel of a state's copy as it takes and leaves the slot, in px. */
+  copyTravel: 40,
+  /** The picture only fades and settles — a large plate must not slide. */
+  mediaScaleFrom: 1.05,
 } as const;
 
 /**
- * The EVERLAS stage — the single signature moment of the second half.
+ * The procedure slides (`.slide-scene`) — image and text as one state.
  *
- * One controlled spatial scene: the machine comes forward out of its own depth
- * while the picture inside the frame counter-zooms, the manipula detail arrives
- * from behind it, and the copy only drifts. Every number is a starting offset
- * of that one composition; nothing here is a separate animation screen.
+ * Desktop cost: one viewport of stage plus `pinViewports`, ~2.1 screens for
+ * three states. The image is the scene, so the text travels and the picture
+ * only fades; both read the same presence, so they cannot disagree.
  */
-export const EVERLAS_STAGE = {
-  /**
-   * Pinned scroll budget, in viewport heights. Desktop only.
-   *
-   * This is the page's one held moment below the price list, so it is worth
-   * more than a glance — but it is one composition, not four, and it must stay
-   * shorter than the sequence that has four states to get through.
-   */
-  viewports: 2.2,
+export const SLIDES = {
+  pinViewports: 1.1,
+  mobilePinViewports: 0,
   scrub: 1,
-  /** How far back the dominant plate starts, and how far it rides. */
-  plateScaleFrom: 0.74,
-  plateYFrom: 8,
-  plateYTo: -3,
-  /** Counter-zoom inside the plate — the frame grows, the picture settles. */
-  pictureScaleFrom: 1.2,
-  /** The detail plate rises out from behind the dominant one. */
-  detailScaleFrom: 0.84,
-  detailXFrom: 12,
-  detailYFrom: 16,
-  /** The copy is readable on every frame; only its position moves. */
-  copyYFrom: 24,
-  copyYTo: -18,
-  glowScaleFrom: 0.62,
-  glowOpacityFrom: 0.18,
-} as const;
-
-/**
- * The procedure sequence — the four states, continuing out of the stage above.
- *
- * One scroll position drives everything: the frame that is centred, the line
- * that is shown and the dimming of the other three are all read off it, so the
- * media, the text and the active state cannot drift apart at any width.
- */
-export const SPOTLIGHT = {
-  /** Pinned/scrubbed runway, in viewport heights. */
-  viewports: 4,
-  /** A phone reads the same four states over a shorter runway. */
-  mobileViewports: 3,
-  scrub: 1,
-  /** Opacity of a frame whose state is not the active one. */
-  dimOpacity: 0.5,
-  /**
-   * The four states occupy this fraction of the scrub. The rest is the release:
-   * the sequence stops stepping, the composition opens back up and drifts into
-   * the document flow instead of being cut off by the unpin.
-   */
-  statesEnd: 0.86,
-  /** What the dimmed frames rise to through the release. */
-  releaseOpacity: 0.68,
-  /**
-   * Extra upward drift through the release: column, in viewport heights…
-   *
-   * Small on purpose. A long drift empties the bottom of the stage before the
-   * pin lets go, which reads as a hole rather than as a hand-off.
-   */
-  releaseDrift: 0.03,
-  /** …and the line, in px. */
-  releaseLift: 10,
-  /**
-   * Travel of a state's line as it takes and leaves its slot, in px.
-   *
-   * Large enough that the outgoing line is most of the way out of the clipped
-   * slot by the time the incoming one is readable — two multi-line captions
-   * crossfading on the same spot are a tangle, not a transition.
-   */
-  nameTravel: 90,
-  /**
-   * Presence of a state falls from 1 to 0 between `stateFadeEnd - stateFadeSpan`
-   * and `stateFadeEnd` of a state's distance from the current position.
-   *
-   * `stateFadeSpan = 2 × stateFadeEnd - 1` is load-bearing: it is what makes two
-   * neighbouring states sum to exactly 1 everywhere between them, so the swap
-   * never dips to an empty slot in the middle. Within that constraint the span
-   * is kept short, so each state holds for most of its slice and the exchange is
-   * a brief, deliberate move.
-   */
-  stateFadeEnd: 0.56,
-  stateFadeSpan: 0.12,
-} as const;
-
-export const MOSAIC = {
-  /** Wave offset between the five anti-diagonals, in seconds. */
-  waveOffset: 0.125,
-  /** Per-tile clip-path tween. */
-  duration: 0.5,
-  stagger: 0.1,
-  ease: 'power2.out',
-  start: 'top 75%',
+  statesEnd: 0.94,
+  fadeEnd: 0.62,
+  fadeSpan: 0.24,
+  copyTravel: 34,
+  mediaScaleFrom: 1.06,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */
