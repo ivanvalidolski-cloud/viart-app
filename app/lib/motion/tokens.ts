@@ -45,5 +45,64 @@ export const SCENE = {
   mobileBreakpoint: 900,
 } as const;
 
+/**
+ * Budgets and constants of the adapted external scenes.
+ *
+ * Every number below is transcribed from the scene's own source (the
+ * MotionPrompts prompt named in the scene module) and is part of that scene's
+ * progress mapping — it is not a taste value to tune. Changing one changes
+ * where a phase fires, so they live here only so the whole page's scroll cost
+ * can be read in one place.
+ */
+export const CAPSULES = {
+  /** Pin length of the capsule section, in viewport heights. */
+  pinViewports: 5,
+  /** Progress-trigger length — deliberately longer than the pin. */
+  progressViewports: 6,
+  /** Phase thresholds on the progress trigger. */
+  phaseOne: 0.33,
+  phaseTwo: 0.66,
+  /** Every phase tween in the source runs at this length, default ease. */
+  duration: 0.75,
+  /** The incoming text block waits this long before dropping in. */
+  textDelay: 0.5,
+  /** Collapsed and open clip-paths of the second image capsule. */
+  clipClosed: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
+  clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+  /**
+   * Silence, in ms, after the last wheel/touch input before a gesture counts
+   * as finished. One gesture may fire at most one phase transition; the next
+   * transition waits for this much quiet before it will fire again.
+   */
+  gestureIdleMs: 140,
+} as const;
+
+/**
+ * Scene 03 — the journey track (`#everlas`): Procedure's square cards and
+ * Studio's portrait frames on one continuous horizontal track, pinned and
+ * scrubbed over a single scroll budget so the hand-off between them is one
+ * transform, never a separate section starting over.
+ */
+export const JOURNEY = {
+  /** Pinned/scrubbed runway of the whole track, in viewport heights. */
+  viewports: 8,
+  scrub: 1,
+  /** Opacity of a procedure card whose stage is not the active one. */
+  dimOpacity: 0.5,
+  /**
+   * Fraction of the track's progress spent inside the four procedure cards
+   * before the studio frames take over the counter/caption band. Kept
+   * proportional to the card counts (4 procedure : 5 studio) so neither half
+   * is rushed relative to how much track it actually occupies.
+   */
+  procedureFraction: 4 / 9,
+  /** How much wider the dominant last studio frame grows as the track ends,
+   *  so the multi-image line resolves onto one frame instead of stopping
+   *  mid-row. */
+  finalCardGrowth: 1.35,
+  /** Fraction of progress (from the end) over which that growth happens. */
+  resolveSpan: 0.14,
+} as const;
+
 /** Fixed header height in px — anchor scrolling must clear it. */
 export const HEADER_OFFSET = 80;
