@@ -133,7 +133,7 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
         // Everything they build with GSAP is recorded here, so the pins and
         // their spacers go away with the context.
         const teardowns = [
-          createCapsulesScene(pageRoot),
+          createCapsulesScene(pageRoot, lenis),
           createEverlasSpotlightScene(pageRoot),
           createGalleryMosaicScene(pageRoot),
           wideRig ? createVideoGrowScene(pageRoot) : undefined,

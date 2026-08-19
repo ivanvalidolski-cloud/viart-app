@@ -5222,3 +5222,44 @@ p.cap-tag {
     scroll-snap-align: center;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Short-viewport fix — capsules text plate (#services)
+
+   `.cap-scene` is a fixed `100svh`, so its text plate's height is whatever is
+   left after the header band, the outer padding and the CTA row — a budget
+   that shrinks with viewport height while the copy inside it does not. Below
+   roughly 750px tall (an iPhone SE, small Android phones in the wild) the
+   768px-wide mobile sizing above still leaves the heading-plus-three-points
+   copy taller than that budget, and `.cap-plate` clips it with its own
+   `overflow: hidden` — both the top of the incoming heading and the tail of
+   the last point disappear.
+
+   This only tightens the two text plates that swap inside the capsule scene,
+   at the same breakpoint's font ranks (heading still outranks body copy) —
+   composition, images and the scene mechanics are untouched. It has to be
+   the last occurrence of these selectors in the file to win the cascade
+   described at the top of this stylesheet. */
+@media (max-width: 768px) and (max-height: 750px) {
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .cap-plate--text,
+  .cap-text--b {
+    gap: 0.6rem;
+    padding: 1rem 0.9rem;
+  }
+
+  .cap-points {
+    gap: 0.35rem;
+  }
+}

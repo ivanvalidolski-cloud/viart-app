@@ -69,6 +69,12 @@ export const CAPSULES = {
   /** Collapsed and open clip-paths of the second image capsule. */
   clipClosed: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
   clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+  /**
+   * Silence, in ms, after the last wheel/touch input before a gesture counts
+   * as finished. One gesture may fire at most one phase transition; the next
+   * transition waits for this much quiet before it will fire again.
+   */
+  gestureIdleMs: 140,
 } as const;
 
 export const SPOTLIGHT = {
