@@ -3796,29 +3796,31 @@ p.cap-tag {
   letter-spacing: -0.05em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  will-change: transform;
 }
 
-/* Half a viewport of padding top and bottom is what puts the first and last
-   frame near mid-screen at the two ends of the scrub. */
+/* Half a viewport of padding left and right is what puts the first and last
+   card near mid-screen at the two ends of the scrub. A horizontal line of
+   square cards, not a column — the active one is the visual centre and its
+   neighbours stay part of the same line either side of it. */
 .spot-images {
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 50%;
+  left: 0;
   z-index: 0;
   display: flex;
-  width: 35%;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 50svh 0;
-  transform: translateX(-50%);
+  flex-direction: row;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 50vw;
+  transform: translateY(-50%);
   will-change: transform;
 }
 
 .spot-img {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+  flex: none;
+  width: min(34vw, 28rem);
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   margin: 0;
   border-radius: 0.5rem;
@@ -3826,29 +3828,39 @@ p.cap-tag {
   transition: opacity 0.3s ease;
 }
 
+/* One box in the band below the row, not a travelling list — a full-width
+   card row leaves no side margin for captions to slide down without landing
+   on the cards they describe. All four stack in the same spot and crossfade;
+   only the active one is ever opaque. */
 .spot-names {
   position: absolute;
   right: 2rem;
   bottom: 2rem;
+  left: 2rem;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.1rem;
+  height: 5.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .spot-name {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: grid;
   max-width: 26rem;
+  margin-left: auto;
   justify-items: end;
   gap: 0.2rem;
   color: var(--muted);
   text-align: right;
-  transition: color 0.3s ease;
-  will-change: transform;
+  opacity: 0;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.spot-name:first-child {
+  opacity: 1;
 }
 
 .spot-name__index {
@@ -4373,10 +4385,12 @@ p.cap-tag {
     padding: 2rem;
   }
 
-  /* Near-full-width frames spaced far apart, so one still owns the midline. */
+  .spot-img {
+    width: min(58vw, 24rem);
+  }
+
   .spot-images {
-    width: calc(100% - 4rem);
-    gap: 25svh;
+    gap: 1.5rem;
   }
 
   /* At this size the dim/active distinction stops earning its keep. */
@@ -4525,6 +4539,14 @@ p.cap-tag {
 
   .spot-name {
     max-width: none;
+  }
+
+  .spot-img {
+    width: min(86vw, 24rem);
+  }
+
+  .spot-images {
+    gap: 1rem;
   }
 
   .deck-container {
@@ -4752,16 +4774,6 @@ p.cap-tag {
      the same warm ground the section already uses for the same purpose in the
      hero — it travels with the line, because each name is
      transformed on its own. */
-  .spot-name {
-    justify-items: stretch;
-    padding: 0.55rem 0.75rem;
-    border-radius: 0.4rem;
-    background: linear-gradient(90deg, rgba(16, 9, 5, 0), rgba(16, 9, 5, 0.86) 10%);
-  }
-
-  .spot-names {
-    gap: 0.75rem;
-  }
 }
 
 @media (max-width: 899px) {
@@ -4916,13 +4928,21 @@ p.cap-tag {
 
   .spot-names {
     position: static;
+    display: flex;
+    flex-direction: column;
     align-items: stretch;
+    height: auto;
+    inset: auto;
     margin-top: clamp(2rem, 4vw, 3rem);
+    gap: 1.1rem;
   }
 
+  /* No scrub, so no active state to crossfade — every stage is simply present. */
   .spot-name {
+    position: static;
     max-width: none;
     justify-items: start;
+    opacity: 1;
     color: var(--ivory) !important;
     text-align: left;
   }
@@ -4974,5 +4994,231 @@ p.cap-tag {
   /* --- the closing panel keeps its content, drops its reserved screen --- */
   .wipe-booking {
     min-height: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Trust rebuild — the award and the testimonial are two different claims
+   (a sourced, dated fact vs. one client's words) and now live in two visibly
+   separate objects instead of one combined rating block. `.reviews-chapter`
+   becomes a plain vertical stack; `.trust-body` carries the 12-column split
+   the old `.reviews-chapter` used to, so `.rating-anchor` / `.active-review`
+   keep the column spans already declared above.
+   -------------------------------------------------------------------------- */
+.reviews-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 6vw, 5rem);
+  background: #100c09;
+}
+
+.trust-award {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  max-width: 42rem;
+  border: 1px solid var(--hairline);
+  border-radius: 0.6rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: var(--cocoa);
+}
+
+.trust-award__media {
+  position: relative;
+  flex: none;
+  height: 4.8rem;
+  width: 4.8rem;
+}
+
+.trust-award__copy {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.trust-award__eyebrow {
+  color: var(--bronze-soft);
+}
+
+.trust-award__copy > p:not(.trust-award__eyebrow) {
+  margin: 0;
+  max-width: 42ch;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.trust-body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: start;
+}
+
+@media (max-width: 899px) {
+  .trust-award {
+    max-width: none;
+  }
+
+  .trust-body {
+    grid-template-columns: 1fr;
+    row-gap: 3rem;
+  }
+
+  .rating-anchor,
+  .active-review {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .trust-award {
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .trust-award__media {
+    height: 3.6rem;
+    width: 3.6rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   First Visit rebuild — one portrait video instead of a four-card deck. The
+   plate keeps the video's own 9:16 ratio (it is genuinely vertical, not
+   forced), and reuses the deck's proven tag/body/gradient combination for
+   legible-without-sound text over footage instead of a new overlay recipe.
+   -------------------------------------------------------------------------- */
+.first-visit-scene {
+  background: var(--ink);
+}
+
+.first-visit-layout {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.first-visit-plate {
+  position: relative;
+  width: min(100%, 26rem);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  margin: 0;
+  background: var(--cocoa);
+}
+
+.first-visit-plate::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(13, 7, 4, 0.3) 0%, rgba(13, 7, 4, 0.88) 64%);
+  pointer-events: none;
+}
+
+.first-visit-video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.82) sepia(0.08) contrast(1.04) brightness(0.92);
+}
+
+@media (max-width: 640px) {
+  /* Near-fullscreen, and still crop-free: the source is native 9:16, so a
+     full-bleed width just runs the same ratio at full scale. */
+  .first-visit-layout {
+    padding: 0;
+  }
+
+  .first-visit-plate {
+    width: 100%;
+    border-radius: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Studio rebuild — a horizontal line of portrait frames instead of the 3×3
+   mask-reveal grid, continuing the square Procedure line rather than
+   resetting into an unrelated composition. Same warm-espresso ground as
+   `.everlas-chapter`, same page gutter, same horizontal reading direction —
+   the two chapters share a rhythm instead of meeting at a hard seam.
+   -------------------------------------------------------------------------- */
+.studio-scene {
+  background: var(--espresso);
+}
+
+.studio-track {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding: 0.5rem var(--page-gutter) 1rem;
+  margin: 0 calc(var(--page-gutter) * -1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+.studio-track:focus-visible {
+  outline: 1px solid var(--ivory);
+  outline-offset: 4px;
+}
+
+.studio-card {
+  position: relative;
+  flex: none;
+  width: min(22vw, 17rem);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0.5rem;
+  scroll-snap-align: start;
+  background: var(--cocoa);
+}
+
+.studio-card--feature {
+  width: min(34vw, 26rem);
+  aspect-ratio: 4 / 5;
+}
+
+/* The Lens wrapper (the pointer-fine branch only) has no height of its own —
+   sizing the image from its own width and aspect-ratio, rather than a
+   percentage of an ancestor, is what gives that wrapper a real height to
+   overflow-hide against, with no dependency on `.studio-card--feature`'s box. */
+.studio-feature-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+@media (max-width: 1000px) {
+  .studio-card {
+    width: min(40vw, 20rem);
+  }
+
+  .studio-card--feature {
+    width: min(60vw, 26rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .studio-track {
+    gap: 1rem;
+    scroll-snap-type: x mandatory;
+  }
+
+  .studio-card,
+  .studio-card--feature {
+    width: 86vw;
+    aspect-ratio: 4 / 5;
+    scroll-snap-align: center;
   }
 }
