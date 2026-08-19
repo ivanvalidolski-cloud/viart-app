@@ -4,11 +4,11 @@ import { settle, wheelTo } from '../support/scroll';
 /** Every chapter shell below the hero, in document order. */
 export const SCENES = [
   '.hb-scene',
-  '.cap-scene',
-  '.ev-stage',
-  '.spot-scene',
-  '.mosaic-scene',
-  '.grow-scene',
+  '.laser-stage',
+  '.rig-chapter',
+  '.slide-stage',
+  '.studio-chapter',
+  '.reel-chapter',
   '.deck-scene',
   '.wipe-booking',
 ] as const;
@@ -16,17 +16,17 @@ export const SCENES = [
 /**
  * The boxes ScrollTrigger pins.
  *
- * `.ev-stage` is the second half's one signature moment and it is pinned on a
- * desktop only — a phone gets the same composition as a short transformation in
- * ordinary flow, so the list is viewport-dependent.
+ * Both of the second half's sticky viewports are desktop-only — a phone gets
+ * the same states as stacked blocks in ordinary flow — so the list is
+ * viewport-dependent and the hero is the only pin at every width.
  */
-export const PINNED = ['.cap-scene', '.spot-scene'] as const;
-export const PINNED_WIDE = ['.ev-stage'] as const;
+export const PINNED = [] as const;
+export const PINNED_WIDE = ['.laser-stage', '.slide-stage'] as const;
 
 /** The width the scenes switch composition on, in both the CSS and the driver. */
 export const WIDE_BREAKPOINT = 900;
 
-export const pinnedFor = (width: number) =>
+export const pinnedFor = (width: number): string[] =>
   width >= WIDE_BREAKPOINT ? [...PINNED, ...PINNED_WIDE] : [...PINNED];
 
 export type Probe = {
@@ -56,7 +56,7 @@ export class ViartPage {
   /**
    * Layout shift, in two figures.
    *
-   * `raw` is what the browser reports. On a page with three pinned sections that
+   * `raw` is what the browser reports. On a page with pinned sections that
    * number is meaningless: the moment ScrollTrigger swaps a section to
    * `position: fixed` it leaves the scrolling contents, and Chrome accounts for
    * that as an element with no previous box appearing at full viewport size — a

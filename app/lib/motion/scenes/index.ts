@@ -6,10 +6,12 @@
  *    a scene's DOM, or the two layers animate the same node.
  *  - Only one scene is pinned at a time. Scenes run in document order, and
  *    their scroll budget comes from the tokens, never from a literal.
- *  - Motion decays down the page. Below the price list there is exactly one
- *    signature moment — the EVERLAS stage — the procedure sequence continues
- *    out of it, and everything after that is ordinary flow with, at most, a
- *    one-shot entrance. Do not add a second pinned showpiece down there.
+ *  - Motion decays down the page. The second half holds the reader still twice
+ *    and briefly — the laser chapter and the procedure slides, each one sticky
+ *    viewport plus about one more of scroll — and everything after them is
+ *    ordinary flow with, at most, a one-shot entrance. The equipment scenes,
+ *    the studio gallery and the video wall are deliberately not scenes: they
+ *    are read, dragged and pressed, not scrubbed.
  *  - Every trigger declares `invalidateOnRefresh`, and any `end` that depends
  *    on the viewport is a function — a literal freezes at the height the page
  *    had on first load.
@@ -25,7 +27,5 @@
  */
 
 export { createHeureBleueScene } from './heureBleue';
-export { createCapsulesScene } from './capsules';
-export { createEverlasStageScene } from './everlasStage';
-export { createProcedureSequenceScene } from './procedureSequence';
-export { createGalleryMosaicScene } from './galleryMosaic';
+export { createLaserStoryScene } from './laserStory';
+export { createProcedureSlidesScene } from './procedureSlides';

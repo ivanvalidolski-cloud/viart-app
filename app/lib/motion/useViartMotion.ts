@@ -22,11 +22,9 @@ import Lenis from 'lenis';
 import { HEADER_OFFSET, SCENE } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
 import {
-  createCapsulesScene,
-  createEverlasStageScene,
-  createGalleryMosaicScene,
   createHeureBleueScene,
-  createProcedureSequenceScene,
+  createLaserStoryScene,
+  createProcedureSlidesScene,
 } from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -40,8 +38,9 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
  * bar appears or disappears. `ignoreMobileResize` makes ScrollTrigger ignore a
  * height-only change on touch devices, which is exactly what this is.
  *
- * (Written when the page carried four pins; it carries three now, and the
- * failure it prevents is the same one at any count.)
+ * (Written when the page carried four pins; it carries three now — the hero
+ * and the second half's two sticky viewports — and the failure it prevents is
+ * the same one at any count.)
  */
 ScrollTrigger.config({ ignoreMobileResize: true });
 
@@ -84,10 +83,10 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     /**
      * The scenes carry one extra condition the entrances must not share.
      *
-     * A phone is not a smaller desktop here: the EVERLAS stage is pinned above
-     * this width and simply transforms in place below it, and the procedure
-     * sequence reads the same four states over a shorter runway. That gate has
-     * to be a live media query — the same one the stylesheet switches
+     * A phone is not a smaller desktop here: the laser chapter and the
+     * procedure slides are sticky viewports above this width and ordinary
+     * stacked blocks below it — a phone never enters either branch. That gate
+     * has to be a live media query — the same one the stylesheet switches
      * composition on — not a width read once at build time. Declaring it here
      * means GSAP tears the scenes down and rebuilds them when the breakpoint
      * flips, in the same moment the stylesheet changes underneath them.
@@ -135,13 +134,12 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
         // by itself — injected DOM, a SplitText, a plain listener, an inline
         // style written from a trigger callback. Everything they build with
         // GSAP is recorded here, so the pins and their spacers go away with the
-        // context. Nothing below the mosaic pins or scrubs: past the studio the
-        // page is ordinary flow.
+        // context. Nothing below the slides pins or scrubs: past the studio the
+        // page is ordinary flow — the gallery is dragged and the videos are
+        // pressed, and neither is driven by the scroll position.
         const teardowns = [
-          createCapsulesScene(pageRoot),
-          createEverlasStageScene(pageRoot, { pinned: wide }),
-          createProcedureSequenceScene(pageRoot, { wide }),
-          createGalleryMosaicScene(pageRoot),
+          createLaserStoryScene(pageRoot, { wide }),
+          createProcedureSlidesScene(pageRoot, { wide }),
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
 
         return () => teardowns.forEach((teardown) => teardown());

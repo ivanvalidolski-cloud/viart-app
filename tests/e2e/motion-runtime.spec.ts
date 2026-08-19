@@ -108,18 +108,23 @@ test.describe('motion runtime', () => {
   });
 
   test('the first pin swaps without dropping a frame', async ({ page }) => {
+    test.skip(
+      page.viewportSize()!.width < WIDE_BREAKPOINT,
+      'the second half is stacked flow below the breakpoint — there is no pin to swap',
+    );
+
     const viart = new ViartPage(page);
     await viart.goto();
 
     const top = await page.evaluate(
-      () => (document.querySelector('.cap-scene') as HTMLElement).getBoundingClientRect().top,
+      () => (document.querySelector('.laser-stage') as HTMLElement).getBoundingClientRect().top,
     );
 
     // Straddle the pin's start. Chrome scores the `position: fixed` swap as a
     // full-viewport layout shift because the section leaves the scrolling
     // contents; the only way to tell that apart from the section genuinely
     // blinking is to look at its box on every frame of the crossing.
-    const frames = await framesAcross(page, '.cap-scene', Math.round(top) - 260, Math.round(top) + 320);
+    const frames = await framesAcross(page, '.laser-stage', Math.round(top) - 260, Math.round(top) + 320);
 
     expect(frames.length).toBeGreaterThan(20);
     const collapsed = frames.filter(([, , width, height]) => width === 0 || height === 0);
@@ -154,13 +159,33 @@ test.describe('motion runtime', () => {
 /**
  * The second half's pacing contract.
  *
- * Not how it looks — what has to be true of it: one signature moment and no
- * second one, four states whose picture and words are the same state at every
- * stop, and a release that hands the sequence to the document rather than
- * cutting it loose.
+ * Not how it looks — what has to be true of it: two short sticky viewports and
+ * no third one, and, in both of them, a picture and a caption that are the same
+ * state at every stop of the scrub and in both directions.
  */
+
+/** The two sticky viewports of the second half, and how to read each one. */
+const STICKY = [
+  {
+    name: 'the laser chapter',
+    section: '.laser-scene',
+    stage: '.laser-stage',
+    media: '.laser-frame',
+    copy: '.laser-copy',
+    states: 3,
+  },
+  {
+    name: 'the procedure slides',
+    section: '.slide-scene',
+    stage: '.slide-stage',
+    media: '.slide-frame',
+    copy: '.slide-caption',
+    states: 3,
+  },
+] as const;
+
 test.describe('the second half', () => {
-  test('pins once for the stage and once for the sequence, and never again', async ({ page }) => {
+  test('holds the reader twice, briefly, and never again', async ({ page }) => {
     const viart = new ViartPage(page);
     await viart.goto();
 
@@ -172,141 +197,163 @@ test.describe('the second half', () => {
         .map((name) => name.split(/\s+/)[0]),
     );
 
-    // Everything below the studio is ordinary flow: the complexes, the reviews
-    // and the closing panel may not reserve a screen of scroll between them.
-    expect(pinned).not.toContain('deck-scene');
-    expect(pinned).not.toContain('mosaic-scene');
-    expect(pinned).not.toContain('grow-scene');
-    expect(pinned.filter((name) => name === 'ev-stage')).toHaveLength(wide ? 1 : 0);
-    expect(pinned.filter((name) => name === 'spot-scene')).toHaveLength(1);
+    // The equipment scenes, the studio gallery, the video wall, the complexes
+    // and everything under them are ordinary flow: none of them may reserve a
+    // screen of scroll.
+    for (const name of ['rig-chapter', 'studio-chapter', 'reel-chapter', 'deck-scene']) {
+      expect(pinned, `${name} reserved scroll`).not.toContain(name);
+    }
+    expect(pinned.filter((name) => name === 'laser-stage')).toHaveLength(wide ? 1 : 0);
+    expect(pinned.filter((name) => name === 'slide-stage')).toHaveLength(wide ? 1 : 0);
+    expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
   });
 
-  test('the sequence never shows one state and describes another', async ({ page }) => {
+  test('costs the scroll it says it costs', async ({ page }) => {
+    test.skip(page.viewportSize()!.width < WIDE_BREAKPOINT, 'no sticky viewport below the breakpoint');
+
     const viart = new ViartPage(page);
     await viart.goto();
 
-    /**
-     * Read the sequence at a spread of stops through its own pin, forwards and
-     * then backwards: the frame nearest the middle of the stage and the line
-     * that is legible have to be the same index every time, in both directions.
-     *
-     * "The middle" is the middle of the band the section actually shows — its
-     * own content box, whose top padding is the strip the fixed header paints
-     * over. That is read here from the computed padding, not from the scene, so
-     * this is a restatement of the CSS rather than of the code under test.
-     *
-     * The pin's own extent comes back with every read. A late image decode fires
-     * one more `ScrollTrigger.refresh`, which moves both the start and the
-     * length — measured once up front, every stop after it lands somewhere else.
-     */
-    const readState = () =>
-      page.evaluate(() => {
-        const section = document.querySelector<HTMLElement>('.spot-scene');
-        const spacer = section?.parentElement;
-        if (!section || !spacer) return null;
-
-        const styles = getComputedStyle(section);
-        const paddingTop = parseFloat(styles.paddingTop) || 0;
-        const paddingBottom = parseFloat(styles.paddingBottom) || 0;
-        const box = section.getBoundingClientRect();
-        const middle = box.top + paddingTop + (box.height - paddingTop - paddingBottom) / 2;
-
-        const frames = Array.from(section.querySelectorAll<HTMLElement>('.spot-img'));
-        const distances = frames.map((frame) => {
-          const rect = frame.getBoundingClientRect();
-          return Math.abs(rect.top + rect.height / 2 - middle);
-        });
-        const nearest = Math.min(...distances);
-        const centred = distances.indexOf(nearest);
-        const runnerUp = Math.min(...distances.filter((_, index) => index !== centred));
-
-        const names = Array.from(section.querySelectorAll<HTMLElement>('.spot-name'));
-        const opacities = names.map((name) => Number(getComputedStyle(name).opacity));
-        const legible = opacities.indexOf(Math.max(...opacities));
-
-        const pinStart = spacer.getBoundingClientRect().top + window.scrollY;
-        const pinLength = spacer.getBoundingClientRect().height - box.height;
-
-        return {
-          centred,
-          legible,
-          middle,
-          pinLength,
-          // Exactly halfway between two frames, "which one is centred" is decided
-          // by sub-pixel rounding, and the answer is not meaningful either way.
-          tied: runnerUp - nearest < 16,
-          progress: (window.scrollY - pinStart) / pinLength,
-        };
-      });
-
-    const first = await readState();
-    expect(first, 'the sequence is not in the document').not.toBeNull();
-
-    const STEPS = 14;
-    const step = Math.round(first!.pinLength / STEPS);
-
-    // Walk the pin down and back up rather than jumping to fractions of it: the
-    // scene is read at wherever the step actually landed, so nothing here
-    // depends on hitting an exact scroll position.
-    const walk = async (direction: 1 | -1) => {
-      const seen: number[] = [];
-      for (let index = 0; index <= STEPS + 4; index += 1) {
-        await wheelBy(page, direction * step);
-        await transformSettled(page, '.spot-images');
-
-        const state = await readState();
-        if (!state || state.progress < 0 || state.progress > 1) continue;
-
-        // The band the frames are centred in has to be the one the reader sees:
-        // the fixed header paints over the top of a pinned scene.
-        expect(state.middle, 'the frames are centred under the header').toBeGreaterThan(64);
-        if (!state.tied) {
-          expect(
-            state.centred,
-            `${direction > 0 ? 'forward' : 'reverse'} at ${Math.round(state.progress * 100)}%: the centred frame is ${state.centred} and the legible line is ${state.legible}`,
-          ).toBe(state.legible);
-          seen.push(state.centred);
-        }
-      }
-      return seen;
-    };
-
-    // Park just above the pin, then walk it in both directions. A scrub reaching
-    // a position from above is a different frame of the same scene than one
-    // reaching it from below, and both have to hold.
-    //
-    // The parking is corrected until it lands, not assumed: `wheelTo` seeks an
-    // absolute position against a smooth scroller and can finish a few hundred
-    // pixels off, which is enough to start the walk already inside the pin and
-    // miss its first state.
-    await viart.scrollTo(
-      await page.evaluate(() => {
-        const spacer = document.querySelector('.spot-scene')!.parentElement!;
-        return Math.round(spacer.getBoundingClientRect().top + window.scrollY) - 400;
-      }),
-    );
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      const here = await readState();
-      if (!here) break;
-      const delta = Math.round((-0.08 - here.progress) * here.pinLength);
-      if (Math.abs(delta) < 40) break;
-      await wheelBy(page, delta);
+    // A sticky viewport is one screen of stage plus its own pin distance. The
+    // budgets are 0.9 and 1.1 viewports, so the two blocks cost ~1.9 and ~2.1
+    // screens — the ceiling below is what "noticeably shorter than the
+    // baseline" means in numbers: the pair used to cost nine.
+    for (const scene of STICKY) {
+      const cost = await page.evaluate((selector) => {
+        const stage = document.querySelector<HTMLElement>(selector)!;
+        const spacer = stage.parentElement!;
+        return spacer.getBoundingClientRect().height / window.innerHeight;
+      }, scene.stage);
+      expect(cost, `${scene.name} costs ${cost.toFixed(2)} viewports`).toBeLessThan(2.35);
+      expect(cost, `${scene.name} costs ${cost.toFixed(2)} viewports`).toBeGreaterThan(1.6);
     }
-
-    const down = await walk(1);
-    const up = await walk(-1);
-    const walked = [...down, ...up];
-
-    expect(walked.length, 'the walk never landed inside the pin').toBeGreaterThan(8);
-
-    // …and it actually walked the four states rather than sitting on one.
-    const seen = new Set(walked);
-    expect(
-      seen.size,
-      `the sequence showed ${seen.size} of its four states: ${walked.join(' ')}`,
-    ).toBe(4);
-    expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
   });
+
+  for (const scene of STICKY) {
+    test(`${scene.name} never shows one state and describes another`, async ({ page }) => {
+      test.skip(
+        page.viewportSize()!.width < WIDE_BREAKPOINT,
+        'stacked flow below the breakpoint: every state is present at once',
+      );
+
+      const viart = new ViartPage(page);
+      await viart.goto();
+
+      /**
+       * Read the scene at a spread of stops through its own pin, forwards and
+       * then backwards.
+       *
+       * The property under test is the one the whole rewrite turns on: a state
+       * is one thing. Its picture and its copy are driven off a single derived
+       * position, so the most present picture and the most present copy have to
+       * be the same index at every stop, in both directions — and never, at any
+       * stop, may the slot be empty.
+       *
+       * The pin's own extent comes back with every read: a late image decode
+       * fires one more `ScrollTrigger.refresh`, which moves both the start and
+       * the length.
+       */
+      const readState = () =>
+        page.evaluate((selectors) => {
+          const stage = document.querySelector<HTMLElement>(selectors.stage);
+          const spacer = stage?.parentElement;
+          if (!stage || !spacer) return null;
+
+          const presence = (selector: string) =>
+            Array.from(document.querySelectorAll<HTMLElement>(selector)).map((element) =>
+              Number(getComputedStyle(element).opacity),
+            );
+
+          const media = presence(selectors.media);
+          const copy = presence(selectors.copy);
+          const strongest = (values: number[]) => values.indexOf(Math.max(...values));
+
+          const pinStart = spacer.getBoundingClientRect().top + window.scrollY;
+          const pinLength = spacer.getBoundingClientRect().height - stage.offsetHeight;
+
+          return {
+            media,
+            copy,
+            mediaIndex: strongest(media),
+            copyIndex: strongest(copy),
+            // The exchange is built to sum to 1, so the total presence is a
+            // direct read of "the slot is never empty".
+            mediaTotal: media.reduce((sum, value) => sum + value, 0),
+            pinLength,
+            progress: (window.scrollY - pinStart) / pinLength,
+          };
+        }, { stage: scene.stage, media: scene.media, copy: scene.copy });
+
+      const first = await readState();
+      expect(first, `${scene.name} is not in the document`).not.toBeNull();
+      expect(first!.media).toHaveLength(scene.states);
+      expect(first!.copy).toHaveLength(scene.states);
+
+      const STOPS = 12;
+      const step = Math.round(first!.pinLength / STOPS);
+
+      const walk = async (direction: 1 | -1) => {
+        const seen: number[] = [];
+        for (let index = 0; index <= STOPS + 4; index += 1) {
+          await wheelBy(page, direction * step);
+          await transformSettled(page, scene.copy);
+
+          const state = await readState();
+          if (!state || state.progress < 0 || state.progress > 1) continue;
+
+          expect(
+            state.copyIndex,
+            `${direction > 0 ? 'forward' : 'reverse'} at ${Math.round(state.progress * 100)}%: ` +
+              `the picture is ${state.mediaIndex} and the copy is ${state.copyIndex}`,
+          ).toBe(state.mediaIndex);
+
+          // …and the picture and its copy are equally present, not merely
+          // ranked the same. A 0.05 tolerance is sub-pixel rounding of two
+          // separately composited opacities.
+          expect(
+            Math.abs(state.media[state.mediaIndex] - state.copy[state.copyIndex]),
+            `picture and copy are ${state.media[state.mediaIndex]} and ${state.copy[state.copyIndex]}`,
+          ).toBeLessThan(0.05);
+
+          expect(
+            state.mediaTotal,
+            `the media slot was ${state.mediaTotal.toFixed(2)} present at ` +
+              `${Math.round(state.progress * 100)}%`,
+          ).toBeGreaterThan(0.9);
+
+          seen.push(state.mediaIndex);
+        }
+        return seen;
+      };
+
+      // Park just above the pin, correcting until it lands: `wheelTo` seeks an
+      // absolute position against a smooth scroller and can finish a few hundred
+      // pixels off, which is enough to start the walk already inside the pin.
+      await viart.scrollTo(
+        await page.evaluate((selector) => {
+          const spacer = document.querySelector(selector)!.parentElement!;
+          return Math.round(spacer.getBoundingClientRect().top + window.scrollY) - 400;
+        }, scene.stage),
+      );
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const here = await readState();
+        if (!here) break;
+        const delta = Math.round((-0.08 - here.progress) * here.pinLength);
+        if (Math.abs(delta) < 40) break;
+        await wheelBy(page, delta);
+      }
+
+      const walked = [...(await walk(1)), ...(await walk(-1))];
+      expect(walked.length, 'the walk never landed inside the pin').toBeGreaterThan(8);
+
+      // …and it actually walked every state rather than sitting on one.
+      expect(
+        new Set(walked).size,
+        `${scene.name} showed ${new Set(walked).size} of its ${scene.states} states`,
+      ).toBe(scene.states);
+      expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
+    });
+  }
 });
 
 test.describe('the quiet end of the page', () => {
@@ -366,61 +413,63 @@ test.describe('the quiet end of the page', () => {
     await page.locator('.segmented-control button', { hasText: 'Женщины' }).click();
     await page.waitForTimeout(900);
 
-    // Walk into the sequence and check it still agrees with itself.
+    const overflowX = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflowX).toBeLessThanOrEqual(1);
+
+    if (page.viewportSize()!.width < WIDE_BREAKPOINT) {
+      // Below the breakpoint there is nothing pinned under the price list to
+      // lose its measurement; the overflow check above still applies.
+      expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
+      return;
+    }
+
+    // Walk into the slides and check they still agree with themselves.
     const spacerTop = await page.evaluate(() => {
-      const section = document.querySelector('.spot-scene')!;
-      return Math.round(section.parentElement!.getBoundingClientRect().top + window.scrollY);
+      const stage = document.querySelector('.slide-stage')!;
+      return Math.round(stage.parentElement!.getBoundingClientRect().top + window.scrollY);
     });
     await viart.scrollTo(spacerTop + 200);
     await wheelBy(page, 400);
-    await transformSettled(page, '.spot-images');
+    await transformSettled(page, '.slide-caption');
 
     const state = await page.evaluate(() => {
-      const section = document.querySelector<HTMLElement>('.spot-scene')!;
-      const styles = getComputedStyle(section);
-      const paddingTop = parseFloat(styles.paddingTop) || 0;
-      const paddingBottom = parseFloat(styles.paddingBottom) || 0;
-      const box = section.getBoundingClientRect();
-      const middle = box.top + paddingTop + (box.height - paddingTop - paddingBottom) / 2;
-      const frames = Array.from(section.querySelectorAll<HTMLElement>('.spot-img'));
-      const distances = frames.map((frame) => {
-        const rect = frame.getBoundingClientRect();
-        return Math.abs(rect.top + rect.height / 2 - middle);
-      });
-      const opacities = Array.from(section.querySelectorAll<HTMLElement>('.spot-name')).map(
-        (name) => Number(getComputedStyle(name).opacity),
-      );
+      const stage = document.querySelector<HTMLElement>('.slide-stage')!;
+      const presence = (selector: string) =>
+        Array.from(document.querySelectorAll<HTMLElement>(selector)).map((element) =>
+          Number(getComputedStyle(element).opacity),
+        );
+      const media = presence('.slide-frame');
+      const copy = presence('.slide-caption');
       return {
-        centred: distances.indexOf(Math.min(...distances)),
-        legible: opacities.indexOf(Math.max(...opacities)),
-        pinned: Math.round(box.top),
-        overflowX:
-          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        mediaIndex: media.indexOf(Math.max(...media)),
+        copyIndex: copy.indexOf(Math.max(...copy)),
+        pinned: Math.round(stage.getBoundingClientRect().top),
       };
     });
 
-    expect(state.pinned, 'the sequence did not hold the viewport after a refresh').toBeLessThanOrEqual(2);
-    expect(state.centred, 'the sequence lost sync after the price list changed height').toBe(
-      state.legible,
+    expect(state.pinned, 'the slides did not hold the viewport after a refresh').toBeLessThanOrEqual(2);
+    expect(state.mediaIndex, 'the slides lost sync after the price list changed height').toBe(
+      state.copyIndex,
     );
-    expect(state.overflowX).toBeLessThanOrEqual(1);
     expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
   });
 });
 
 test.describe('resize', () => {
-  test('crossing the stage breakpoint rebuilds the pin it owns', async ({ page }) => {
-    test.skip(page.viewportSize()!.width < WIDE_BREAKPOINT, 'the pinned stage is desktop-only');
+  test('crossing the breakpoint rebuilds the pins it owns', async ({ page }) => {
+    test.skip(page.viewportSize()!.width < WIDE_BREAKPOINT, 'the sticky viewports are desktop-only');
 
     const viart = new ViartPage(page);
     await viart.goto();
 
     const before = await page.evaluate(() => document.documentElement.scrollHeight);
 
-    // The EVERLAS stage is pinned above 900px and is an ordinary block below it,
-    // in the stylesheet and in the driver alike. A gate read once at build time
-    // gets this wrong in one direction and leaves either a pin with no scene or
-    // a scene with nowhere to hold.
+    // Both sticky viewports are pinned above 900px and are ordinary stacked
+    // blocks below it, in the stylesheet and in the driver alike. A gate read
+    // once at build time gets this wrong in one direction and leaves either a
+    // pin with no scene or a scene with nowhere to hold.
     await page.setViewportSize({ width: 820, height: 900 });
     await page.waitForTimeout(1000);
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -428,12 +477,13 @@ test.describe('resize', () => {
     await settle(page);
 
     const after = await page.evaluate(() => {
-      const stage = document.querySelector('.ev-stage');
+      const pinned = (selector: string) =>
+        document.querySelector(selector)?.parentElement?.classList.contains('pin-spacer') ?? false;
       return {
         documentHeight: document.documentElement.scrollHeight,
         // ScrollTrigger wraps a pinned element in a spacer of its own. If the
         // scene was not rebuilt there is no wrapper and nothing holds the pin.
-        stagePinned: stage?.parentElement?.classList.contains('pin-spacer') ?? false,
+        stagePinned: pinned('.laser-stage') && pinned('.slide-stage'),
         overflowX:
           document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
@@ -443,7 +493,7 @@ test.describe('resize', () => {
     // length again.
     expect(Math.abs(after.documentHeight - before)).toBeLessThan(before * 0.05);
     expect(after.overflowX).toBeLessThanOrEqual(1);
-    expect(after.stagePinned, 'the EVERLAS stage was not rebuilt after the resize').toBe(true);
+    expect(after.stagePinned, 'a sticky viewport was not rebuilt after the resize').toBe(true);
     expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
   });
 });
@@ -472,15 +522,27 @@ test.describe('reduced motion', () => {
         // horizontal axis for the whole page the moment the clip is relaxed.
         overflowX:
           document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        // Every state of the sequence is a plain list item here, not a slot.
-        namesVisible: Array.from(
-          document.querySelectorAll<HTMLElement>('.spot-name'),
-        ).filter((name) => Number(getComputedStyle(name).opacity) > 0.9).length,
+        // Every state of both sticky viewports is a plain block here, not a
+        // slot: all three pictures and all three copies are readable at once.
+        statesVisible: ['.laser-frame', '.laser-copy', '.slide-frame', '.slide-caption'].map(
+          (selector) =>
+            Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
+              (element) => Number(getComputedStyle(element).opacity) > 0.9,
+            ).length,
+        ),
+        // The gallery is a scroller, not a scene: every control it has stays.
+        galleryControls: document.querySelectorAll('.shot-buttons button').length,
+        galleryCards: document.querySelectorAll('.shot-card').length,
+        // …and so does every video's own play control.
+        videoControls: document.querySelectorAll('.reel-play').length,
       };
     });
 
     expect(state.overflowX, 'the page gained a horizontal axis').toBeLessThanOrEqual(1);
-    expect(state.namesVisible, 'the four procedure states are not all readable').toBe(4);
+    expect(state.statesVisible, 'a state of the second half is not readable').toEqual([3, 3, 3, 3]);
+    expect(state.galleryControls, 'the gallery lost its controls').toBe(2);
+    expect(state.galleryCards, 'the gallery lost its frames').toBeGreaterThan(3);
+    expect(state.videoControls, 'a video lost its play control').toBeGreaterThan(0);
 
     // No scene is built, so none of the boxes that exist only to hold scroll may
     // survive: the hero's spacer alone is two and a half screens of nothing.
@@ -488,5 +550,126 @@ test.describe('reduced motion', () => {
     expect(state.heroSpacer, 'the hero scroll spacer did not collapse').toBe(0);
     expect(state.hidden, 'reveal targets left hidden with no animation to show them').toBe(0);
     expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
+  });
+});
+
+/**
+ * The two blocks of the second half that are read with the hands rather than
+ * with the scrollbar.
+ */
+test.describe('the studio gallery', () => {
+  test('moves on its controls, without a hover anywhere', async ({ page }) => {
+    const viart = new ViartPage(page);
+    await viart.goto();
+
+    const gallery = page.locator('.shot-gallery');
+    await gallery.scrollIntoViewIfNeeded();
+
+    const read = () =>
+      page.evaluate(() => {
+        const track = document.querySelector<HTMLElement>('.shot-track')!;
+        const active = document.querySelector<HTMLElement>('.shot-card.is-active');
+        return {
+          left: Math.round(track.scrollLeft),
+          // The whole row lives inside the track's own overflow — the document
+          // may never gain an axis because of it.
+          overflowX:
+            document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          activeIndex: active
+            ? Array.from(track.children).indexOf(active)
+            : -1,
+          // Every frame carries its own index and caption, so nothing here is
+          // only reachable by pointing at it.
+          captions: document.querySelectorAll('.shot-card .shot-text').length,
+          indices: document.querySelectorAll('.shot-card .shot-index').length,
+          cards: track.children.length,
+        };
+      });
+
+    const first = await read();
+    expect(first.activeIndex, 'no frame is active on arrival').toBe(0);
+    expect(first.captions, 'a frame has no caption').toBe(first.cards);
+    expect(first.indices, 'a frame has no index').toBe(first.cards);
+    expect(first.overflowX).toBeLessThanOrEqual(1);
+
+    // Forward on the control, and the position actually moved.
+    await page.locator('.shot-buttons button[aria-label="Следующий кадр"]').click();
+    await page.waitForTimeout(700);
+    const next = await read();
+    expect(next.left, 'the next control did not move the track').toBeGreaterThan(first.left);
+    expect(next.activeIndex).toBe(1);
+
+    // …and back, to the position it came from.
+    await page.locator('.shot-buttons button[aria-label="Предыдущий кадр"]').click();
+    await page.waitForTimeout(700);
+    const back = await read();
+    expect(back.activeIndex).toBe(0);
+    expect(Math.abs(back.left - first.left)).toBeLessThan(8);
+
+    // The first control is unusable at the first frame and the last at the last
+    // — the row has ends, and they are stated rather than silently absorbed.
+    await expect(
+      page.locator('.shot-buttons button[aria-label="Предыдущий кадр"]'),
+    ).toBeDisabled();
+
+    // Keyboard reaches the same position as the buttons.
+    await page.locator('.shot-track').focus();
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(700);
+    expect((await read()).activeIndex, 'the arrow keys do not move the track').toBe(1);
+
+    expect(viart.pageErrors, `page errors:\n${viart.pageErrors.join('\n')}`).toEqual([]);
+  });
+});
+
+test.describe('the video wall', () => {
+  test('is portrait, equal and pressed rather than scrolled into', async ({ page }) => {
+    const viart = new ViartPage(page);
+    await viart.goto();
+
+    const wall = page.locator('.reel-wall');
+    await wall.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+
+    const state = await page.evaluate(() => {
+      const frames = Array.from(document.querySelectorAll<HTMLElement>('.reel-frame'));
+      const visible = frames.filter((frame) => frame.getBoundingClientRect().width > 0);
+      return {
+        // A 9:16 frame around a 1080×1920 file has nothing to crop; anything
+        // wider than tall is the failure this guards.
+        ratios: visible.map((frame) => {
+          const box = frame.getBoundingClientRect();
+          return Math.round((box.width / box.height) * 100) / 100;
+        }),
+        // Equal priority is a measurement: one row, one width.
+        widths: visible.map((frame) => Math.round(frame.getBoundingClientRect().width)),
+        // Nothing is playing, and nothing started playing on the way here.
+        playing: Array.from(document.querySelectorAll('video')).filter(
+          (video) => !video.paused,
+        ).length,
+        // `preload="none"` — the scroll may not pull tens of megabytes.
+        preloads: Array.from(document.querySelectorAll('video')).map((video) => video.preload),
+        controls: document.querySelectorAll('.reel-play').length,
+      };
+    });
+
+    expect(state.ratios.length, 'no video frame is on screen').toBeGreaterThan(0);
+    for (const ratio of state.ratios) {
+      expect(ratio, `a video frame is ${ratio}:1 — not portrait`).toBeCloseTo(9 / 16, 1);
+    }
+    expect(new Set(state.widths).size, 'the visible clips are not the same size').toBe(1);
+    expect(state.playing, 'the scroll started a video').toBe(0);
+    expect(new Set(state.preloads)).toEqual(new Set(['none']));
+    expect(state.controls, 'a clip has no play control').toBeGreaterThan(0);
+
+    // Pressing play is what starts it — and scrolling away does not stop it.
+    await page.locator('.reel-play').first().click();
+    await page.waitForTimeout(1500);
+    expect(
+      await page.evaluate(() =>
+        Array.from(document.querySelectorAll('video')).some((video) => !video.paused),
+      ),
+      'the play control did not start the clip',
+    ).toBe(true);
   });
 });

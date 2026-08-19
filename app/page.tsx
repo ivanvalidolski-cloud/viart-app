@@ -1,13 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
 import { usePointerFine } from './lib/usePointerFine';
-import { Backlight } from './components/ui/backlight';
+import { StudioGallery, type StudioShot } from './components/studio-gallery';
+import { VideoWall, type StudioVideo } from './components/video-wall';
 import { BorderBeam } from './components/ui/border-beam';
 import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
-import { Lens } from './components/ui/lens';
 import Magnet from './components/ui/magnet';
 import { NumberTicker } from './components/ui/number-ticker';
 import { TextAnimate } from './components/ui/text-animate';
@@ -102,7 +102,6 @@ const massagePrices = [
 ];
 
 type Review = { name: string; rating: number; text: string; date?: string };
-type VideoState = 'poster' | 'preview' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
 
 const reviews: Review[] = [
   {
@@ -155,51 +154,181 @@ const reviews: Review[] = [
   },
 ];
 
-/** The four states of the procedure, one image and one line each. */
-const everlasStages = [
+/**
+ * The laser chapter — three states of one direction, held in one sticky
+ * viewport. Each carries the направление, the machine, an index, a short
+ * heading, two or three lines and the photograph that belongs to them; the
+ * scene drives the copy and the picture off one number, so a state is one
+ * thing.
+ */
+const laserStates = [
+  {
+    index: '01',
+    title: 'Курс, а не разовая процедура',
+    lines: [
+      'Процедуры идут с интервалом 4–6 недель.',
+      'Сколько их нужно, зависит от зоны, кожи и волос.',
+      'Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.',
+    ],
+    src: '/images/gallery/4.jpg',
+    alt: 'Мастер ViART проводит процедуру лазерной эпиляции ног, клиентка в защитных очках',
+    focus: '50% 46%',
+  },
+  {
+    index: '02',
+    title: 'Параметры под зону',
+    lines: [
+      'Мастер уточняет противопоказания и осматривает зону.',
+      'Параметры аппарата подбираются под зону, тип кожи и волос.',
+      'Перед процедурой наносится гель, во время работы используются защитные очки.',
+    ],
+    src: '/images/gallery/7.jpg',
+    alt: 'Манипула аппарата EVERLAS на подготовленной гелем коже руки',
+    focus: '50% 42%',
+  },
+  {
+    index: '03',
+    title: 'Результат накапливается',
+    lines: [
+      'Отрастающий волос со временем становится тоньше и светлее, а самого волоса — меньше.',
+      'Ориентир по числу процедур мастер называет на первой консультации.',
+    ],
+    src: '/images/gallery/8.jpg',
+    alt: 'Клиентка ViART у подсвеченного зеркала в студии',
+    focus: '50% 38%',
+  },
+];
+
+/**
+ * The two machines, one editorial scene each and nothing else on the page that
+ * claims to be equipment. Every line here is either the studio's own approved
+ * copy or a fact visible in the photograph — no modes, no power figures, no
+ * specification that has not been confirmed.
+ *
+ * The photographs are the machines themselves: `6.jpg` is the laser and its
+ * protective glasses, `2.jpg` is the massage unit with the roller manipula in
+ * the specialist's hands.
+ */
+const equipment = [
+  {
+    name: 'EVERLAS',
+    procedure: 'Лазерная эпиляция',
+    copy: 'Аппарат, на котором в студии проходит лазерная эпиляция. Работа идёт по разметке зоны, с гелем и защитными очками.',
+    master: 'Мастер уточняет противопоказания, осматривает зону и подбирает параметры под тип кожи и волос.',
+    src: '/images/gallery/6.jpg',
+    alt: 'Аппарат для лазерной эпиляции EVERLAS с защитными очками в кабинете ViART',
+    tab: 0,
+    cta: 'Зоны и цены',
+  },
+  {
+    name: 'TURBO G8',
+    procedure: 'Аппаратный массаж',
+    copy: 'Роликовая манипула прорабатывает выбранные зоны — живот, ягодицы или две зоны на выбор.',
+    master: 'Интенсивность мастер регулирует по вашим ощущениям прямо во время процедуры.',
+    src: '/images/gallery/2.jpg',
+    alt: 'Специалист ViART держит роликовую манипулу аппарата аппаратного массажа TURBO G8',
+    tab: 2,
+    cta: 'Программы и цены',
+  },
+];
+
+/** The visit itself — one picture and one caption per state. */
+const procedureSlides = [
   {
     index: '01',
     title: 'Подготовка',
     copy: 'Мастер уточняет противопоказания, осматривает зону и наносит гель.',
     src: '/images/gallery/1.jpg',
     alt: 'Мастер ViART наносит гель перед процедурой лазерной эпиляции',
+    focus: '50% 34%',
   },
   {
     index: '02',
-    title: 'Настройка',
-    copy: 'Параметры аппарата подбираются под зону, тип кожи и волос.',
-    src: '/images/gallery/6.jpg',
-    alt: 'Аппарат лазерной эпиляции EVERLAS и защитные очки в кабинете ViART',
+    title: 'Лазерная эпиляция',
+    copy: 'Работа по разметке на аппарате EVERLAS; во время процедуры используются защитные очки.',
+    src: '/images/equipment/everlas/everlas-procedure-mirrored.png',
+    alt: 'Процедура лазерной эпиляции на аппарате EVERLAS: манипула на подготовленной коже руки',
+    focus: '50% 52%',
   },
   {
     index: '03',
-    title: 'Процедура',
-    copy: 'Работа по разметке; во время процедуры используются защитные очки.',
-    src: '/images/equipment/everlas/everlas-procedure-mirrored.png',
-    alt: 'Процедура лазерной эпиляции на аппарате EVERLAS',
-  },
-  {
-    index: '04',
-    title: 'Курс',
-    copy: 'Результат накапливается: интервал между процедурами — 4–6 недель, число зависит от зоны.',
-    src: '/images/gallery/8.jpg',
-    alt: 'Клиентка ViART у зеркала после процедуры',
+    title: 'Аппаратный массаж',
+    copy: 'Роликовая манипула TURBO G8 проходит выбранную зону — живот, ягодицы или две зоны на выбор.',
+    src: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg',
+    alt: 'Процедура аппаратного массажа TURBO G8: роликовая манипула на животе',
+    focus: '50% 58%',
   },
 ];
 
-/** Mosaic rows. A cell without a source still tiles in — the gaps are the grid. */
-const mosaicRows: Array<Array<{ src: string; alt: string } | null>> = [
-  [
-    { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
-    null,
-    { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART' },
-  ],
-  [
-    { src: '/images/gallery/8.jpg', alt: 'Зона с подсвеченным зеркалом в студии ViART' },
-    { src: '/images/gallery/1.jpg', alt: 'Гель и рабочая панель аппарата перед процедурой' },
-    null,
-    { src: '/images/gallery/7.jpg', alt: 'Манипула аппарата на подготовленной коже руки' },
-  ],
+/**
+ * «Студия в деталях» — the horizontal gallery.
+ *
+ * Every frame carries its own index and caption, so nothing here depends on a
+ * hover. The protective glasses are one card among the others: they are a
+ * detail of the room, not an attraction with a magnifier on it.
+ */
+const studioShots: StudioShot[] = [
+  {
+    src: '/images/gallery/3.jpg',
+    alt: 'Защитные очки, гель и деревянные шпатели на столике в кабинете ViART',
+    caption: 'Защитные очки и расходные материалы на рабочем столике кабинета.',
+    focus: '50% 56%',
+  },
+  {
+    src: '/images/gallery/6.jpg',
+    alt: 'Аппарат для лазерной эпиляции EVERLAS у подсвеченного зеркала',
+    caption: 'Кабинет лазерной эпиляции: аппарат EVERLAS и очки перед процедурой.',
+    focus: '50% 40%',
+  },
+  {
+    src: '/images/gallery/1.jpg',
+    alt: 'Мастер ViART наносит гель перед процедурой',
+    caption: 'Подготовка: гель наносится на зону прямо перед началом работы.',
+    focus: '50% 32%',
+  },
+  {
+    src: '/images/gallery/5.jpg',
+    alt: 'Сухоцветы и полки с декором в интерьере студии ViART',
+    caption: 'Зона ожидания: сухоцветы, полки и тёплый свет.',
+    focus: '50% 44%',
+  },
+  {
+    src: '/images/gallery/8.jpg',
+    alt: 'Клиентка ViART у подсвеченного зеркала',
+    caption: 'Подсвеченное зеркало у выхода из кабинета.',
+    focus: '50% 36%',
+  },
+  {
+    src: '/images/gallery/2.jpg',
+    alt: 'Роликовая манипула аппарата TURBO G8 в руках специалиста',
+    caption: 'Аппаратный массаж: роликовая манипула TURBO G8.',
+    focus: '50% 46%',
+  },
+];
+
+/**
+ * The portrait clips.
+ *
+ * Only the files that actually exist in `public/videos/` are listed. The wall
+ * lays out whatever it is given at one size, so adding the remaining clips is
+ * adding entries here — no layout change follows.
+ */
+const studioVideos: StudioVideo[] = [
+  {
+    src: '/videos/viart-procedure-prep.mp4',
+    poster: '/images/gallery/1.jpg',
+    title: 'Знакомство с ViART',
+    meta: 'Подготовка к процедуре',
+    alt: 'Кадр из видео: подготовка к процедуре в студии ViART',
+  },
+];
+
+/** The first-visit deck's own frames — one per complex, in the deck's order. */
+const deckImages = [
+  '/images/gallery/4.jpg',
+  '/images/gallery/7.jpg',
+  '/images/gallery/8.jpg',
+  '/images/gallery/6.jpg',
 ];
 
 export default function Home() {
@@ -209,11 +338,6 @@ export default function Home() {
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [reviewIndex, setReviewIndex] = useState(0);
   const [reviewDirection, setReviewDirection] = useState(1);
-  const [videoState, setVideoState] = useState<VideoState>('poster');
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const videoStateRef = useRef<VideoState>('poster');
-  const intentionalAudioRef = useRef(false);
-  const masterVideoRef = useRef<HTMLVideoElement | null>(null);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
 
@@ -289,32 +413,7 @@ export default function Home() {
     changeReview(dx < 0 ? 1 : -1);
   };
 
-  const playMasterVideo = () => {
-    const video = masterVideoRef.current;
-    if (!video) return;
-    if (videoState === 'error') video.load();
-    if (videoState === 'ended' || videoState === 'preview') video.currentTime = 0;
-    intentionalAudioRef.current = true;
-    setIsAudioEnabled(true);
-    video.muted = false;
-    videoStateRef.current = 'loading';
-    setVideoState('loading');
-    video.play()
-      .then(() => {
-        videoStateRef.current = 'playing';
-        setVideoState('playing');
-      })
-      .catch(() => {
-        intentionalAudioRef.current = false;
-        setIsAudioEnabled(false);
-        videoStateRef.current = 'error';
-        setVideoState('error');
-      });
-  };
-
   const activeReview = reviews[reviewIndex];
-
-  const mosaicSource = (src: string) => ({ '--mosaic-src': `url('${src}')` }) as CSSProperties;
 
   return (
     <div className="viart-site">
@@ -414,97 +513,56 @@ export default function Home() {
         </div>
 
         {/* ---------------------------------------------------------------- */}
-        {/* SERVICES — the two directions, as a phased capsule swap.         */}
-        {/* Mechanics: motionprompts.dev/component/capsules-animated-columns */}
+        {/* LASER — the direction, as three states of one sticky viewport.    */}
+        {/* Desktop: 100svh of stage plus 0.9 of scroll — about 1.9 screens   */}
+        {/* for three states, and every screen of it puts something new on    */}
+        {/* the page. The copy and the picture of a state are driven off one  */}
+        {/* number in `laserStory.ts`, so they arrive and leave together.     */}
+        {/* Mobile: the same three states as ordinary stacked blocks.         */}
         {/* ---------------------------------------------------------------- */}
-        <section id="services" className="cap-scene">
-          <div className="cap-wrapper">
-            <div className="cap-col cap-col--1">
-              <div className="cap-content">
-                <div className="cap-plate cap-plate--text">
-                  <div>
-                    <p className="tech-label cap-kicker">EVERLAS · направление 01</p>
-                    <h2>Лазерная эпиляция</h2>
+        <section id="services" className="laser-scene">
+          <div className="laser-stage">
+            {/* One block per state, each holding its own picture and its own
+                copy. On a desktop the block is `display: contents` and the two
+                children are placed into the stage's two columns — all three
+                pictures in one cell, all three copies in the other — so the
+                grid does the stacking. On a phone the same block is an ordinary
+                media-then-text scene in flow. Either way a state is one node in
+                the markup, which is why they cannot be reordered apart. */}
+            <div className="laser-inner">
+              {laserStates.map((state) => (
+                <div className="laser-state" key={state.index}>
+                  <figure className="laser-frame">
+                    <Image
+                      src={state.src}
+                      alt={state.alt}
+                      fill
+                      sizes="(max-width: 899px) 92vw, 56vw"
+                      className="cover-image"
+                      style={{ objectPosition: state.focus }}
+                    />
+                  </figure>
+
+                  <div className="laser-copy">
+                    <p className="tech-label laser-kicker">
+                      <span>Лазерная эпиляция · EVERLAS</span>
+                      <span className="laser-index">{state.index}</span>
+                    </p>
+                    <h2>{state.title}</h2>
+                    <div className="laser-lines">
+                      {state.lines.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
                   </div>
-                  <p className="cap-lead">Курс процедур вместо ежедневной бритвы.</p>
                 </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--2">
-              <div className="cap-img cap-img--1">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/6.jpg"
-                    alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">EVERLAS · аппарат</p>
-                </div>
-              </div>
-              <div className="cap-img cap-img--2">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/7.jpg"
-                    alt="Манипула аппарата EVERLAS на подготовленной коже руки"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">Процедура по зоне</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--3">
-              <div className="cap-plate cap-plate--text cap-text--a">
-                <div>
-                  <h3 className="cap-split">Курс, а не разовая процедура</h3>
-                </div>
-                <div className="cap-points">
-                  <p className="cap-split">Процедуры идут с интервалом 4–6 недель — сколько их нужно, зависит от зоны.</p>
-                  <p className="cap-split">Отрастающий волос со временем становится тоньше и светлее, а самого волоса — меньше.</p>
-                  <p className="cap-split">Параметры мастер подбирает под зону и тип кожи, во время процедуры — защитные очки.</p>
-                </div>
-              </div>
-
-              {/* Every text node in this column is split, as in the source:
-                  an unmasked line here would sit visibly on top of the first
-                  block from the very first frame. */}
-              <div className="cap-plate--text cap-text--b">
-                <div>
-                  <p className="tech-label cap-kicker cap-split">TURBO G8 · направление 02</p>
-                  <h3 className="cap-split">Аппаратный массаж</h3>
-                </div>
-                <div className="cap-points">
-                  <p className="cap-split">Роликовая манипула прорабатывает выбранные зоны — живот, ягодицы или две зоны на выбор.</p>
-                  <p className="cap-split">Интенсивность мастер регулирует по вашим ощущениям прямо во время процедуры.</p>
-                  <p className="cap-split">Первое посещение «Коррекции фигуры» — 1500 ₽ вместо 2500 ₽.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--4">
-              <div className="cap-img">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/2.jpg"
-                    alt="Роликовая манипула аппарата TURBO G8 в студии ViART"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">TURBO G8 · манипула</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Outside the four columns on purpose: both routes into the price
-              list stay visible and keyboard-reachable through every phase. */}
-          <div className="cap-actions">
+          {/* Outside the stage on purpose: both routes into the price list
+              stay in flow and keyboard-reachable at every scroll position. */}
+          <div className="laser-actions">
             <InteractiveHoverButton
               type="button"
               className="viart-cta viart-cta--outline"
@@ -515,9 +573,9 @@ export default function Home() {
             <InteractiveHoverButton
               type="button"
               className="viart-cta viart-cta--outline"
-              onClick={() => openPriceTab(2)}
+              onClick={() => openPriceTab(1)}
             >
-              Программы и цены
+              Комплексы со скидкой 30%
             </InteractiveHoverButton>
           </div>
         </section>
@@ -618,81 +676,102 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* EVERLAS — the one signature moment of the second half. A single  */}
-        {/* spatial scene: the machine comes forward out of its own depth,   */}
-        {/* the manipula detail arrives behind it, the copy only drifts.     */}
-        {/* The procedure sequence below continues out of it — same chapter, */}
-        {/* no heading, no second opening.                                    */}
+        {/* EQUIPMENT — two machines, two procedures, two equal scenes.       */}
+        {/* Not a scene in the motion sense: each is an ordinary ~80svh       */}
+        {/* editorial block that arrives once, mirrored against the other.    */}
         {/* ---------------------------------------------------------------- */}
-        <section id="everlas" className="everlas-chapter">
-          <div className="ev-stage">
-            <div className="ev-stage__inner">
-              <div className="ev-copy">
-                <p className="eyebrow">Оборудование</p>
-                <h2>Лазерная эпиляция<br />на EVERLAS</h2>
-                <p className="ev-copy__lead">
-                  Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
-                  Четыре состояния одного курса — от подготовки до интервалов между процедурами.
+        <section id="everlas" className="rig-chapter">
+          <div className="rig-intro">
+            <div>
+              <p className="eyebrow" data-reveal="">Оборудование</p>
+              <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
+                {'Два аппарата —\nдве процедуры'}
+              </TextAnimate>
+            </div>
+            <p data-reveal="" data-reveal-delay="0.08">
+              На чём работает студия и что мастер делает на каждом из аппаратов.
+            </p>
+          </div>
+
+          {equipment.map((machine, index) => (
+            <article
+              className={`rig-scene ${index % 2 === 1 ? 'rig-scene--mirrored' : ''}`}
+              key={machine.name}
+            >
+              <figure className="rig-media" data-reveal="media">
+                <Image
+                  src={machine.src}
+                  alt={machine.alt}
+                  fill
+                  sizes="(max-width: 899px) 92vw, 46vw"
+                  className="cover-image"
+                />
+              </figure>
+
+              <div className="rig-copy" data-reveal="" data-reveal-delay="0.08">
+                <p className="tech-label rig-kicker">
+                  {String(index + 1).padStart(2, '0')} · {machine.procedure}
                 </p>
+                <h3 className="rig-name">{machine.name}</h3>
+                <p className="rig-lead">{machine.copy}</p>
+                <p className="rig-master">
+                  <span className="tech-label">Мастер</span>
+                  {machine.master}
+                </p>
+                <InteractiveHoverButton
+                  type="button"
+                  className="viart-cta viart-cta--outline"
+                  onClick={() => openPriceTab(machine.tab)}
+                >
+                  {machine.cta}
+                </InteractiveHoverButton>
               </div>
+            </article>
+          ))}
+        </section>
 
-              <div className="ev-media">
-                <div className="ev-frame">
-                  <div className="ev-glow" aria-hidden="true" />
-                  <figure className="ev-plate ev-plate--main">
+        {/* ---------------------------------------------------------------- */}
+        {/* THE VISIT — three slides, one sticky viewport, ~2.1 screens.      */}
+        {/* Picture and caption are one state: both read the same presence,   */}
+        {/* so every state is a short joint enter, a long read, a joint exit. */}
+        {/* ---------------------------------------------------------------- */}
+        <section className="slide-scene">
+          <div className="slide-stage">
+            {/* Same shape as the laser chapter: one node per state, holding its
+                own picture and its own caption. On a desktop the node is
+                `display: contents` and the two children are placed into the
+                stage's two rows — every frame in the first, every caption in
+                the second. Stacked, the node is simply a picture with its
+                caption under it. */}
+            <div className="slide-inner">
+              {procedureSlides.map((slide) => (
+                <div className="slide-state" key={slide.index}>
+                  <figure className="slide-frame">
                     <Image
-                      src="/images/gallery/6.jpg"
-                      alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
+                      src={slide.src}
+                      alt={slide.alt}
                       fill
-                      sizes="(max-width: 899px) 76vw, 34vw"
+                      sizes="(max-width: 899px) 92vw, 64vw"
                       className="cover-image"
+                      style={{ objectPosition: slide.focus }}
                     />
                   </figure>
-                  <figure className="ev-plate ev-plate--detail">
-                    <Image
-                      src="/images/gallery/7.jpg"
-                      alt="Манипула аппарата EVERLAS на подготовленной коже руки"
-                      fill
-                      sizes="(max-width: 899px) 36vw, 16vw"
-                      className="cover-image"
-                    />
-                  </figure>
+
+                  <div className="slide-caption">
+                    <span className="tech-label slide-index">{slide.index}</span>
+                    <span className="slide-title">{slide.title}</span>
+                    <span className="slide-copy">{slide.copy}</span>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* The four states. One frame is centred and one line is shown at a
-              time, both derived from the same scroll position, so the picture
-              and the words can never disagree. */}
-          <div className="spot-scene">
-            <div className="spot-images">
-              {everlasStages.map((stage) => (
-                <figure className="spot-img" key={stage.index}>
-                  <Image
-                    src={stage.src}
-                    alt={stage.alt}
-                    fill
-                    sizes="(max-width: 1000px) 92vw, 35vw"
-                    className="cover-image"
-                  />
-                </figure>
-              ))}
-            </div>
-
-            <ol className="spot-names">
-              {everlasStages.map((stage) => (
-                <li className="spot-name" key={stage.index}>
-                  <span className="spot-name__index tech-label">{stage.index}</span>
-                  <span className="spot-name__title">{stage.title}</span>
-                  <span className="spot-name__copy">{stage.copy}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="spot-outro" data-reveal="">
-            <p>Число процедур зависит от зоны, кожи и волос — мастер называет ориентир на первой консультации.</p>
+          <div className="slide-outro" data-reveal="">
+            <p>
+              Число процедур зависит от зоны, кожи и волос — мастер называет ориентир на первой
+              консультации.
+            </p>
             <InteractiveHoverButton
               type="button"
               className="viart-cta viart-cta--outline"
@@ -704,162 +783,47 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* GALLERY — every plate tiles in as a 3×3 clip-path mosaic.        */}
-        {/* Mechanics: motionprompts.dev/component/mask-reveal               */}
+        {/* STUDIO — a horizontal gallery, not a mosaic. Every frame carries  */}
+        {/* its own index and caption, so nothing here needs a hover; the     */}
+        {/* protective glasses are one card among the rest.                   */}
         {/* ---------------------------------------------------------------- */}
-        <section id="gallery" className="chapter mosaic-scene">
+        <section id="gallery" className="chapter studio-chapter">
           <div className="gallery-topline">
             <div>
               <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
                 {'Студия\nв деталях'}
               </TextAnimate>
             </div>
-            <p data-reveal="">Реальные кадры пространства, оборудования и процесса.</p>
+            <p data-reveal="">
+              Реальные кадры пространства, оборудования и процесса — листайте вбок.
+            </p>
           </div>
 
-          {mosaicRows.map((row, rowIndex) => (
-            <div className="mosaic-row" key={`mosaic-row-${rowIndex}`}>
-              {row.map((cell, cellIndex) =>
-                cell ? (
-                  <div
-                    className="mosaic-cell"
-                    key={cell.src}
-                    style={mosaicSource(cell.src)}
-                    role="img"
-                    aria-label={cell.alt}
-                  />
-                ) : (
-                  <div
-                    className="mosaic-cell mosaic-cell--void"
-                    key={`void-${rowIndex}-${cellIndex}`}
-                    aria-hidden="true"
-                  />
-                ),
-              )}
-            </div>
-          ))}
-
-          {/* The lens plate sits outside the rows: it renders its children
-              twice, and a mosaic cell must contain exactly nine masks. */}
-          <figure className="mosaic-feature" data-reveal="media">
-            {pointerFine ? (
-              <Lens zoomFactor={1.6} lensSize={210} ariaLabel="Увеличить кадр">
-                <Image
-                  src="/images/gallery/3.jpg"
-                  alt="Гель, деревянные шпатели и защитные очки на столике в кабинете ViART"
-                  width={1600}
-                  height={1067}
-                  sizes="(max-width: 899px) 100vw, 90vw"
-                  className="cover-image"
-                />
-              </Lens>
-            ) : (
-              <Image
-                src="/images/gallery/3.jpg"
-                alt="Гель, деревянные шпатели и защитные очки на столике в кабинете ViART"
-                width={1600}
-                height={1067}
-                sizes="(max-width: 899px) 100vw, 90vw"
-                className="cover-image"
-              />
-            )}
-            <figcaption className="tech-label">
-              Расходные материалы и защитные очки{pointerFine ? ' · наведите, чтобы приблизить' : ''}
-            </figcaption>
-          </figure>
+          <StudioGallery shots={studioShots} label="Кадры студии ViART" />
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* VIDEO — the second half of the studio chapter. Ordinary flow: the */}
-        {/* plate sits where it belongs and only fades in.                    */}
+        {/* VIDEO — portrait clips, one row, all of them equal. Playback is   */}
+        {/* pressed, never scrolled into.                                     */}
         {/* ---------------------------------------------------------------- */}
-        <section id="video" className="grow-scene">
-          <div className="grow-container">
-            {/* Outside the clipped plate on purpose — the glow has to spill. */}
-            <Backlight className="grow-backlight" blur={34}>
-              <div className="grow-backlight__plate" aria-hidden="true" />
-            </Backlight>
-
-            <div className="grow-preview" data-reveal="media">
-              <div className="master-media">
-                <video
-                  ref={masterVideoRef}
-                  src="/videos/viart-procedure-prep.mp4"
-                  poster="/images/gallery/1.jpg"
-                  playsInline
-                  muted={!isAudioEnabled}
-                  // The file is ~19MB and its `moov` atom sits at the very end,
-                  // so `metadata` costs a fetch of nearly the whole thing before
-                  // anything is playable — paid by every visitor, most of whom
-                  // never press play, and competing for bandwidth with the
-                  // images the scenes are measured against. The poster is what
-                  // the section shows until the play button is pressed.
-                  preload="none"
-                  controls={videoState === 'playing'}
-                  onPlay={() => {
-                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onPlaying={() => {
-                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onWaiting={() => {
-                    if (!intentionalAudioRef.current) return;
-                    videoStateRef.current = 'loading';
-                    setVideoState('loading');
-                  }}
-                  onPause={(event) => {
-                    if (event.currentTarget.ended) return;
-                    const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
-                      ? 'paused'
-                      : 'poster';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onEnded={() => {
-                    intentionalAudioRef.current = false;
-                    setIsAudioEnabled(false);
-                    videoStateRef.current = 'ended';
-                    setVideoState('ended');
-                  }}
-                  onError={() => {
-                    intentionalAudioRef.current = false;
-                    setIsAudioEnabled(false);
-                    videoStateRef.current = 'error';
-                    setVideoState('error');
-                  }}
-                />
-                {videoState !== 'playing' && videoState !== 'error' && (
-                  <button
-                    type="button"
-                    className="master-play"
-                    onClick={playMasterVideo}
-                    aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
-                    disabled={videoState === 'loading'}
-                  >
-                    <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                  </button>
-                )}
-                {videoState === 'error' && (
-                  <div className="master-error" role="alert">
-                    <p>Видео временно недоступно.</p>
-                    <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
-                  </div>
-                )}
-              </div>
+        <section id="video" className="reel-chapter">
+          <div className="reel-topline">
+            <div>
+              <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
+                {'Видео\nиз студии'}
+              </TextAnimate>
             </div>
-
-            <div className="grow-title">
-              <p>Знакомство с ViART</p>
-              <p>Коммунарка · Бачуринская 11а к1</p>
-            </div>
+            <p data-reveal="">
+              Посмотрите, как проходит подготовка к процедуре и познакомьтесь с атмосферой студии.
+            </p>
           </div>
 
-          <div className="grow-context" data-reveal="">
-            <p>Посмотрите, как проходит подготовка к процедуре и познакомьтесь с атмосферой студии.</p>
+          <div data-reveal="media">
+            <VideoWall videos={studioVideos} />
+          </div>
+
+          <div className="reel-context" data-reveal="">
+            <p>Коммунарка · Бачуринская 11а к1</p>
             <a className="text-link" href="#pricing">Услуги и цены <span>↘</span></a>
           </div>
         </section>
@@ -891,7 +855,7 @@ export default function Home() {
               {epilationComplexes.women.map((complex, index) => (
                 <article className="deck-card" key={complex.name}>
                   <Image
-                    src={everlasStages[index].src}
+                    src={deckImages[index % deckImages.length]}
                     alt=""
                     fill
                     sizes="(max-width: 1000px) 95vw, 50vw"
