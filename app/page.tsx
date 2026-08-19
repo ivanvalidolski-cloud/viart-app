@@ -1,11 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
 import { usePointerFine } from './lib/usePointerFine';
 import { AnimatedBeam } from './components/ui/animated-beam';
-import { Backlight } from './components/ui/backlight';
 import { BorderBeam } from './components/ui/border-beam';
 import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
 import { Lens } from './components/ui/lens';
@@ -94,6 +93,10 @@ const epilationComplexes: Record<PriceGender, Array<{ name: string; detail: stri
     { name: '«Основной»', detail: 'Спина полностью + пах полностью + подмышки', price: '7 300 ₽', firstVisitPrice: '5 110 ₽' },
   ],
 };
+
+/** The one complex First Visit features — "Популярный" is the closest thing
+ *  to a default without inventing a promotional pick. */
+const firstVisitComplex = epilationComplexes.women[2];
 
 const massagePrices = [
   { name: 'Вибромассаж TURBO G8 „Коррекция фигуры“', price: 'Первое посещение — 1500 ₽ / далее — 2500 ₽' },
@@ -188,19 +191,15 @@ const everlasStages = [
   },
 ];
 
-/** Mosaic rows. A cell without a source still tiles in — the gaps are the grid. */
-const mosaicRows: Array<Array<{ src: string; alt: string } | null>> = [
-  [
-    { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
-    null,
-    { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART' },
-  ],
-  [
-    { src: '/images/gallery/8.jpg', alt: 'Зона с подсвеченным зеркалом в студии ViART' },
-    { src: '/images/gallery/1.jpg', alt: 'Гель и рабочая панель аппарата перед процедурой' },
-    null,
-    { src: '/images/gallery/7.jpg', alt: 'Манипула аппарата на подготовленной коже руки' },
-  ],
+/** The studio gallery's horizontal line. The first frame is the dominant one;
+ *  the rest support it with context — space, equipment, materials. */
+const studioGalleryImages = [
+  { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART', feature: true },
+  { src: '/images/gallery/2.jpg', alt: 'Роликовая манипула аппарата TURBO G8 в студии ViART' },
+  { src: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg', alt: 'Процедура аппаратного массажа на TURBO G8' },
+  { src: '/images/gallery/3.jpg', alt: 'Гель, деревянные шпатели и защитные очки на столике в кабинете ViART' },
+  { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
+  { src: '/images/gallery/8.jpg', alt: 'Зона с подсвеченным зеркалом в студии ViART' },
 ];
 
 export default function Home() {
@@ -293,8 +292,6 @@ export default function Home() {
   };
 
   const activeReview = reviews[reviewIndex];
-
-  const mosaicSource = (src: string) => ({ '--mosaic-src': `url('${src}')` }) as CSSProperties;
 
   return (
     <div className="viart-site">
@@ -675,171 +672,70 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* GALLERY — every plate tiles in as a 3×3 clip-path mosaic.        */}
-        {/* Mechanics: motionprompts.dev/component/mask-reveal               */}
+        {/* STUDIO — a horizontal line of portrait frames, continuing the    */}
+        {/* Procedure card line rather than resetting into a grid.          */}
         {/* ---------------------------------------------------------------- */}
-        <section id="gallery" className="chapter mosaic-scene">
+        <section id="gallery" className="chapter studio-scene">
           <div className="gallery-topline">
             <div>
               <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
                 {'Студия\nв деталях'}
               </TextAnimate>
             </div>
-            <p data-reveal="">Реальные кадры пространства, оборудования и процесса.</p>
+            <p data-reveal="">ViART · Коммунарка</p>
           </div>
 
-          {mosaicRows.map((row, rowIndex) => (
-            <div className="mosaic-row" key={`mosaic-row-${rowIndex}`}>
-              {row.map((cell, cellIndex) =>
-                cell ? (
-                  <div
-                    className="mosaic-cell"
-                    key={cell.src}
-                    style={mosaicSource(cell.src)}
-                    role="img"
-                    aria-label={cell.alt}
+          <div
+            className="studio-track"
+            data-reveal="media"
+            role="region"
+            aria-label="Галерея студии"
+            tabIndex={0}
+          >
+            {studioGalleryImages.map((image) =>
+              image.feature && pointerFine ? (
+                <figure className="studio-card studio-card--feature" key={image.src}>
+                  {/* Not `fill`: the Lens wrapper it sits inside has no height
+                      of its own, so a `fill` image has nothing to size
+                      against. Sizing the frame from its own aspect-ratio
+                      sidesteps that instead of fighting for one. */}
+                  <Lens zoomFactor={1.6} lensSize={200} ariaLabel="Увеличить кадр">
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      width={800}
+                      height={1000}
+                      sizes="(max-width: 640px) 86vw, (max-width: 1000px) 60vw, 34vw"
+                      className="studio-feature-img"
+                    />
+                  </Lens>
+                </figure>
+              ) : (
+                <figure
+                  className={`studio-card ${image.feature ? 'studio-card--feature' : ''}`}
+                  key={image.src}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes={`(max-width: 640px) 86vw, (max-width: 1000px) ${image.feature ? '60vw' : '40vw'}, ${image.feature ? '34vw' : '22vw'}`}
+                    className="cover-image"
                   />
-                ) : (
-                  <div
-                    className="mosaic-cell mosaic-cell--void"
-                    key={`void-${rowIndex}-${cellIndex}`}
-                    aria-hidden="true"
-                  />
-                ),
-              )}
-            </div>
-          ))}
-
-          {/* The lens plate sits outside the rows: it renders its children
-              twice, and a mosaic cell must contain exactly nine masks. */}
-          <figure className="mosaic-feature" data-reveal="media">
-            {pointerFine ? (
-              <Lens zoomFactor={1.6} lensSize={210} ariaLabel="Увеличить кадр">
-                <Image
-                  src="/images/gallery/3.jpg"
-                  alt="Гель, деревянные шпатели и защитные очки на столике в кабинете ViART"
-                  width={1600}
-                  height={1067}
-                  sizes="(max-width: 899px) 100vw, 90vw"
-                  className="cover-image"
-                />
-              </Lens>
-            ) : (
-              <Image
-                src="/images/gallery/3.jpg"
-                alt="Гель, деревянные шпатели и защитные очки на столике в кабинете ViART"
-                width={1600}
-                height={1067}
-                sizes="(max-width: 899px) 100vw, 90vw"
-                className="cover-image"
-              />
+                </figure>
+              ),
             )}
-            <figcaption className="tech-label">
-              Расходные материалы и защитные очки{pointerFine ? ' · наведите, чтобы приблизить' : ''}
-            </figcaption>
-          </figure>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* VIDEO — the plate grows from a floating thumbnail into the frame. */}
-        {/* Mechanics: motionprompts.dev/component/vucko-scroll-animation-javascript */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="video" className="grow-scene">
-          <div className="grow-container">
-            {/* Outside the clipped plate on purpose — the glow has to spill. */}
-            <Backlight className="grow-backlight" blur={34}>
-              <div className="grow-backlight__plate" aria-hidden="true" />
-            </Backlight>
-
-            <div className="grow-preview">
-              <div className="master-media">
-                <video
-                  ref={masterVideoRef}
-                  src="/videos/viart-procedure-prep.mp4"
-                  poster="/images/gallery/1.jpg"
-                  playsInline
-                  muted={!isAudioEnabled}
-                  // The file is ~19MB and its `moov` atom sits at the very end,
-                  // so `metadata` costs a fetch of nearly the whole thing before
-                  // anything is playable — paid by every visitor, most of whom
-                  // never press play, and competing for bandwidth with the
-                  // images the scenes are measured against. The poster is what
-                  // the section shows until the play button is pressed.
-                  preload="none"
-                  controls={videoState === 'playing'}
-                  onPlay={() => {
-                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onPlaying={() => {
-                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onWaiting={() => {
-                    if (!intentionalAudioRef.current) return;
-                    videoStateRef.current = 'loading';
-                    setVideoState('loading');
-                  }}
-                  onPause={(event) => {
-                    if (event.currentTarget.ended) return;
-                    const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
-                      ? 'paused'
-                      : 'poster';
-                    videoStateRef.current = nextState;
-                    setVideoState(nextState);
-                  }}
-                  onEnded={() => {
-                    intentionalAudioRef.current = false;
-                    setIsAudioEnabled(false);
-                    videoStateRef.current = 'ended';
-                    setVideoState('ended');
-                  }}
-                  onError={() => {
-                    intentionalAudioRef.current = false;
-                    setIsAudioEnabled(false);
-                    videoStateRef.current = 'error';
-                    setVideoState('error');
-                  }}
-                />
-                {videoState !== 'playing' && videoState !== 'error' && (
-                  <button
-                    type="button"
-                    className="master-play"
-                    onClick={playMasterVideo}
-                    aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
-                    disabled={videoState === 'loading'}
-                  >
-                    <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                  </button>
-                )}
-                {videoState === 'error' && (
-                  <div className="master-error" role="alert">
-                    <p>Видео временно недоступно.</p>
-                    <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="grow-title">
-              <p>Знакомство с ViART</p>
-              <p>Коммунарка · Бачуринская 11а к1</p>
-            </div>
-          </div>
-
-          <div className="grow-context" data-reveal="">
-            <p>Посмотрите, как проходит подготовка к процедуре и познакомьтесь с атмосферой студии.</p>
-            <a className="text-link" href="#pricing">Услуги и цены <span>↘</span></a>
           </div>
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* COMPLEXES — the first-visit deck, one card per complex.          */}
-        {/* Mechanics: motionprompts.dev/component/sticky-cards-ashfall-rebuild-js */}
+        {/* FIRST VISIT — one vertical video carries the offer. The full      */}
+        {/* complex list lives in the price table; this shows one, not four. */}
+        {/* Placeholder media: no vertical clip of a specific master exists   */}
+        {/* yet, so the existing prep footage (native 1080×1920, genuinely    */}
+        {/* portrait) stands in until it is replaced.                        */}
         {/* ---------------------------------------------------------------- */}
-        <section id="promo" className="deck-chapter">
+        <section id="promo" className="chapter first-visit-scene">
           <div className="deck-intro">
             <div>
               {/* No data-reveal on the wrapper: the heading already has an
@@ -847,37 +743,98 @@ export default function Home() {
                   systems moving one headline. */}
               <p className="eyebrow" data-reveal="">Первое посещение</p>
               <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
-                {'Комплекс\nсо скидкой 30%'}
+                {'Скидка 30%\nна комплекс'}
               </TextAnimate>
             </div>
             <p data-reveal="" data-reveal-delay="0.08">
-              Скидка действует на любой комплекс при первом посещении. Составы и цены — те же, что в прайсе.
+              Скидка действует на любой комплекс при первом посещении. Состав и цена — как в прайсе.
             </p>
           </div>
 
-          <div className="deck-scene">
-            <div className="deck-container">
-              {epilationComplexes.women.map((complex, index) => (
-                <article className="deck-card" key={complex.name}>
-                  <Image
-                    src={everlasStages[index].src}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1000px) 95vw, 50vw"
-                    className="cover-image"
-                  />
-                  <div className="deck-tag"><p className="tech-label">{complex.name}</p></div>
-                  <div className="deck-body">
-                    <p className="deck-detail">{complex.detail}</p>
-                    <p className="deck-price">
-                      <span>{complex.price}</span>
-                      <strong>{complex.firstVisitPrice}</strong>
-                      <small>при первом посещении</small>
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
+          <div className="first-visit-layout">
+            <figure className="first-visit-plate" data-reveal="media">
+              <video
+                ref={masterVideoRef}
+                className="first-visit-video"
+                src="/videos/viart-procedure-prep.mp4"
+                poster="/images/gallery/1.jpg"
+                playsInline
+                muted={!isAudioEnabled}
+                // The file is ~19MB and its `moov` atom sits at the very end,
+                // so `metadata` costs a fetch of nearly the whole thing before
+                // anything is playable — paid by every visitor, most of whom
+                // never press play, and competing for bandwidth with the
+                // images the scenes are measured against. The poster is what
+                // the section shows until the play button is pressed.
+                preload="none"
+                controls={videoState === 'playing'}
+                onPlay={() => {
+                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onPlaying={() => {
+                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onWaiting={() => {
+                  if (!intentionalAudioRef.current) return;
+                  videoStateRef.current = 'loading';
+                  setVideoState('loading');
+                }}
+                onPause={(event) => {
+                  if (event.currentTarget.ended) return;
+                  const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
+                    ? 'paused'
+                    : 'poster';
+                  videoStateRef.current = nextState;
+                  setVideoState(nextState);
+                }}
+                onEnded={() => {
+                  intentionalAudioRef.current = false;
+                  setIsAudioEnabled(false);
+                  videoStateRef.current = 'ended';
+                  setVideoState('ended');
+                }}
+                onError={() => {
+                  intentionalAudioRef.current = false;
+                  setIsAudioEnabled(false);
+                  videoStateRef.current = 'error';
+                  setVideoState('error');
+                }}
+              />
+
+              {/* The offer reads on its own — no audio, no interaction needed. */}
+              <div className="deck-tag"><p className="tech-label">−30% первое посещение</p></div>
+              <div className="deck-body">
+                <p className="tech-label">{firstVisitComplex.name}</p>
+                <p className="deck-detail">{firstVisitComplex.detail}</p>
+                <p className="deck-price">
+                  <span>{firstVisitComplex.price}</span>
+                  <strong>{firstVisitComplex.firstVisitPrice}</strong>
+                  <small>при первом посещении</small>
+                </p>
+              </div>
+
+              {videoState !== 'playing' && videoState !== 'error' && (
+                <button
+                  type="button"
+                  className="master-play"
+                  onClick={playMasterVideo}
+                  aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
+                  disabled={videoState === 'loading'}
+                >
+                  <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
+                </button>
+              )}
+              {videoState === 'error' && (
+                <div className="master-error" role="alert">
+                  <p>Видео временно недоступно.</p>
+                  <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
+                </div>
+              )}
+            </figure>
           </div>
 
           <div className="deck-outro" data-reveal="">
@@ -887,7 +844,7 @@ export default function Home() {
               target="_blank"
               rel="noopener"
             >
-              Выбрать комплекс и записаться
+              Записаться со скидкой
             </InteractiveHoverLink>
             <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
               Все комплексы и составы <span>↗</span>
@@ -895,27 +852,47 @@ export default function Home() {
           </div>
         </section>
 
-        {/* REVIEWS — the pause after the heavy scenes. No new experience here. */}
+        {/* TRUST — two separate claims, kept visually apart on purpose: the
+            award is a sourced, dated fact; the testimonial is one client's
+            words. Combining them under one number would blur which is which. */}
         <section id="reviews" className="chapter reviews-chapter">
-          <div className="rating-anchor" data-reveal="">
-            <strong>5,0</strong>
-            <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
-            <p className="rating-counts">
-              <NumberTicker value={119} className="rating-counts__value" /> оценок ·{' '}
-              <NumberTicker value={98} className="rating-counts__value" /> отзывов
-            </p>
-            <div className="award-lockup">
-              <div className="award-image"><Image src="/images/awards/good-place-2026-source.png" alt="Награда Яндекс Карт Хорошее место 2026" fill sizes="120px" className="contain-image" /></div>
-              <span>Хорошее место<br />2026</span>
+          <div className="trust-award" data-reveal="">
+            <div className="trust-award__media">
+              <Image
+                src="/images/awards/good-place-2026-source.png"
+                alt="Значок награды Яндекс Карт «Хорошее место — 2026»"
+                fill
+                sizes="120px"
+                className="contain-image"
+              />
+            </div>
+            <div className="trust-award__copy">
+              <p className="tech-label trust-award__eyebrow">Хорошее место · 2026</p>
+              <p>
+                Награда Яндекс Карт для мест, которые пользователи особенно любят: высоко оценивают
+                и рекомендуют в отзывах. В 2026 году её получили организации, чей рейтинг и отзывы
+                на карте держатся стабильно высокими весь год.
+              </p>
             </div>
           </div>
-          <div className="active-review" key={reviewIndex}>
-            <div className="quote-mark">“</div>
-            <blockquote>{activeReview.text}</blockquote>
-            <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
-            <div className="review-controls">
-              <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
-              <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
+
+          <div className="trust-body">
+            <div className="rating-anchor" data-reveal="" data-reveal-delay="0.08">
+              <strong>5,0</strong>
+              <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
+              <p className="rating-counts">
+                <NumberTicker value={119} className="rating-counts__value" /> оценок ·{' '}
+                <NumberTicker value={98} className="rating-counts__value" /> отзывов
+              </p>
+            </div>
+            <div className="active-review" key={reviewIndex}>
+              <div className="quote-mark">“</div>
+              <blockquote>{activeReview.text}</blockquote>
+              <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
+              <div className="review-controls">
+                <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
+                <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
+              </div>
             </div>
           </div>
         </section>
