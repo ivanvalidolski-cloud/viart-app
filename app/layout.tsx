@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Martian_Mono, Onest, Playfair_Display } from "next/font/google";
+import { MotionConfig } from "motion/react";
 import "./globals.css";
 
 // Body and UI.
@@ -33,12 +34,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // The three chapter headings and the rating counter animate through
+  // motion/react, outside the GSAP layer that `useViartMotion` drives.
+  // `revealInstantly` only knows `[data-reveal]` and the stylesheet's
+  // reduced-motion reset only reaches CSS transitions, so without `MotionConfig`
+  // they are the only things on the page that keep moving when the reader has
+  // asked for stillness.
   return (
     <html
       lang="ru"
       className={`${onest.variable} ${martianMono.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      </body>
     </html>
   );
 }
