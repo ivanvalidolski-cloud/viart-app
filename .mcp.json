@@ -2,10 +2,28 @@
   "mcpServers": {
     "magic": {
       "command": "npx",
-      "args": ["-y", "@21st-dev/magic@latest"],
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest"
+      ],
       "env": {
         "API_KEY": "${TWENTY_FIRST_API_KEY}"
       }
+    },
+    "21st": {
+      "type": "http",
+      "url": "https://21st.dev/api/mcp",
+      "headers": {
+        "x-api-key": "${API_KEY_21ST}"
+      }
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "env": {}
     }
   }
 }
