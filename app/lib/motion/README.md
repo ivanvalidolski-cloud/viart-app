@@ -15,12 +15,7 @@ useViartMotion.ts   the driver: Lenis, gsap.ticker, matchMedia, refresh, teardow
 |---|---|---|
 | `heureBleue` | hero image wall | in-house |
 | `capsules` | `#services` — the two directions | [capsules-animated-columns](https://motionprompts.dev/component/capsules-animated-columns/) |
-| `everlasSpotlight` | `#everlas` — four states of a course | [prototypestudio-scroll-animation](https://motionprompts.dev/component/prototypestudio-scroll-animation/) |
-| `turboDissolve` | `#turbo` — the one WebGL scene | [ironhill-scroll-animation](https://motionprompts.dev/component/ironhill-scroll-animation/) |
-| `galleryMosaic` | `#gallery` — 3×3 clip-path tiles | [mask-reveal](https://motionprompts.dev/component/mask-reveal/) |
-| `videoGrow` | `#video` — plate grows into frame | [vucko-scroll-animation-javascript](https://motionprompts.dev/component/vucko-scroll-animation-javascript/) |
-| `stickyCards` | `#promo` — the complexes deck | [sticky-cards-ashfall-rebuild-js](https://motionprompts.dev/component/sticky-cards-ashfall-rebuild-js/) |
-| `bookingRevealer` | reviews → booking wipe | [epic-scroll-anims-scrolltrigger-gsap](https://motionprompts.dev/component/epic-scroll-anims-scrolltrigger-gsap/) |
+| `journey` | `#everlas` — Procedure's square cards into Studio's portrait line, one track | in-house, adapted from the retired `everlasSpotlight`'s pinned-row mechanics |
 
 An adapted scene's numbers are **transcribed, not chosen**: thresholds, phase
 lengths, clip-path tables, travel formulas and scroll budgets come from the source

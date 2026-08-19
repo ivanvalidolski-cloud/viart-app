@@ -22,7 +22,4 @@
 
 export { createHeureBleueScene } from './heureBleue';
 export { createCapsulesScene } from './capsules';
-export { createEverlasSpotlightScene } from './everlasSpotlight';
-export { createGalleryMosaicScene } from './galleryMosaic';
-export { createVideoGrowScene } from './videoGrow';
-export { createStickyCardsScene } from './stickyCards';
+export { createJourneyScene } from './journey';

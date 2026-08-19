@@ -77,48 +77,31 @@ export const CAPSULES = {
   gestureIdleMs: 140,
 } as const;
 
-export const SPOTLIGHT = {
-  /** Pinned/scrubbed runway of the EVERLAS spotlight, in viewport heights. */
-  viewports: 5,
+/**
+ * Scene 03 — the journey track (`#everlas`): Procedure's square cards and
+ * Studio's portrait frames on one continuous horizontal track, pinned and
+ * scrubbed over a single scroll budget so the hand-off between them is one
+ * transform, never a separate section starting over.
+ */
+export const JOURNEY = {
+  /** Pinned/scrubbed runway of the whole track, in viewport heights. */
+  viewports: 8,
   scrub: 1,
-  /** Opacity of an image whose stage is not the active one. */
+  /** Opacity of a procedure card whose stage is not the active one. */
   dimOpacity: 0.5,
-} as const;
-
-export const MOSAIC = {
-  /** Wave offset between the five anti-diagonals, in seconds. */
-  waveOffset: 0.125,
-  /** Per-tile clip-path tween. */
-  duration: 0.5,
-  stagger: 0.1,
-  ease: 'power2.out',
-  start: 'top 75%',
-} as const;
-
-export const VIDEO_GROW = {
-  /** The whole rig is desktop-only, gated on this width. */
-  minWidth: 900,
-  scaleFrom: 0.25,
-  gapFrom: 2,
-  gapTo: 1,
-  /** Two-phase title size: 80 → 40 over the first 40%, then 40 → 20. */
-  fontFrom: 80,
-  fontMid: 40,
-  fontTo: 20,
-  fontSplit: 0.4,
-  /** Lerp factor of the mouse parallax follow. */
-  mouseLerp: 0.05,
-  /** Above this scale the parallax target snaps back to centre. */
-  parallaxCutoff: 0.95,
-} as const;
-
-export const STICKY_CARDS = {
-  scrub: 0.5,
-  /** Outgoing card. */
-  cardScale: 0.5,
-  cardRotation: 10,
-  /** Its photograph counter-zooms while the card shrinks. */
-  imageScale: 1.5,
+  /**
+   * Fraction of the track's progress spent inside the four procedure cards
+   * before the studio frames take over the counter/caption band. Kept
+   * proportional to the card counts (4 procedure : 5 studio) so neither half
+   * is rushed relative to how much track it actually occupies.
+   */
+  procedureFraction: 4 / 9,
+  /** How much wider the dominant last studio frame grows as the track ends,
+   *  so the multi-image line resolves onto one frame instead of stopping
+   *  mid-row. */
+  finalCardGrowth: 1.35,
+  /** Fraction of progress (from the end) over which that growth happens. */
+  resolveSpan: 0.14,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */

@@ -19,16 +19,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
-import { HEADER_OFFSET, VIDEO_GROW } from './tokens';
+import { HEADER_OFFSET } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
-import {
-  createCapsulesScene,
-  createEverlasSpotlightScene,
-  createGalleryMosaicScene,
-  createHeureBleueScene,
-  createStickyCardsScene,
-  createVideoGrowScene,
-} from './scenes';
+import { createCapsulesScene, createHeureBleueScene, createJourneyScene } from './scenes';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -79,25 +72,7 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
       motionOk: '(prefers-reduced-motion: no-preference)',
       motionReduced: '(prefers-reduced-motion: reduce)',
     };
-    /**
-     * The scenes carry one extra condition the entrances must not share.
-     *
-     * `.grow-container` is pulled up and scaled to a quarter by a
-     * `@media (min-width: 900px)` block, and the video rig is the only thing
-     * that animates it back — so the rig's gate has to be *that* media query,
-     * live, not a width read once at build time. Declaring it here means GSAP
-     * tears the scenes down and rebuilds them when the breakpoint flips, the
-     * same moment the stylesheet swaps composition.
-     *
-     * The entrances stay on the two-key object on purpose: rebuilding them on a
-     * resize would re-hide every element that has already revealed itself.
-     */
-    const SCENE_QUERIES = {
-      ...QUERIES,
-      wideRig: `(min-width: ${VIDEO_GROW.minWidth}px)`,
-    };
     type Conditions = { motionOk: boolean; motionReduced: boolean };
-    type SceneConditions = Conditions & { wideRig: boolean };
 
     // --- phase 1: entrances, before the first paint ------------------------
     // Hiding a reveal target has to happen in the same frame its markup lands.
@@ -120,8 +95,8 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     document.fonts.ready.then(() => {
       if (cancelled) return;
 
-      media.add(SCENE_QUERIES, (context) => {
-        const { motionReduced, wideRig } = context.conditions as SceneConditions;
+      media.add(QUERIES, (context) => {
+        const { motionReduced } = context.conditions as Conditions;
         if (motionReduced) return;
 
         createHeureBleueScene(sequenceRoot);
@@ -134,10 +109,7 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
         // their spacers go away with the context.
         const teardowns = [
           createCapsulesScene(pageRoot, lenis),
-          createEverlasSpotlightScene(pageRoot),
-          createGalleryMosaicScene(pageRoot),
-          wideRig ? createVideoGrowScene(pageRoot) : undefined,
-          createStickyCardsScene(pageRoot),
+          createJourneyScene(pageRoot),
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
 
         return () => teardowns.forEach((teardown) => teardown());

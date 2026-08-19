@@ -7,9 +7,7 @@ import { usePointerFine } from './lib/usePointerFine';
 import { AnimatedBeam } from './components/ui/animated-beam';
 import { BorderBeam } from './components/ui/border-beam';
 import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
-import { Lens } from './components/ui/lens';
 import Magnet from './components/ui/magnet';
-import { NumberTicker } from './components/ui/number-ticker';
 import { TextAnimate } from './components/ui/text-animate';
 
 const bookingUrl = 'https://n1177049.yclients.com';
@@ -191,15 +189,17 @@ const everlasStages = [
   },
 ];
 
-/** The studio gallery's horizontal line. The first frame is the dominant one;
- *  the rest support it with context — space, equipment, materials. */
+/** The studio gallery's line inside the journey track — context after the
+ *  four Procedure stages: equipment, materials, space. The last frame is the
+ *  dominant one the track resolves onto, so it closes on the room itself
+ *  rather than another piece of equipment. None of these repeat a Procedure
+ *  card's photograph — `gallery/8.jpg` is Procedure's own "Курс" stage. */
 const studioGalleryImages = [
-  { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART', feature: true },
   { src: '/images/gallery/2.jpg', alt: 'Роликовая манипула аппарата TURBO G8 в студии ViART' },
   { src: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg', alt: 'Процедура аппаратного массажа на TURBO G8' },
   { src: '/images/gallery/3.jpg', alt: 'Гель, деревянные шпатели и защитные очки на столике в кабинете ViART' },
   { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
-  { src: '/images/gallery/8.jpg', alt: 'Зона с подсвеченным зеркалом в студии ViART' },
+  { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART' },
 ];
 
 export default function Home() {
@@ -595,15 +595,17 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* EVERLAS — four states under a pinned spotlight.                  */}
-        {/* Mechanics: motionprompts.dev/component/prototypestudio-scroll-animation */}
+        {/* JOURNEY — Procedure's four square states and Studio's portrait    */}
+        {/* line on one continuous horizontal track: one pin, one transform,  */}
+        {/* so Studio's taller frames arrive while Procedure's cards are      */}
+        {/* still moving rather than after a hard cut into a new section.     */}
         {/* ---------------------------------------------------------------- */}
-        <section id="everlas" className="everlas-chapter">
-          <div className="spot-intro">
-            <div className="spot-intro__copy" data-reveal="">
+        <section id="everlas" className="journey-chapter">
+          <div className="journey-intro">
+            <div className="journey-intro__copy" data-reveal="">
               <p className="eyebrow">Оборудование</p>
               <h2>Лазерная эпиляция<br />на EVERLAS</h2>
-              <p className="spot-intro__lead">
+              <p className="journey-intro__lead">
                 Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
                 Четыре состояния одного курса — от подготовки до интервалов между процедурами.
               </p>
@@ -611,9 +613,9 @@ export default function Home() {
 
             {/* Animated Beam: a light accent between the machine and the zone,
                 not a section of its own. */}
-            <div className="spot-beam" ref={beamFieldRef} aria-hidden="true">
-              <span className="spot-node tech-label" ref={beamSourceRef}>EVERLAS</span>
-              <span className="spot-node tech-label" ref={beamTargetRef}>Зона</span>
+            <div className="journey-beam" ref={beamFieldRef} aria-hidden="true">
+              <span className="journey-node tech-label" ref={beamSourceRef}>EVERLAS</span>
+              <span className="journey-node tech-label" ref={beamTargetRef}>Зона</span>
               <AnimatedBeam
                 containerRef={beamFieldRef}
                 fromRef={beamSourceRef}
@@ -629,37 +631,52 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="spot-scene">
-            <div className="spot-index">
-              <span className="spot-counter">01/04</span>
+          <div className="journey-scene">
+            <div className="journey-index">
+              <span className="journey-counter">01/04</span>
+              <span className="journey-studio-label tech-label">Студия · ViART</span>
             </div>
 
-            <div className="spot-images">
+            <div className="journey-track">
               {everlasStages.map((stage) => (
-                <figure className="spot-img" key={stage.index}>
+                <figure className="journey-card journey-card--procedure" key={`procedure-${stage.index}`}>
                   <Image
                     src={stage.src}
                     alt={stage.alt}
                     fill
-                    sizes="(max-width: 1000px) 92vw, 35vw"
+                    sizes="(max-width: 1000px) 70vw, 30vw"
+                    className="cover-image"
+                  />
+                </figure>
+              ))}
+              {studioGalleryImages.map((image, index) => (
+                <figure
+                  className={`journey-card journey-card--studio ${index === studioGalleryImages.length - 1 ? 'journey-card--dominant' : ''}`}
+                  key={`studio-${image.src}`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 1000px) 80vw, 28vw"
                     className="cover-image"
                   />
                 </figure>
               ))}
             </div>
 
-            <ol className="spot-names">
+            <ol className="journey-captions">
               {everlasStages.map((stage) => (
-                <li className="spot-name" key={stage.index}>
-                  <span className="spot-name__index tech-label">{stage.index}</span>
-                  <span className="spot-name__title">{stage.title}</span>
-                  <span className="spot-name__copy">{stage.copy}</span>
+                <li className="journey-caption" key={stage.index}>
+                  <span className="journey-caption__index tech-label">{stage.index}</span>
+                  <span className="journey-caption__title">{stage.title}</span>
+                  <span className="journey-caption__copy">{stage.copy}</span>
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="spot-outro" data-reveal="">
+          <div className="journey-outro" data-reveal="">
             <p>Число процедур зависит от зоны, кожи и волос — мастер называет ориентир на первой консультации.</p>
             <InteractiveHoverButton
               type="button"
@@ -668,63 +685,6 @@ export default function Home() {
             >
               Выбрать зону или комплекс
             </InteractiveHoverButton>
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* STUDIO — a horizontal line of portrait frames, continuing the    */}
-        {/* Procedure card line rather than resetting into a grid.          */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="gallery" className="chapter studio-scene">
-          <div className="gallery-topline">
-            <div>
-              <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
-                {'Студия\nв деталях'}
-              </TextAnimate>
-            </div>
-            <p data-reveal="">ViART · Коммунарка</p>
-          </div>
-
-          <div
-            className="studio-track"
-            data-reveal="media"
-            role="region"
-            aria-label="Галерея студии"
-            tabIndex={0}
-          >
-            {studioGalleryImages.map((image) =>
-              image.feature && pointerFine ? (
-                <figure className="studio-card studio-card--feature" key={image.src}>
-                  {/* Not `fill`: the Lens wrapper it sits inside has no height
-                      of its own, so a `fill` image has nothing to size
-                      against. Sizing the frame from its own aspect-ratio
-                      sidesteps that instead of fighting for one. */}
-                  <Lens zoomFactor={1.6} lensSize={200} ariaLabel="Увеличить кадр">
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      width={800}
-                      height={1000}
-                      sizes="(max-width: 640px) 86vw, (max-width: 1000px) 60vw, 34vw"
-                      className="studio-feature-img"
-                    />
-                  </Lens>
-                </figure>
-              ) : (
-                <figure
-                  className={`studio-card ${image.feature ? 'studio-card--feature' : ''}`}
-                  key={image.src}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    sizes={`(max-width: 640px) 86vw, (max-width: 1000px) ${image.feature ? '60vw' : '40vw'}, ${image.feature ? '34vw' : '22vw'}`}
-                    className="cover-image"
-                  />
-                </figure>
-              ),
-            )}
           </div>
         </section>
 
@@ -854,16 +814,23 @@ export default function Home() {
 
         {/* TRUST — two separate claims, kept visually apart on purpose: the
             award is a sourced, dated fact; the testimonial is one client's
-            words. Combining them under one number would blur which is which. */}
-        <section id="reviews" className="chapter reviews-chapter">
+            words. Neither is a number to skim — the award is its own object
+            with its own copy, and the testimonial is one large quote, not a
+            rating anchored to counts nobody here has confirmed. */}
+        <section id="reviews" className="chapter trust-chapter">
           <div className="trust-award" data-reveal="">
             <div className="trust-award__media">
+              {/* `cover`, not `contain`: the source frame is a wide 1200×630
+                  canvas with the badge itself sitting in a narrow vertical
+                  band at its centre, surrounded by confetti margin. A
+                  portrait box with `cover` crops that margin away instead of
+                  rendering the badge small in the middle of empty space. */}
               <Image
                 src="/images/awards/good-place-2026-source.png"
                 alt="Значок награды Яндекс Карт «Хорошее место — 2026»"
                 fill
-                sizes="120px"
-                className="contain-image"
+                sizes="(max-width: 640px) 6rem, 7.5rem"
+                className="cover-image"
               />
             </div>
             <div className="trust-award__copy">
@@ -876,23 +843,32 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="trust-body">
-            <div className="rating-anchor" data-reveal="" data-reveal-delay="0.08">
-              <strong>5,0</strong>
-              <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
-              <p className="rating-counts">
-                <NumberTicker value={119} className="rating-counts__value" /> оценок ·{' '}
-                <NumberTicker value={98} className="rating-counts__value" /> отзывов
-              </p>
-            </div>
-            <div className="active-review" key={reviewIndex}>
-              <div className="quote-mark">“</div>
-              <blockquote>{activeReview.text}</blockquote>
-              <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
-              <div className="review-controls">
-                <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
-                <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
+          <div className="trust-testimonial" key={reviewIndex}>
+            <p className="tech-label trust-testimonial__eyebrow">Отзывы</p>
+            <div className="trust-testimonial__layout">
+              <div className="trust-testimonial__quote-block">
+                <div className="trust-testimonial__mark" aria-hidden="true">“</div>
+                <blockquote className="trust-testimonial__quote">{activeReview.text}</blockquote>
+                <footer className="trust-testimonial__footer">
+                  <div>
+                    <strong>{activeReview.name}</strong>
+                    <span>{activeReview.date}</span>
+                  </div>
+                  <div className="trust-testimonial__controls">
+                    <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
+                    <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
+                  </div>
+                </footer>
               </div>
+              <figure className="trust-testimonial__media">
+                <Image
+                  src="/images/gallery/5.jpg"
+                  alt="Интерьер студии ViART"
+                  fill
+                  sizes="(max-width: 900px) 60vw, 26vw"
+                  className="cover-image"
+                />
+              </figure>
             </div>
           </div>
         </section>
