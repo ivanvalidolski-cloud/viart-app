@@ -1,8 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { type KeyboardEvent, type TouchEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
+import { usePointerFine } from './lib/usePointerFine';
+import { AnimatedBeam } from './components/ui/animated-beam';
+import { BorderBeam } from './components/ui/border-beam';
+import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
+import Magnet from './components/ui/magnet';
+import { TextAnimate } from './components/ui/text-animate';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -86,6 +92,10 @@ const epilationComplexes: Record<PriceGender, Array<{ name: string; detail: stri
   ],
 };
 
+/** The one complex First Visit features — "Популярный" is the closest thing
+ *  to a default without inventing a promotional pick. */
+const firstVisitComplex = epilationComplexes.women[2];
+
 const massagePrices = [
   { name: 'Вибромассаж TURBO G8 „Коррекция фигуры“', price: 'Первое посещение — 1500 ₽ / далее — 2500 ₽' },
   { name: 'Комплекс „Упругие ягодицы“', price: '2 500 ₽' },
@@ -95,7 +105,6 @@ const massagePrices = [
 
 type Review = { name: string; rating: number; text: string; date?: string };
 type VideoState = 'poster' | 'preview' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
-type GalleryRole = 'active' | 'support-one' | 'support-two' | 'support-three';
 
 const reviews: Review[] = [
   {
@@ -148,44 +157,74 @@ const reviews: Review[] = [
   },
 ];
 
-const galleryImages = [
-  '/images/gallery/4.jpg',
-  '/images/gallery/3.jpg',
-  '/images/gallery/5.jpg',
-  '/images/gallery/6.jpg',
+/** The four states of an EVERLAS course, one image and one line each. */
+const everlasStages = [
+  {
+    index: '01',
+    title: 'Подготовка',
+    copy: 'Мастер уточняет противопоказания, осматривает зону и наносит гель.',
+    src: '/images/gallery/1.jpg',
+    alt: 'Мастер ViART наносит гель перед процедурой лазерной эпиляции',
+  },
+  {
+    index: '02',
+    title: 'Настройка',
+    copy: 'Параметры аппарата подбираются под зону, тип кожи и волос.',
+    src: '/images/gallery/6.jpg',
+    alt: 'Аппарат лазерной эпиляции EVERLAS и защитные очки в кабинете ViART',
+  },
+  {
+    index: '03',
+    title: 'Процедура',
+    copy: 'Работа по разметке; во время процедуры используются защитные очки.',
+    src: '/images/equipment/everlas/everlas-procedure-mirrored.png',
+    alt: 'Процедура лазерной эпиляции на аппарате EVERLAS',
+  },
+  {
+    index: '04',
+    title: 'Курс',
+    copy: 'Результат накапливается: интервал между процедурами — 4–6 недель, число зависит от зоны.',
+    src: '/images/gallery/8.jpg',
+    alt: 'Клиентка ViART у зеркала после процедуры',
+  },
 ];
-const initialGalleryOrder = [0, 1, 2, 3];
 
-const galleryRoleAt = (position: number): GalleryRole => {
-  if (position === 0) return 'active';
-  if (position === 1) return 'support-one';
-  if (position === 2) return 'support-two';
-  if (position === 3) return 'support-three';
-  return 'support-three';
-};
+/** The studio gallery's line inside the journey track — context after the
+ *  four Procedure stages: equipment, materials, space. The last frame is the
+ *  dominant one the track resolves onto, so it closes on the room itself
+ *  rather than another piece of equipment. None of these repeat a Procedure
+ *  card's photograph — `gallery/8.jpg` is Procedure's own "Курс" stage. */
+const studioGalleryImages = [
+  { src: '/images/gallery/2.jpg', alt: 'Роликовая манипула аппарата TURBO G8 в студии ViART' },
+  { src: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg', alt: 'Процедура аппаратного массажа на TURBO G8' },
+  { src: '/images/gallery/3.jpg', alt: 'Гель, деревянные шпатели и защитные очки на столике в кабинете ViART' },
+  { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
+  { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART' },
+];
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderSolid, setIsHeaderSolid] = useState(false);
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
-  const [galleryOrder, setGalleryOrder] = useState(initialGalleryOrder);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [videoState, setVideoState] = useState<VideoState>('poster');
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const galleryOrderRef = useRef(initialGalleryOrder);
-  const galleryTouchLockUntilRef = useRef(0);
-  const galleryTouchStartRef = useRef<{ x: number; y: number } | null>(null);
   const videoStateRef = useRef<VideoState>('poster');
   const intentionalAudioRef = useRef(false);
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
-  const voyeurSceneRef = useRef<HTMLElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
 
-  const { scrollTo, setScrollLocked } = useViartMotion({
+  // The Animated Beam measures between two nodes inside one container.
+  const beamFieldRef = useRef<HTMLDivElement | null>(null);
+  const beamSourceRef = useRef<HTMLSpanElement | null>(null);
+  const beamTargetRef = useRef<HTMLSpanElement | null>(null);
+
+  const pointerFine = usePointerFine();
+
+  const { scrollTo, setScrollLocked, refresh } = useViartMotion({
     sequence: motionSequenceRef,
-    voyeur: voyeurSceneRef,
     page: pageContentRef,
   });
 
@@ -201,6 +240,20 @@ export default function Home() {
     return () => setScrollLocked(false);
   }, [isMenuOpen, setScrollLocked]);
 
+  // The price list is keyed, so a tab or gender swap remounts it at a different
+  // height and every scene below `#pricing` is left measured against the page as
+  // it used to be. The first pass is skipped: the motion layer runs its own
+  // refresh behind `document.fonts.ready`, and racing it re-measures the pins
+  // against fonts that have not landed.
+  const priceMounted = useRef(false);
+  useEffect(() => {
+    if (!priceMounted.current) {
+      priceMounted.current = true;
+      return;
+    }
+    refresh();
+  }, [activePriceTab, priceGender, refresh]);
+
   const selectGender = (gender: PriceGender) => {
     setPriceGender(gender);
     if (gender === 'men' && activePriceTab === 2) setActivePriceTab(0);
@@ -209,52 +262,6 @@ export default function Home() {
   const openPriceTab = (tab: number) => {
     setActivePriceTab(tab);
     scrollTo('#pricing');
-  };
-
-  const commitGalleryOrder = (nextOrder: number[]) => {
-    galleryOrderRef.current = nextOrder;
-    setGalleryOrder(nextOrder);
-  };
-
-  const promoteGalleryMedia = (index: number) => {
-    const currentOrder = galleryOrderRef.current;
-    const currentPosition = currentOrder.indexOf(index);
-    if (currentPosition <= 0) return;
-    const nextOrder = [...currentOrder];
-    [nextOrder[0], nextOrder[currentPosition]] = [nextOrder[currentPosition], nextOrder[0]];
-    commitGalleryOrder(nextOrder);
-  };
-
-  const stepGallery = (direction: number) => {
-    const currentIndex = galleryOrderRef.current[0];
-    promoteGalleryMedia((currentIndex + direction + galleryImages.length) % galleryImages.length);
-  };
-
-  const handleGalleryTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    const touch = event.touches[0];
-    galleryTouchStartRef.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
-  };
-
-  const handleGalleryTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const start = galleryTouchStartRef.current;
-    const touch = event.changedTouches[0];
-    galleryTouchStartRef.current = null;
-    if (!start || !touch) return;
-
-    const deltaX = touch.clientX - start.x;
-    const deltaY = touch.clientY - start.y;
-    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
-    // `event.timeStamp` shares its time origin with `performance.now()`, which
-    // the click guard below reads. A wall-clock reading would also drift if the
-    // system clock changed between the swipe and the click it suppresses.
-    galleryTouchLockUntilRef.current = event.timeStamp + 420;
-    stepGallery(deltaX < 0 ? 1 : -1);
-  };
-
-  const handleGalleryKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-    event.preventDefault();
-    stepGallery(event.key === 'ArrowRight' ? 1 : -1);
   };
 
   const changeReview = (direction: number) => {
@@ -285,8 +292,6 @@ export default function Home() {
   };
 
   const activeReview = reviews[reviewIndex];
-  const galleryIndex = galleryOrder[0];
-  const galleryActiveSource = galleryImages[galleryIndex];
 
   return (
     <div className="viart-site">
@@ -294,7 +299,7 @@ export default function Home() {
         <div className="site-header__inner">
           <a href="#top" className="site-logo" aria-label="ViART — на главную">ViART</a>
           <nav className="site-nav" aria-label="Основная навигация">
-            <a href="#studio">Студия</a>
+            <a href="#services">Направления</a>
             <a href="#pricing">Услуги и цены</a>
             <a href="#everlas">Оборудование</a>
             <a href="#reviews">Отзывы</a>
@@ -317,7 +322,7 @@ export default function Home() {
 
       <div className={`mobile-menu ${isMenuOpen ? 'is-open' : ''}`} aria-hidden={!isMenuOpen}>
         {[
-          ['Студия', '#studio'],
+          ['Направления', '#services'],
           ['Услуги и цены', '#pricing'],
           ['Оборудование', '#everlas'],
           ['Отзывы', '#reviews'],
@@ -368,7 +373,14 @@ export default function Home() {
                   <p className="hb-intro__subtitle">Процедуры на аппаратах EVERLAS и TURBO G8</p>
                   <p className="hb-intro__offer">Скидка 30% на любой комплекс при первом посещении</p>
                   <div className="hb-intro__actions">
-                    <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать услугу и записаться</a>
+                    <InteractiveHoverLink
+                      className="viart-cta viart-cta--ivory"
+                      href={bookingUrl}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Выбрать услугу и записаться
+                    </InteractiveHoverLink>
                     <a className="text-link" href="#pricing">Услуги и цены <span>↘</span></a>
                   </div>
                 </div>
@@ -376,63 +388,121 @@ export default function Home() {
               <div className="hb-ws" aria-hidden="true" />
             </div>
           </div>
-
-          <section className="vv-hero" ref={voyeurSceneRef}>
-            <div className="vv-bg-content">
-              <div className="vv-bg-col">
-                <div className="vv-bg-copy">
-                  <h3>Атмосфера ViART</h3>
-                  <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке.</p>
-                </div>
-              </div>
-              <div className="vv-bg-col">
-                <div className="vv-bg-copy">
-                  <h3>Спокойное пространство</h3>
-                  <p>Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="vv-outro-content">
-              <figure className="vv-outro-img"><Image src="/images/gallery/4.jpg" alt="Процедура лазерной эпиляции в ViART" fill sizes="50vw" /></figure>
-              <figure className="vv-outro-img"><Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="50vw" /></figure>
-              <div className="vv-outro-header"><h3>Спокойное пространство для регулярных процедур</h3></div>
-            </div>
-
-            <div className="vv-fg-content">
-              <figure className="vv-fg-img"><Image src="/images/gallery/2.jpg" alt="Аппаратная процедура в студии ViART" fill priority sizes="100vw" /></figure>
-              <div className="vv-fg-header"><h2>Процедуры на аппаратах EVERLAS и TURBO G8</h2></div>
-              <div className="vv-fg-overlay-dark" />
-              <div className="vv-fg-overlay-accent" />
-            </div>
-          </section>
         </div>
 
-        <section id="studio" className="chapter studio-chapter">
-          <div className="studio-layout">
-            <figure className="studio-main-media" data-reveal="media">
-              <Image src="/images/gallery/8.jpg" alt="Пространство студии ViART" fill sizes="(max-width: 767px) 100vw, 52vw" className="cover-image" />
-            </figure>
-            <div className="studio-copy" data-reveal="">
-              <p className="eyebrow">Атмосфера ViART</p>
-              <h2>Спокойное пространство для регулярных процедур</h2>
-              <p>ViART — студия лазерной эпиляции и аппаратного массажа в Коммунарке. Здесь легко выбрать отдельную зону, комплекс или программу массажа и заранее посмотреть стоимость.</p>
-              <p>Понятный сценарий записи, спокойная обстановка и реальные материалы студии — без лишней сложности до и во время визита.</p>
+        {/* ---------------------------------------------------------------- */}
+        {/* SERVICES — the two directions, as a phased capsule swap.         */}
+        {/* Mechanics: motionprompts.dev/component/capsules-animated-columns */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="services" className="cap-scene">
+          <div className="cap-wrapper">
+            <div className="cap-col cap-col--1">
+              <div className="cap-content">
+                <div className="cap-plate cap-plate--text">
+                  <div>
+                    <p className="tech-label cap-kicker">EVERLAS · направление 01</p>
+                    <h2>Лазерная эпиляция</h2>
+                  </div>
+                  <p className="cap-lead">Курс процедур вместо ежедневной бритвы.</p>
+                </div>
+              </div>
             </div>
-            <figure className="studio-support-media" data-reveal="media" data-reveal-delay="0.12">
-              <Image src="/images/gallery/5.jpg" alt="Детали интерьера студии ViART" fill sizes="(max-width: 767px) 100vw, 40vw" className="cover-image" />
-            </figure>
+
+            <div className="cap-col cap-col--2">
+              <div className="cap-img cap-img--1">
+                <div className="cap-plate">
+                  <Image
+                    src="/images/gallery/6.jpg"
+                    alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
+                    fill
+                    sizes="(max-width: 899px) 50vw, 46vw"
+                    className="cover-image"
+                  />
+                  <p className="tech-label cap-tag">EVERLAS · аппарат</p>
+                </div>
+              </div>
+              <div className="cap-img cap-img--2">
+                <div className="cap-plate">
+                  <Image
+                    src="/images/gallery/7.jpg"
+                    alt="Манипула аппарата EVERLAS на подготовленной коже руки"
+                    fill
+                    sizes="(max-width: 899px) 50vw, 46vw"
+                    className="cover-image"
+                  />
+                  <p className="tech-label cap-tag">Процедура по зоне</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="cap-col cap-col--3">
+              <div className="cap-plate cap-plate--text cap-text--a">
+                <div>
+                  <h3 className="cap-split">Курс, а не разовая процедура</h3>
+                </div>
+                <div className="cap-points">
+                  <p className="cap-split">Процедуры идут с интервалом 4–6 недель — сколько их нужно, зависит от зоны.</p>
+                  <p className="cap-split">Отрастающий волос со временем становится тоньше и светлее, а самого волоса — меньше.</p>
+                  <p className="cap-split">Параметры мастер подбирает под зону и тип кожи, во время процедуры — защитные очки.</p>
+                </div>
+              </div>
+
+              {/* Every text node in this column is split, as in the source:
+                  an unmasked line here would sit visibly on top of the first
+                  block from the very first frame. */}
+              <div className="cap-plate--text cap-text--b">
+                <div>
+                  <p className="tech-label cap-kicker cap-split">TURBO G8 · направление 02</p>
+                  <h3 className="cap-split">Аппаратный массаж</h3>
+                </div>
+                <div className="cap-points">
+                  <p className="cap-split">Роликовая манипула прорабатывает выбранные зоны — живот, ягодицы или две зоны на выбор.</p>
+                  <p className="cap-split">Интенсивность мастер регулирует по вашим ощущениям прямо во время процедуры.</p>
+                  <p className="cap-split">Первое посещение «Коррекции фигуры» — 1500 ₽ вместо 2500 ₽.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="cap-col cap-col--4">
+              <div className="cap-img">
+                <div className="cap-plate">
+                  <Image
+                    src="/images/gallery/2.jpg"
+                    alt="Роликовая манипула аппарата TURBO G8 в студии ViART"
+                    fill
+                    sizes="(max-width: 899px) 50vw, 46vw"
+                    className="cover-image"
+                  />
+                  <p className="tech-label cap-tag">TURBO G8 · манипула</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Outside the four columns on purpose: both routes into the price
+              list stay visible and keyboard-reachable through every phase. */}
+          <div className="cap-actions">
+            <InteractiveHoverButton
+              type="button"
+              className="viart-cta viart-cta--outline"
+              onClick={() => openPriceTab(0)}
+            >
+              Зоны и цены
+            </InteractiveHoverButton>
+            <InteractiveHoverButton
+              type="button"
+              className="viart-cta viart-cta--outline"
+              onClick={() => openPriceTab(2)}
+            >
+              Программы и цены
+            </InteractiveHoverButton>
           </div>
         </section>
 
+        {/* PRICES — an ordinary interface. Never pinned, never scrubbed.
+            No intro screen: the last capsule state hands off straight into
+            the filters and the price list. */}
         <section id="pricing" className="chapter pricing-chapter">
-          <div className="chapter-heading" data-reveal="">
-            <div>
-              <h2>Открытые цены.<br />Точный выбор.</h2>
-            </div>
-            <p>Выберите направление — состав и стоимость всегда остаются перед глазами.</p>
-          </div>
-
           <div className="pricing-layout">
             <aside className="price-controls" aria-label="Фильтры прайс-листа" data-reveal="" data-reveal-delay="0.08">
               <div className="control-group">
@@ -511,99 +581,139 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="everlas" className="chapter everlas-chapter">
-          <div className="everlas-stage">
-            <div className="everlas-media" data-reveal="media">
-              <Image src="/images/equipment/everlas/everlas-procedure-mirrored.png" alt="Процедура лазерной эпиляции на EVERLAS" fill sizes="(max-width: 767px) 100vw, 60vw" className="cover-image" />
+        {/* ---------------------------------------------------------------- */}
+        {/* JOURNEY — Procedure's four square states and Studio's portrait    */}
+        {/* line on one continuous horizontal track: one pin, one transform,  */}
+        {/* so Studio's taller frames arrive while Procedure's cards are      */}
+        {/* still moving rather than after a hard cut into a new section.     */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="everlas" className="journey-chapter">
+          <div className="journey-intro">
+            <div className="journey-intro__copy" data-reveal="">
+              <p className="eyebrow">Оборудование</p>
+              <h2>Лазерная эпиляция<br />на EVERLAS</h2>
+              <p className="journey-intro__lead">
+                Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
+                Четыре состояния одного курса — от подготовки до интервалов между процедурами.
+              </p>
             </div>
-            <div className="everlas-copy">
-              <div className="technology-heading" data-reveal="">
-                <h2>Лазерная эпиляция на EVERLAS</h2>
-                <p>Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.</p>
-              </div>
-              <ol className="fact-stages" data-reveal="group">
-                <li data-reveal-item=""><span className="fact-title">Подготовка</span><p>Перед началом мастер уточняет противопоказания и осматривает выбранную зону.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Настройка</span><p>Параметры аппарата подбираются мастером индивидуально.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Процедура</span><p>Во время процедуры используются защитные очки.</p></li>
-                <li data-reveal-item=""><span className="fact-title">Курс</span><p>Результат накапливается постепенно; число процедур зависит от зоны, кожи и волос.</p></li>
-              </ol>
-              <button type="button" className="button button--outline" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс</button>
+
+            {/* Animated Beam: a light accent between the machine and the zone,
+                not a section of its own. */}
+            <div className="journey-beam" ref={beamFieldRef} aria-hidden="true">
+              <span className="journey-node tech-label" ref={beamSourceRef}>EVERLAS</span>
+              <span className="journey-node tech-label" ref={beamTargetRef}>Зона</span>
+              <AnimatedBeam
+                containerRef={beamFieldRef}
+                fromRef={beamSourceRef}
+                toRef={beamTargetRef}
+                curvature={38}
+                pathColor="rgba(201, 168, 76, 0.24)"
+                pathWidth={1}
+                pathOpacity={1}
+                gradientStartColor="#c9a84c"
+                gradientStopColor="#d3b561"
+                duration={6}
+              />
             </div>
           </div>
-        </section>
 
-        <section className="chapter turbo-chapter">
-          <div className="turbo-heading" data-reveal="">
-            <h2>Аппаратный массаж<br />на TURBO G8</h2>
-          </div>
-          <div className="turbo-media" data-reveal="media">
-            <Image src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg" alt="Процедура аппаратного массажа на TURBO G8" fill sizes="(max-width: 767px) 100vw, 70vw" className="cover-image" />
-          </div>
-          <div className="turbo-copy" data-reveal="" data-reveal-delay="0.08">
-            <p>Мастер прорабатывает выбранные зоны роликовой манипулой и регулирует интенсивность по ощущениям клиента.</p>
-            <ul>
-              <li>Работа с выбранными зонами</li>
-              <li>Регулируемая интенсивность</li>
-              <li>Программы для живота, ягодиц и двух зон</li>
-            </ul>
-            <button type="button" className="text-button" onClick={() => openPriceTab(2)}>Программы и цены <span>↗</span></button>
-          </div>
-        </section>
+          <div className="journey-scene">
+            <div className="journey-index">
+              <span className="journey-counter">01/04</span>
+              <span className="journey-studio-label tech-label">Студия · ViART</span>
+            </div>
 
-        <section id="gallery" className="chapter gallery-chapter">
-          <div className="gallery-topline" data-reveal="">
-            <div><h2>Студия<br />в деталях</h2></div>
-            <p>Реальные кадры пространства, оборудования и процесса.</p>
-          </div>
-          <div
-            className="gallery-stage"
-            role="group"
-            aria-label="Фотографии пространства студии ViART"
-            aria-roledescription="интерактивная галерея"
-            tabIndex={0}
-            onKeyDown={handleGalleryKeyDown}
-            onTouchStart={handleGalleryTouchStart}
-            onTouchEnd={handleGalleryTouchEnd}
-          >
-            {galleryImages.map((src, index) => {
-              const position = galleryOrder.indexOf(index);
-              const role = galleryRoleAt(position);
-              const isActive = role === 'active';
-
-              return (
-                <button
-                  key={src}
-                  type="button"
-                  className={`gallery-media gallery-media--${role}`}
-                  aria-label={isActive ? `Выбран кадр ${index + 1} из ${galleryImages.length}` : `Выбрать кадр ${index + 1} из ${galleryImages.length}`}
-                  aria-pressed={isActive}
-                  onClick={() => {
-                    if (performance.now() >= galleryTouchLockUntilRef.current) promoteGalleryMedia(index);
-                  }}
-                >
+            <div className="journey-track">
+              {everlasStages.map((stage) => (
+                <figure className="journey-card journey-card--procedure" key={`procedure-${stage.index}`}>
                   <Image
-                    src={src}
-                    alt={isActive ? `Пространство студии ViART — кадр ${index + 1}` : ''}
+                    src={stage.src}
+                    alt={stage.alt}
                     fill
-                    sizes={isActive ? '(max-width: 899px) 100vw, 64vw' : '(max-width: 899px) 33vw, 24vw'}
+                    sizes="(max-width: 1000px) 70vw, 30vw"
                     className="cover-image"
                   />
-                </button>
-              );
-            })}
+                </figure>
+              ))}
+              {studioGalleryImages.map((image, index) => (
+                <figure
+                  className={`journey-card journey-card--studio ${index === studioGalleryImages.length - 1 ? 'journey-card--dominant' : ''}`}
+                  key={`studio-${image.src}`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 1000px) 80vw, 28vw"
+                    className="cover-image"
+                  />
+                </figure>
+              ))}
+            </div>
+
+            <ol className="journey-captions">
+              {everlasStages.map((stage) => (
+                <li className="journey-caption" key={stage.index}>
+                  <span className="journey-caption__index tech-label">{stage.index}</span>
+                  <span className="journey-caption__title">{stage.title}</span>
+                  <span className="journey-caption__copy">{stage.copy}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="journey-outro" data-reveal="">
+            <p>Число процедур зависит от зоны, кожи и волос — мастер называет ориентир на первой консультации.</p>
+            <InteractiveHoverButton
+              type="button"
+              className="viart-cta viart-cta--outline"
+              onClick={() => openPriceTab(0)}
+            >
+              Выбрать зону или комплекс
+            </InteractiveHoverButton>
           </div>
         </section>
 
-        <section id="video" className="chapter video-chapter">
-          <div className="video-gallery">
-            <div className="master-media">
+        {/* ---------------------------------------------------------------- */}
+        {/* FIRST VISIT — one vertical video carries the offer. The full      */}
+        {/* complex list lives in the price table; this shows one, not four. */}
+        {/* Placeholder media: no vertical clip of a specific master exists   */}
+        {/* yet, so the existing prep footage (native 1080×1920, genuinely    */}
+        {/* portrait) stands in until it is replaced.                        */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="promo" className="chapter first-visit-scene">
+          <div className="deck-intro">
+            <div>
+              {/* No data-reveal on the wrapper: the heading already has an
+                  animation of its own, and stacking a fade on top of it is two
+                  systems moving one headline. */}
+              <p className="eyebrow" data-reveal="">Первое посещение</p>
+              <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
+                {'Скидка 30%\nна комплекс'}
+              </TextAnimate>
+            </div>
+            <p data-reveal="" data-reveal-delay="0.08">
+              Скидка действует на любой комплекс при первом посещении. Состав и цена — как в прайсе.
+            </p>
+          </div>
+
+          <div className="first-visit-layout">
+            <figure className="first-visit-plate" data-reveal="media">
               <video
                 ref={masterVideoRef}
+                className="first-visit-video"
                 src="/videos/viart-procedure-prep.mp4"
-                poster={galleryActiveSource}
+                poster="/images/gallery/1.jpg"
                 playsInline
                 muted={!isAudioEnabled}
-                preload="metadata"
+                // The file is ~19MB and its `moov` atom sits at the very end,
+                // so `metadata` costs a fetch of nearly the whole thing before
+                // anything is playable — paid by every visitor, most of whom
+                // never press play, and competing for bandwidth with the
+                // images the scenes are measured against. The poster is what
+                // the section shows until the play button is pressed.
+                preload="none"
                 controls={videoState === 'playing'}
                 onPlay={() => {
                   const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
@@ -641,6 +751,19 @@ export default function Home() {
                   setVideoState('error');
                 }}
               />
+
+              {/* The offer reads on its own — no audio, no interaction needed. */}
+              <div className="deck-tag"><p className="tech-label">−30% первое посещение</p></div>
+              <div className="deck-body">
+                <p className="tech-label">{firstVisitComplex.name}</p>
+                <p className="deck-detail">{firstVisitComplex.detail}</p>
+                <p className="deck-price">
+                  <span>{firstVisitComplex.price}</span>
+                  <strong>{firstVisitComplex.firstVisitPrice}</strong>
+                  <small>при первом посещении</small>
+                </p>
+              </div>
+
               {videoState !== 'playing' && videoState !== 'error' && (
                 <button
                   type="button"
@@ -658,68 +781,148 @@ export default function Home() {
                   <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
                 </div>
               )}
-            </div>
+            </figure>
+          </div>
 
-            <div className="video-context" data-reveal="">
-              <h2>Знакомство с ViART</h2>
-              <p>Посмотрите, как проходит процедура и познакомьтесь с атмосферой студии.</p>
-            </div>
-
+          <div className="deck-outro" data-reveal="">
+            <InteractiveHoverLink
+              className="viart-cta viart-cta--ivory"
+              href={bookingUrl}
+              target="_blank"
+              rel="noopener"
+            >
+              Записаться со скидкой
+            </InteractiveHoverLink>
+            <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
+              Все комплексы и составы <span>↗</span>
+            </button>
           </div>
         </section>
 
-        <section id="promo" className="chapter first-visit-chapter">
-          <div className="first-visit-heading" data-reveal="">
-            <h2>Запишитесь на комплекс со скидкой 30%</h2>
+        {/* TRUST — two separate claims, kept visually apart on purpose: the
+            award is a sourced, dated fact; the testimonial is one client's
+            words. Neither is a number to skim — the award is its own object
+            with its own copy, and the testimonial is one large quote, not a
+            rating anchored to counts nobody here has confirmed. */}
+        <section id="reviews" className="chapter trust-chapter">
+          <div className="trust-award" data-reveal="">
+            <div className="trust-award__media">
+              {/* `cover`, not `contain`: the source frame is a wide 1200×630
+                  canvas with the badge itself sitting in a narrow vertical
+                  band at its centre, surrounded by confetti margin. A
+                  portrait box with `cover` crops that margin away instead of
+                  rendering the badge small in the middle of empty space. */}
+              <Image
+                src="/images/awards/good-place-2026-source.png"
+                alt="Значок награды Яндекс Карт «Хорошее место — 2026»"
+                fill
+                sizes="(max-width: 640px) 6rem, 7.5rem"
+                className="cover-image"
+              />
+            </div>
+            <div className="trust-award__copy">
+              <p className="tech-label trust-award__eyebrow">Хорошее место · 2026</p>
+              <p>
+                Награда Яндекс Карт для мест, которые пользователи особенно любят: высоко оценивают
+                и рекомендуют в отзывах. В 2026 году её получили организации, чей рейтинг и отзывы
+                на карте держатся стабильно высокими весь год.
+              </p>
+            </div>
           </div>
-          <div className="first-visit-action" data-reveal="" data-reveal-delay="0.12">
-            <p>Скидка действует на любой комплекс при первом посещении.</p>
-            <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Выбрать комплекс и записаться</a>
-            <a className="text-link" href="#pricing">Вернуться к составам и ценам <span>↑</span></a>
+
+          <div className="trust-testimonial" key={reviewIndex}>
+            <p className="tech-label trust-testimonial__eyebrow">Отзывы</p>
+            <div className="trust-testimonial__layout">
+              <div className="trust-testimonial__quote-block">
+                <div className="trust-testimonial__mark" aria-hidden="true">“</div>
+                <blockquote className="trust-testimonial__quote">{activeReview.text}</blockquote>
+                <footer className="trust-testimonial__footer">
+                  <div>
+                    <strong>{activeReview.name}</strong>
+                    <span>{activeReview.date}</span>
+                  </div>
+                  <div className="trust-testimonial__controls">
+                    <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
+                    <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
+                  </div>
+                </footer>
+              </div>
+              <figure className="trust-testimonial__media">
+                <Image
+                  src="/images/gallery/5.jpg"
+                  alt="Интерьер студии ViART"
+                  fill
+                  sizes="(max-width: 900px) 60vw, 26vw"
+                  className="cover-image"
+                />
+              </figure>
+            </div>
           </div>
         </section>
 
-        <section id="reviews" className="chapter reviews-chapter">
-          <div className="rating-anchor" data-reveal="">
-            <strong>5,0</strong>
-            <div className="rating-stars" aria-label="Рейтинг 5 из 5">★★★★★</div>
-            <p>119 оценок · 98 отзывов</p>
-            <div className="award-lockup">
-              <div className="award-image"><Image src="/images/awards/good-place-2026-source.png" alt="Награда Яндекс Карт Хорошее место 2026" fill sizes="120px" className="contain-image" /></div>
-              <span>Хорошее место<br />2026</span>
+        {/* BOOKING — the closing panel: the record, the contacts and the map. */}
+        <section id="contacts" className="wipe-booking">
+          <div className="wipe-booking__inner">
+            <div className="wipe-booking__lead">
+              <p className="wipe-eyebrow">Запись в студию</p>
+              <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
+              <Magnet
+                padding={90}
+                magnetStrength={7}
+                disabled={!pointerFine}
+                wrapperClassName="wipe-magnet"
+              >
+                {/* A div, not a span: the beam renders a div of its own, and
+                    a span may only carry phrasing content. */}
+                <div className="wipe-cta-frame">
+                  <InteractiveHoverLink
+                    className="viart-cta viart-cta--dark"
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Записаться в ViART
+                  </InteractiveHoverLink>
+                  <BorderBeam
+                    size={64}
+                    duration={9}
+                    borderWidth={1}
+                    colorFrom="#d3b561"
+                    colorTo="#2a1c11"
+                  />
+                </div>
+              </Magnet>
             </div>
-          </div>
-          <div className="active-review" key={reviewIndex}>
-            <div className="quote-mark">“</div>
-            <blockquote>{activeReview.text}</blockquote>
-            <footer><strong>{activeReview.name}</strong><span>{activeReview.date}</span></footer>
-            <div className="review-controls">
-              <button type="button" onClick={() => changeReview(-1)} aria-label="Предыдущий отзыв">←</button>
-              <button type="button" onClick={() => changeReview(1)} aria-label="Следующий отзыв">→</button>
-            </div>
-          </div>
-        </section>
 
-        <section id="contacts" className="closure-section">
-          <div className="closure-message" data-reveal="">
-            <h2>Выберите процедуру.<br />Остальное — на нас.</h2>
-            <a className="button button--ivory" href={bookingUrl} target="_blank" rel="noopener">Записаться в ViART</a>
-          </div>
-          <div className="contact-grid" data-reveal="group">
-            <div data-reveal-item=""><span className="contact-label">Адрес</span><p>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</p></div>
-            <div data-reveal-item=""><span className="contact-label">Телефон</span><a href="tel:+79633555888">+7 963 355-58-88</a></div>
-            <div data-reveal-item=""><span className="contact-label">Режим работы</span><p>Пн–Вс: 10:00–21:00</p></div>
-            <div data-reveal-item=""><span className="contact-label">Запись</span><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></div>
-          </div>
-          <div className="map-frame" data-reveal="media">
-            <iframe
-              src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              title="ViART на карте"
-              loading="lazy"
-            />
+            <dl className="wipe-facts">
+              <div>
+                <dt className="tech-label">Адрес</dt>
+                <dd>Москва, Коммунарка,<br />ул. Бачуринская, 11а к1</dd>
+              </div>
+              <div>
+                <dt className="tech-label">Телефон</dt>
+                <dd><a href="tel:+79633555888">+7 963 355-58-88</a></dd>
+              </div>
+              <div>
+                <dt className="tech-label">Режим работы</dt>
+                <dd>Пн–Вс: 10:00–21:00</dd>
+              </div>
+              <div>
+                <dt className="tech-label">Запись</dt>
+                <dd><a href={bookingUrl} target="_blank" rel="noopener">Yclients ↗</a></dd>
+              </div>
+            </dl>
+
+            <div className="wipe-map">
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?ll=37.482726%2C55.578294&z=16&pt=37.482726%2C55.578294"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                title="ViART на карте"
+                loading="lazy"
+              />
+            </div>
           </div>
         </section>
       </main>
