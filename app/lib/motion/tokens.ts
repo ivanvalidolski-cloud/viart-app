@@ -34,15 +34,83 @@ export const REVEAL = {
 export const SCENE = {
   /** Scroll budget of the pinned voyeur scene, in viewport heights. */
   voyeurViewports: 3,
-  /** Scroll budget of the heurebleue zoom, in viewport heights. */
-  heureBleueViewports: 2.5,
   /** ScrollTrigger scrub smoothing, in seconds. */
   scrub: 1,
-  /** Gallery zoom ceiling — mobile needs more travel to fill a narrow frame. */
-  zoomDesktop: 2.65,
-  zoomMobile: 4,
-  /** Viewport width under which the mobile zoom ceiling applies. */
+  /** Viewport width under which the mobile composition applies. */
   mobileBreakpoint: 900,
+} as const;
+
+/**
+ * Gesture-gate constants shared by every stepped scene (`steppedScene.ts`):
+ * Hero→Directions, Procedure, Equipment, Videos. One wheel/touch gesture is
+ * either a complete state change or nothing — real scrolling is frozen for
+ * as long as the section is pinned, so these are this site's own addition,
+ * not transcribed from an external source.
+ */
+export const STEPPED = {
+  /**
+   * Silence, in ms, after the last wheel/touch input before a gesture counts
+   * as finished. One gesture may fire at most one state change; the next one
+   * waits for this much quiet, and for the current transition to finish,
+   * before it will fire again.
+   */
+  gestureIdleMs: 140,
+  /** Vertical drag, in px, a touch swipe needs before it counts as a gesture. */
+  touchThreshold: 40,
+  /** How far past the pin's start/end the exit scroll aims — just enough that
+   *  the crossing is unambiguous, not a distance the reader ever feels. */
+  exitOvershoot: 2,
+} as const;
+
+/**
+ * Scene 01 — the hero → Laser signature transfer. One continuous scroll
+ * budget: the dominant hero image travels via GSAP Flip into Laser's media
+ * slot while the hero copy leaves and Laser's copy settles in.
+ */
+export const TRANSFER = {
+  /** Scroll budget of the transfer, in viewport heights (desktop). Longer
+   *  than an ordinary chapter transition — this is the signature move. */
+  viewports: 1.3,
+  viewportsMobile: 0.85,
+  scrub: 0.7,
+  /** Slight diagonal/asymmetric travel, in px at 1x progress, added on top
+   *  of the Flip-computed path so the move reads as authored, not mechanical. */
+  driftX: -24,
+  driftY: 18,
+} as const;
+
+/** Scene 02 — Directions (`#services`): Laser, then Massage. Two states,
+ *  stepped one gesture at a time. Short and calm — never a repeat of the
+ *  hero's deep transfer. */
+export const DIRECTIONS = {
+  pinViewports: 1,
+  /** Seconds. Within the spec's 550–900ms chapter-transition budget. */
+  duration: 0.7,
+} as const;
+
+/** Scene 03 — Procedure (`#procedure`), stages 01→04: a horizontal process
+ *  track, not four fullscreen cards. Stepped, one gesture per number — the
+ *  numbered track pans and the active media/text crossfade in sync. Desktop
+ *  only; mobile gets a compact tap-driven step navigator (`page.tsx` state),
+ *  not this scene. */
+export const PROCEDURE = {
+  pinViewports: 1,
+  duration: 0.6,
+  /** Where the active node's centre sits, as a fraction of viewport width —
+   *  the spec's "35–45% from the left edge" dominant reading zone. */
+  dominantZone: 0.4,
+} as const;
+
+/** Scene 04 — Equipment: EVERLAS → TURBO G8. Two states, stepped. */
+export const EQUIPMENT = {
+  pinViewports: 1,
+  duration: 0.6,
+} as const;
+
+/** Scene 05 — Videos: three tiles → Anna + complex. Two states, stepped. */
+export const VIDEOS = {
+  pinViewports: 1,
+  duration: 0.6,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */

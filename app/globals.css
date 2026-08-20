@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* The imported Magic UI components are written against shadcn's theme names
+   (`bg-background`, `bg-primary`, `text-primary-foreground`). Mapping those three
+   onto ViART tokens is what lets the official markup keep its own classes while
+   painting in this palette — see `.viart-cta` at the end of this file for the
+   rest of the adaptation. */
+@theme inline {
+  --color-background: var(--warm-black);
+  --color-primary: var(--bronze-soft);
+  --color-primary-foreground: var(--warm-black);
+}
+
 :root {
   --warm-black: #100905;
   --ink: #0d0704;
@@ -290,77 +301,6 @@ a {
   to { opacity: 1; filter: blur(0.35px); }
 }
 
-/* Studio / quiet editorial */
-.studio-chapter {
-  background: var(--ink);
-}
-
-.studio-layout {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: auto auto;
-  gap: clamp(1.5rem, 3vw, 3.5rem);
-  margin-top: 2.5rem;
-}
-
-.studio-main-media,
-.studio-support-media {
-  position: relative;
-  margin: 0;
-  overflow: hidden;
-  background: var(--cocoa);
-}
-
-.studio-main-media {
-  grid-column: 1 / span 6;
-  grid-row: 1 / span 2;
-  min-height: clamp(40rem, 72vw, 63rem);
-}
-
-.studio-main-media img {
-  object-position: center 35%;
-  filter: saturate(0.78) sepia(0.08) contrast(1.05) brightness(0.94);
-}
-
-.studio-copy {
-  grid-column: 8 / span 5;
-  grid-row: 1;
-  align-self: end;
-  max-width: 34rem;
-  padding: 2rem 0 clamp(2rem, 5vw, 5rem);
-}
-
-.studio-copy h2 {
-  margin: 0 0 2rem;
-  font-size: clamp(2.65rem, 4.4vw, 5rem);
-  font-weight: 400;
-  letter-spacing: -0.055em;
-  line-height: 0.98;
-}
-
-.studio-copy > p:not(.eyebrow) {
-  margin: 0;
-  color: var(--muted);
-  font-size: clamp(1rem, 1.25vw, 1.18rem);
-  line-height: 1.7;
-}
-
-.studio-copy > p + p {
-  margin-top: 0.8rem;
-}
-
-.studio-support-media {
-  grid-column: 7 / span 6;
-  grid-row: 2;
-  min-height: clamp(18rem, 30vw, 31rem);
-  margin-left: clamp(0rem, 4vw, 4rem);
-}
-
-.studio-support-media img {
-  object-position: center 62%;
-  filter: saturate(0.76) sepia(0.1) contrast(1.06) brightness(0.9);
-}
-
 /* Prices / structural precision */
 .pricing-chapter {
   background: #100c09;
@@ -399,10 +339,16 @@ a {
   line-height: 1.65;
 }
 
+/* Kept to the spec's ~1100–1280px comparison width and collapsed to two
+   adjacent columns — the old 12-col span (1/3 then 5/-1) left an empty
+   column between the sidebar and the price rows, two independent "coastal"
+   zones on a wide viewport instead of one assembled block. */
 .pricing-layout {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
+  grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+  column-gap: clamp(2rem, 4vw, 3.5rem);
+  max-width: 76rem;
+  margin: 0 auto;
   border-top: 1px solid var(--hairline-strong);
   padding-top: 2rem;
 }
@@ -410,7 +356,7 @@ a {
 .price-controls {
   position: sticky;
   top: 6.5rem;
-  grid-column: 1 / span 3;
+  grid-column: 1;
   align-self: start;
 }
 
@@ -496,7 +442,7 @@ a {
 }
 
 .price-content {
-  grid-column: 5 / -1;
+  grid-column: 2;
   min-width: 0;
   animation: stateIn 260ms ease both;
 }
@@ -662,9 +608,7 @@ a {
 }
 
 /* EVERLAS / narrow scan */
-.everlas-chapter {
-  background: var(--espresso);
-}
+
 
 .everlas-stage {
   display: grid;
@@ -1056,13 +1000,7 @@ a {
   color: var(--bronze-soft);
 }
 
-.review-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+
 
 .review-controls button {
   display: grid;
@@ -1353,59 +1291,19 @@ a {
 }
 
 /* First Visit / quiet gold conversion handoff */
-.first-visit-chapter {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
-  align-items: end;
-  border-top-color: rgba(192, 154, 120, 0.18);
-  background: #15100c;
-}
 
-.first-visit-trace {
-  position: absolute;
-  left: var(--page-gutter);
-  top: 0;
-  height: 1px;
-  width: calc(66.66% - var(--page-gutter));
-  background: linear-gradient(90deg, rgba(218, 164, 116, 0.8), rgba(192, 154, 120, 0.1));
-  box-shadow: 0 0 1.6rem rgba(185, 105, 62, 0.18);
-  opacity: 0.22;
-  transform: scaleX(0.35);
-  transform-origin: left;
-  transition: opacity 620ms ease, transform 760ms cubic-bezier(0.2, 0.72, 0.2, 1);
-}
 
-.first-visit-chapter.is-engaged .first-visit-trace {
-  opacity: 0.78;
-  transform: scaleX(1);
-}
 
-.first-visit-heading {
-  grid-column: 1 / span 8;
-}
 
-.first-visit-heading h2 {
-  max-width: 12ch;
-  margin: 1.2rem 0 0;
-  font-size: clamp(3.4rem, 6.4vw, 7.4rem);
-  font-weight: 400;
-  letter-spacing: -0.07em;
-  line-height: 0.9;
-}
 
-.first-visit-action {
-  grid-column: 10 / -1;
-  border-left: 1px solid var(--hairline-strong);
-  padding-left: clamp(1.5rem, 3vw, 3rem);
-}
 
-.first-visit-action > p {
-  margin: 0 0 2.2rem;
-  color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.65;
-}
+
+
+
+
+
+
+
 
 .first-visit-action .button,
 .first-visit-action .text-link {
@@ -1413,19 +1311,9 @@ a {
 }
 
 /* Reviews / one dominant voice */
-.reviews-chapter {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
-  align-items: start;
-  background: #100c09;
-}
 
-.rating-anchor {
-  grid-column: 1 / span 3;
-  border-right: 1px solid var(--hairline);
-  padding-right: clamp(2rem, 5vw, 5rem);
-}
+
+
 
 .rating-anchor > strong {
   display: block;
@@ -1467,24 +1355,14 @@ a {
   width: 4.8rem;
 }
 
-.active-review {
-  position: relative;
-  grid-column: 5 / -1;
-  min-height: 34rem;
-  animation: reviewIn 320ms ease both;
-}
+
 
 @keyframes reviewIn {
   from { opacity: 0; transform: translateY(0.45rem); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.quote-mark {
-  color: var(--bronze-soft);
-  font-size: 6rem;
-  font-weight: 300;
-  line-height: 0.6;
-}
+
 
 .active-review blockquote {
   max-width: 38ch;
@@ -1512,10 +1390,7 @@ a {
   font-size: 0.72rem;
 }
 
-.review-controls {
-  justify-content: flex-start;
-  margin-top: 3rem;
-}
+
 
 /* Closure / optical return */
 .closure-section {
@@ -1684,27 +1559,6 @@ a {
     padding-right: 1.25rem;
   }
 
-  .studio-layout {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .studio-main-media {
-    order: 1;
-    min-height: min(128vw, 45rem);
-  }
-
-  .studio-copy {
-    order: 2;
-    padding: 2rem 0 1rem;
-  }
-
-  .studio-support-media {
-    order: 3;
-    min-height: min(65vw, 28rem);
-    margin: 0 0 0 12%;
-  }
-
   .chapter-heading,
   .gallery-topline {
     grid-template-columns: 1fr;
@@ -1768,9 +1622,7 @@ a {
     color: var(--warm-black);
   }
 
-  .everlas-chapter {
-    min-height: auto;
-  }
+  
 
   .everlas-stage {
     grid-template-columns: 1fr;
@@ -1868,10 +1720,7 @@ a {
     width: 100%;
   }
 
-  .first-visit-trace {
-    left: 1.25rem;
-    width: calc(100% - 2.5rem);
-  }
+  
 
   .media-continuity,
   .master-media {
@@ -1896,21 +1745,11 @@ a {
     margin-top: 3.5rem;
   }
 
-  .first-visit-action {
-    border-top: 1px solid var(--hairline-strong);
-    border-left: 0;
-    padding: 2rem 0 0;
-  }
+  
 
-  .rating-anchor {
-    border-right: 0;
-    border-bottom: 1px solid var(--hairline);
-    padding: 0 0 3rem;
-  }
+  
 
-  .active-review {
-    min-height: 0;
-  }
+  
 
   .contact-grid {
     grid-template-columns: 1fr 1fr;
@@ -1946,10 +1785,6 @@ a {
 
   .header-booking {
     font-size: 0.62rem;
-  }
-
-  .studio-copy h2 {
-    font-size: clamp(2.5rem, 11vw, 4rem);
   }
 
   .chapter-heading h2,
@@ -2324,61 +2159,11 @@ h3,
   letter-spacing: 0;
   text-transform: none;
 }
-
-.studio-chapter {
-  background: var(--ink);
-}
-
-.studio-layout {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: clamp(1.5rem, 2.5vw, 2.75rem);
-  margin-top: 0;
-}
-
-.studio-main-media,
-.studio-support-media,
 .everlas-media,
 .turbo-media,
 .gallery-media,
 .master-media {
   border-radius: 0.8rem;
-}
-
-.studio-main-media {
-  grid-column: 1 / span 7;
-  height: clamp(36rem, 55vw, 50rem);
-  min-height: 0;
-}
-
-.studio-copy {
-  grid-column: 8 / -1;
-  max-width: 34rem;
-  align-self: center;
-  padding: clamp(1rem, 3vw, 3rem) 0;
-}
-
-.studio-copy h2 {
-  max-width: 13ch;
-  margin-bottom: 1.5rem;
-  font-size: clamp(2.7rem, 4.1vw, 4.6rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.studio-copy > p:not(.eyebrow) {
-  max-width: 56ch;
-  color: var(--muted);
-  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
-  line-height: 1.75;
-}
-
-.studio-support-media {
-  grid-column: 9 / -1;
-  min-height: 0;
-  height: clamp(14rem, 21vw, 20rem);
-  margin-left: 0;
 }
 
 .pricing-chapter,
@@ -2514,9 +2299,7 @@ h3,
   color: var(--bronze-soft);
 }
 
-.everlas-chapter {
-  background: var(--espresso);
-}
+
 
 .everlas-stage {
   align-items: center;
@@ -2757,37 +2540,17 @@ h3,
   line-height: 1.7;
 }
 
-.first-visit-chapter {
-  align-items: center;
-  background: var(--ink);
-}
 
-.first-visit-heading {
-  grid-column: 1 / span 8;
-}
 
-.first-visit-heading h2 {
-  max-width: 13ch;
-  margin: 0;
-  font-size: clamp(3rem, 5.2vw, 5.8rem);
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
-}
 
-.first-visit-action {
-  grid-column: 9 / -1;
-  border-color: var(--hairline-strong);
-}
 
-.first-visit-action > p {
-  color: var(--muted);
-}
 
-.rating-anchor {
-  grid-column: 1 / span 3;
-  border-color: var(--hairline);
-}
+
+
+
+
+
+
 
 .rating-anchor > strong {
   margin-top: 0;
@@ -2802,15 +2565,9 @@ h3,
   color: var(--bronze-soft);
 }
 
-.active-review {
-  min-height: 0;
-  animation: none;
-}
 
-.quote-mark {
-  color: var(--bronze-soft);
-  font-size: 5rem;
-}
+
+
 
 .active-review blockquote {
   max-width: 42ch;
@@ -2822,10 +2579,7 @@ h3,
   line-height: 1.3;
 }
 
-.review-controls {
-  gap: 0.65rem;
-  margin-top: 2rem;
-}
+
 
 .review-controls button {
   height: 2.6rem;
@@ -2935,8 +2689,6 @@ h3,
   .chapter {
     padding: clamp(4.5rem, 12vw, 6rem) var(--page-gutter);
   }
-
-  .studio-layout,
   .everlas-stage,
   .turbo-chapter,
   .video-gallery,
@@ -2947,10 +2699,6 @@ h3,
   .pricing-layout {
     grid-template-columns: 1fr;
   }
-
-  .studio-main-media,
-  .studio-copy,
-  .studio-support-media,
   .everlas-media,
   .everlas-copy,
   .turbo-heading,
@@ -2969,26 +2717,6 @@ h3,
   .price-controls,
   .price-content {
     grid-column: 1;
-  }
-
-  .studio-layout {
-    gap: 1.5rem;
-  }
-
-  .studio-main-media {
-    grid-row: 1;
-    height: min(122vw, 39rem);
-  }
-
-  .studio-copy {
-    grid-row: 2;
-    max-width: 38rem;
-    padding: 1rem 0;
-  }
-
-  .studio-support-media {
-    grid-row: 3;
-    height: min(68vw, 23rem);
   }
 
   .chapter-heading,
@@ -3122,27 +2850,13 @@ h3,
     padding: 0;
   }
 
-  .first-visit-chapter {
-    display: grid;
-    gap: 2.5rem;
-  }
+  
 
-  .first-visit-action {
-    border-top: 1px solid var(--hairline-strong);
-    border-left: 0;
-    padding: 1.5rem 0 0;
-  }
+  
 
-  .reviews-chapter {
-    display: grid;
-    gap: 3rem;
-  }
+  
 
-  .rating-anchor {
-    border-right: 0;
-    border-bottom: 1px solid var(--hairline);
-    padding: 0 0 2.5rem;
-  }
+  
 
   .rating-anchor > strong {
     font-size: clamp(5rem, 18vw, 7rem);
@@ -3269,108 +2983,84 @@ h3,
   }
 }
 
-.studio-chapter {
-  z-index: 2;
-}
-
-/* HeureBleue → VoyeurVerite motion sequence */
+/* Hero → Laser signature transfer (`motion/scenes/transfer.ts`) */
 .viart-motion-sequence {
   position: relative;
   isolation: isolate;
   background: var(--warm-black);
 }
 
-.hb-scene {
+/* No fixed height here — it must grow to contain both `.hero-stage` (100svh,
+   sticky) and `.hero-transfer-spacer` below it. A fixed `100svh` here left
+   the spacer overflowing past this box's own bottom edge, and `.directions
+   -scene` (the next sibling) started right after *this* element's declared
+   height instead of after the spacer's real bottom — Directions' pin was
+   engaging ~1170px of scroll too early, mid-transfer. */
+.hero-scene {
   position: relative;
-  z-index: 1;
-  background: var(--warm-black);
+  width: 100%;
 }
 
-.hb-stage {
+.hero-stage {
   position: sticky;
   top: 0;
-  width: 100%;
+  z-index: 1;
   height: 100svh;
+  width: 100%;
   overflow: hidden;
   background: #000;
 }
 
-.hb-gallery {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: flex;
-  gap: 4em;
-  width: 160vw;
-  height: 100svh;
-  transform: translate(-50%, -50%) scale(1);
-  transform-origin: center;
-  will-change: transform;
-}
-
-.hb-col {
-  position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4em;
-  min-width: 0;
-  height: 100%;
-  will-change: transform;
-}
-
-.hb-img {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  background: var(--ivory);
-}
-
-.hb-img img {
-  object-fit: cover;
-  filter: saturate(0.78) sepia(0.08) contrast(1.03) brightness(0.82);
-}
-
-.hb-img--main img {
-  object-position: center 42%;
-  filter: saturate(0.88) sepia(0.04) contrast(1.03) brightness(0.92);
-  transform: scale(2);
-  will-change: transform;
-}
-
-.hb-flow {
-  position: relative;
-  z-index: 2;
-  margin-top: -100svh;
-}
-
-.hb-intro {
-  position: relative;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-}
-
-.hb-intro__shade {
+/* Becomes `position: fixed` from `transfer.ts` for the scroll budget below —
+   this is its pre-JS/reduced-motion resting box. */
+/* `pointer-events: none` is load-bearing, not tidy-up: `transfer.ts` sets
+   this frame `position: fixed` with a high `z-index` from setup so it can
+   travel above later chapters mid-scroll — at rest (progress 0) that same
+   z-index would otherwise sit on top of the hero CTA in the same stacking
+   area and silently swallow its hover/click, despite being `aria-hidden`. */
+.hero-media__frame {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(13, 7, 4, 0.95) 0%, rgba(13, 7, 4, 0.76) 38%, rgba(13, 7, 4, 0.2) 72%, rgba(13, 7, 4, 0.44) 100%),
-    linear-gradient(180deg, rgba(13, 7, 4, 0.28), transparent 48%, rgba(13, 7, 4, 0.62));
+  overflow: hidden;
+  background: var(--ivory);
   pointer-events: none;
 }
 
-.hb-intro__copy {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: clamp(2rem, 4.5vw, 5.5rem);
-  width: min(54rem, calc(100% - clamp(4rem, 9vw, 11rem)));
-  transform: translateY(-46%);
+.hero-media__frame img {
+  object-fit: cover;
+  /* Vertical only: at hero's landscape desktop aspect, `cover` crops top/
+     bottom and never the sides, so this is the sole crop control. It clears
+     the applicator (EVERLAS handpiece, roughly the image's 42–78% band) into
+     the frame instead of cutting through its body, while the arm/gel stays
+     the dominant read above it. At mobile's narrow/tall aspect `cover` crops
+     left/right instead — the full vertical range is already visible there,
+     so this value has no effect on that crop. */
+  object-position: center 60%;
+  filter: saturate(0.86) sepia(0.05) contrast(1.04) brightness(0.86);
 }
 
-.hb-intro__kicker {
+.hero-media__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(13, 7, 4, 0.94) 0%, rgba(13, 7, 4, 0.72) 40%, rgba(13, 7, 4, 0.16) 74%, rgba(13, 7, 4, 0.4) 100%),
+    linear-gradient(180deg, rgba(13, 7, 4, 0.26), transparent 46%, rgba(13, 7, 4, 0.58));
+  pointer-events: none;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  max-width: min(54rem, calc(100% - clamp(4rem, 9vw, 11rem)));
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 0 clamp(3.5rem, 9svh, 6.5rem) clamp(2rem, 4.5vw, 5.5rem);
+}
+
+.hero-kicker {
   margin: 0 0 clamp(1.25rem, 2.2vw, 2rem);
   color: var(--bronze-soft);
   font-size: 0.72rem;
@@ -3379,7 +3069,7 @@ h3,
   text-transform: uppercase;
 }
 
-.hb-intro__copy h1 {
+.hero-copy h1 {
   max-width: 13.5ch;
   margin: 0;
   color: var(--ivory);
@@ -3391,218 +3081,29 @@ h3,
   text-wrap: balance;
 }
 
-.hb-intro__subtitle {
-  margin: clamp(1.4rem, 2.5vw, 2.25rem) 0 0;
-  color: rgba(244, 236, 216, 0.78);
-  font-size: clamp(0.88rem, 1.05vw, 1rem);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.hb-intro__offer {
+.hero-offer {
   max-width: 36rem;
-  margin: 0.65rem 0 1.4rem;
+  margin: clamp(1.4rem, 2.5vw, 2.25rem) 0 1.4rem;
   color: var(--ivory);
   font-size: clamp(1rem, 1.2vw, 1.15rem);
   line-height: 1.55;
 }
 
-.hb-intro__actions {
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.25rem;
 }
 
-.hb-intro__actions .text-link {
-  min-height: 2.8rem;
-  padding: 0.7rem 0;
-}
-
-.hb-ws {
+/* Scroll budget for the signature transfer — `TRANSFER.viewports` (1.3) at
+   100svh each; the mobile figure below is `TRANSFER.viewportsMobile`. */
+.hero-transfer-spacer {
   width: 100%;
-  height: 250vh;
+  height: 130svh;
   background: transparent;
 }
 
-.vv-hero {
-  position: relative;
-  z-index: 3;
-  width: 100%;
-  height: 100svh;
-  margin-top: -100svh;
-  overflow: hidden;
-  background: var(--ivory);
-}
-
-.vv-fg-content,
-.vv-bg-content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform-origin: center center;
-}
-
-.vv-fg-content {
-  z-index: 2;
-  overflow: hidden;
-  background: var(--ink);
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-  will-change: clip-path, transform;
-}
-
-.vv-fg-img {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.vv-fg-img img {
-  object-fit: cover;
-  object-position: center 42%;
-  filter: saturate(0.88) sepia(0.04) contrast(1.03) brightness(0.92);
-  transform: scale(1.15);
-}
-
-.vv-fg-header {
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  left: 50%;
-  width: 95%;
-  padding: 2rem;
-  color: var(--ivory);
-  text-align: center;
-  transform: translateX(-50%);
-}
-
-.vv-fg-header h2 {
-  margin: 0;
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 6vw, 9rem);
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
-  text-transform: uppercase;
-}
-
-.vv-fg-overlay-dark,
-.vv-fg-overlay-accent {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  opacity: 0;
-  will-change: opacity;
-}
-
-.vv-fg-overlay-dark {
-  background: var(--ink);
-}
-
-.vv-fg-overlay-accent {
-  background: var(--bronze);
-}
-
-.vv-bg-content {
-  z-index: 0;
-  display: flex;
-  background: var(--ivory);
-}
-
-.vv-bg-col {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  height: 100%;
-  padding: 2rem;
-}
-
-.vv-bg-col:nth-child(2) {
-  justify-content: flex-end;
-}
-
-.vv-bg-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 50%;
-  color: var(--ink);
-  will-change: transform;
-}
-
-.vv-bg-copy h3,
-.vv-bg-copy p,
-.vv-outro-header h3 {
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.vv-bg-copy h3 {
-  color: var(--bronze);
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 8rem);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 0.8;
-}
-
-.vv-bg-copy p {
-  color: var(--ink);
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.1;
-}
-
-.vv-outro-content {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  display: flex;
-}
-
-.vv-outro-img {
-  position: relative;
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
-  will-change: clip-path;
-}
-
-.vv-outro-img:first-child {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
-}
-
-.vv-outro-img:nth-child(2) {
-  clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
-}
-
-.vv-outro-img img {
-  object-fit: cover;
-  filter: saturate(0.75) sepia(0.1) contrast(1.04) brightness(0.72);
-}
-
-.vv-outro-header {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  width: 60%;
-  color: var(--ivory);
-  text-align: center;
-  transform: translate(-50%, -50%);
-}
-
-.vv-outro-header h3 {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 8rem);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 0.8;
-}
-
-.vv-outro-header .vv-line,
 .reveal-line {
   position: relative;
   /* A masked line is clipped to its own box. These headlines run at
@@ -3615,68 +3116,3171 @@ h3,
 }
 
 @media (max-width: 1000px) {
-  .hb-gallery {
-    width: 160vw;
+  .hero-copy {
+    max-width: none;
+    padding: 0 var(--page-gutter) clamp(3rem, 8svh, 5rem);
   }
 
-  .hb-intro__copy {
-    top: auto;
-    bottom: clamp(2rem, 6svh, 4.5rem);
-    left: var(--page-gutter);
-    width: calc(100% - var(--page-gutter) * 2);
-    transform: none;
-  }
-
-  .hb-intro__copy h1 {
+  .hero-copy h1 {
     max-width: 11ch;
     font-size: clamp(2.85rem, 12vw, 4.7rem);
     line-height: 0.96;
   }
 
-  .hb-intro__subtitle {
-    font-size: 0.72rem;
-    line-height: 1.45;
-  }
-
-  .hb-intro__offer {
+  .hero-offer {
     max-width: 27rem;
     font-size: 0.92rem;
   }
 
-  .vv-bg-copy {
-    width: 100%;
-  }
-
-  .vv-bg-col:first-child .vv-bg-copy {
-    margin-top: -50svh;
-  }
-
-  .vv-bg-col:nth-child(2) .vv-bg-copy {
-    margin-top: 50svh;
-  }
-
-  .vv-outro-header {
-    width: 100%;
-    padding: 2rem;
+  .hero-transfer-spacer {
+    height: 85svh;
   }
 }
 
 @media (max-width: 640px) {
-  .hb-intro__actions {
+  .hero-actions {
     display: grid;
   }
 
-  .hb-intro__actions .button,
-  .hb-intro__actions .text-link {
+  .hero-actions .button,
+  .hero-actions .viart-cta {
     width: 100%;
   }
+}
 
-  .vv-fg-header {
-    padding: 1.25rem;
+
+/* Services / two directions */
+.services-chapter {
+  background: var(--ink);
+}
+
+.services-intro {
+  max-width: 46rem;
+  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+}
+
+.services-intro h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(3rem, 5vw, 5.6rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.services-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  align-items: start;
+}
+
+.service-column {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 1px solid var(--hairline);
+  background: var(--cocoa);
+}
+
+.service-column__media {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.service-column__media img {
+  transition: transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.service-column:hover .service-column__media img {
+  transform: scale(1.035);
+}
+
+.service-column__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.5rem, 2.4vw, 2.4rem);
+}
+
+.service-column__kicker {
+  margin: 0 0 0.7rem;
+  color: var(--bronze-soft);
+  font-family: var(--font-martian), "Courier New", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.service-column h3 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.service-column__lead {
+  margin: 0.9rem 0 0;
+  max-width: 34ch;
+  color: var(--ivory);
+  font-size: clamp(1rem, 1.15vw, 1.12rem);
+  line-height: 1.5;
+}
+
+.service-column__points {
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.service-column__points li {
+  position: relative;
+  padding: 0.7rem 0 0.7rem 1.4rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.service-column__points li::before {
+  position: absolute;
+  top: 0.7rem;
+  left: 0;
+  color: var(--bronze);
+  content: "—";
+}
+
+.service-column .button {
+  margin-top: clamp(1.5rem, 2.2vw, 2.2rem);
+}
+
+@media (max-width: 899px) {
+  .services-columns {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .vv-fg-header h2,
-  .vv-outro-header h3 {
-    font-size: clamp(2rem, 9vw, 4rem);
+  .service-column__media {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+@media (hover: none) {
+  .service-column:hover .service-column__media img {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   ViART Motion Chapters (v13)
+
+   The scene scaffolding for the chapters below the hero. Every block is the CSS
+   half of a scene in `app/lib/motion/scenes/`; the source it is adapted from is
+   named at the top of that module, and the geometry here is transcribed from it
+   — a capsule column is 50% wide, the spotlight column carries 50svh of padding,
+   the deck stage is one viewport tall. Those are progress mapping, not taste,
+   and cannot be nudged.
+
+   What *is* ours: the palette, the type, the copy, the media and the
+   responsive/reduced-motion composition at the end.
+   ========================================================================== */
+
+:root {
+  /* Gold on hover for a filled control — already in use by .button--ivory. */
+  --bronze-hi: #e4cc89;
+  /* Gold and hairlines that hold up on the warm off-white closing panel. */
+  --bronze-ink: #6b5015;
+  --hairline-ink: rgba(42, 28, 17, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   Global CTA system — Magic UI's Interactive Hover Button in ViART clothing.
+   The component's own utilities drive the motion (the dot scaling to the fill,
+   the label sliding out, the second label arriving); these rules only restate
+   the surface, the radius and the type, and pick the four colours through
+   custom properties so a variant is one declaration block.
+   -------------------------------------------------------------------------- */
+.viart-cta {
+  --cta-surface: transparent;
+  --cta-ink: var(--ivory);
+  --cta-border: var(--hairline-strong);
+  --cta-fill: var(--bronze-soft);
+  --cta-fill-ink: var(--warm-black);
+
+  min-height: 2.8rem;
+  border: 1px solid var(--cta-border);
+  /* Nothing on this site is a pill; the component's `rounded-full` is replaced
+     by the project radius. The dot still scales to cover the whole control. */
+  border-radius: 0.4rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--cta-surface);
+  color: var(--cta-ink);
+  font-family: var(--font-onest), Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* The expanding dot. */
+.viart-cta > div:first-child > div:first-child {
+  background: var(--cta-fill);
+}
+
+/* The label that arrives once the fill has covered the control. */
+.viart-cta > div:last-child {
+  color: var(--cta-fill-ink);
+}
+
+.viart-cta:focus-visible {
+  outline: 1px solid var(--ivory);
+  outline-offset: 4px;
+}
+
+.viart-cta--ivory {
+  --cta-surface: var(--bronze-soft);
+  --cta-ink: var(--warm-black);
+  --cta-border: var(--bronze-soft);
+  --cta-fill: var(--bronze-hi);
+  --cta-fill-ink: var(--warm-black);
+}
+
+.viart-cta--outline {
+  --cta-surface: transparent;
+  --cta-ink: var(--bronze-soft);
+  --cta-border: rgba(201, 168, 76, 0.58);
+  --cta-fill: var(--bronze-soft);
+  --cta-fill-ink: var(--warm-black);
+}
+
+/* For the warm off-white closing panel. */
+.viart-cta--dark {
+  --cta-surface: var(--warm-black);
+  --cta-ink: var(--ivory);
+  --cta-border: var(--warm-black);
+  --cta-fill: var(--bronze);
+  --cta-fill-ink: var(--warm-black);
+}
+
+/* --------------------------------------------------------------------------
+   02 SERVICES — capsule columns
+   -------------------------------------------------------------------------- */
+.cap-scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  border-top: 1px solid var(--hairline);
+  padding: 0.5rem;
+  background: var(--warm-black);
+}
+
+/* The stage clips its own columns. Two of them wait a full stage-height below,
+   which lands them in the strip the section keeps for the CTA row — without
+   this they show through underneath the buttons for the whole scene, and the
+   off-stage photograph reads as a layout error rather than as something
+   waiting to slide in. */
+.cap-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 50% is load-bearing: every phase moves a column by a full 100% of its own
+   width, so at half width it lands exactly on the other half. Widen it and the
+   two middle columns hang off the edge at one of their two stops. */
+.cap-col {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Off-stage positions for the frame before the scene is built — and the whole
+   composition when motion is reduced. */
+.cap-col--2 {
+  transform: translateX(100%);
+}
+
+.cap-col--3 {
+  padding: 0.5rem;
+  transform: translateX(100%) translateY(100%);
+}
+
+.cap-col--4 {
+  transform: translateX(100%) translateY(100%);
+}
+
+.cap-content,
+.cap-img {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.cap-plate {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.cap-plate--text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 2.4vw, 2.6rem);
+}
+
+/* Sits exactly on top of the first text plate, with no surface of its own. */
+.cap-text--b {
+  position: absolute;
+  /* Not `inset: 0` — absolute offsets resolve against the column's padding box,
+     which would leave this block 0.5rem wider than the plate it stacks on and
+     shift its copy outward mid-swap. */
+  inset: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 2.4vw, 2.6rem);
+}
+
+.cap-img--1,
+.cap-img--2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* A zero-height sliver at the top edge: the second photograph starts hidden and
+   the phase-one wipe grows it to the full plate. */
+.cap-img--2 {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+}
+
+/* `transform`, not the `scale` property — GSAP writes the same channel, so the
+   two cannot compound. */
+.cap-img--2 img {
+  transform: scale(1.25);
+}
+
+.cap-plate--text h2,
+.cap-plate--text h3 {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1.9rem, 3.2vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+}
+
+.cap-kicker {
+  margin: 0 0 0.9rem;
+  color: var(--bronze-soft);
+}
+
+.cap-lead {
+  max-width: 26ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.cap-points {
+  display: grid;
+  max-width: 34ch;
+  gap: 0.7rem;
+}
+
+.cap-points p {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+p.cap-tag {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  margin: 0;
+  border-radius: 0.3rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(13, 7, 4, 0.74);
+  color: var(--bronze-soft);
+  white-space: nowrap;
+}
+
+/* One span per line, clipped by the line: the swap is two stacks of line masks
+   passing each other. */
+.cap-line {
+  overflow: hidden;
+  /* Same reason as .reveal-line — at this leading a mask clips Cyrillic
+     descenders without it. */
+  padding-bottom: 0.14em;
+}
+
+.cap-line span {
+  display: block;
+  will-change: transform;
+}
+
+.cap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   03 EVERLAS — pinned spotlight
+   -------------------------------------------------------------------------- */
+
+
+
+
+
+
+
+
+/* The beam's SVG is absolutely positioned against this box. */
+
+
+
+
+
+
+
+
+
+
+/* Half a viewport of padding left and right is what puts the first and last
+   card near mid-screen at the two ends of the scrub. A horizontal line of
+   square cards, not a column — the active one is the visual centre and its
+   neighbours stay part of the same line either side of it. */
+
+
+
+
+/* One box in the band below the row, not a travelling list — a full-width
+   card row leaves no side margin for captions to slide down without landing
+   on the cards they describe. All four stack in the same spot and crossfade;
+   only the active one is ever opaque. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --------------------------------------------------------------------------
+   05 GALLERY — 3×3 clip-path mosaic
+   -------------------------------------------------------------------------- */
+.mosaic-scene {
+  background: var(--warm-black);
+}
+
+
+
+.gallery-topline + .mosaic-row {
+  margin-top: clamp(3rem, 6vw, 6rem);
+}
+
+.mosaic-row + .mosaic-row,
+.mosaic-feature + .mosaic-row {
+  margin-top: clamp(2rem, 4vw, 4rem);
+}
+
+
+
+/* All nine masks in a cell carry the same full-cover picture; the 3×3 grid is
+   entirely a matter of clip-path, so a tile uncovers its own ninth of one
+   continuous photograph. A cell with no `--mosaic-src` resolves to no image and
+   tiles in empty — that is what makes the row read as a gappy editorial grid. */
+.mosaic-cell .mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-image: var(--mosaic-src);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+}
+
+.mosaic-feature {
+  position: relative;
+  margin: clamp(2rem, 4vw, 4rem) 0 0;
+}
+
+.mosaic-feature > div {
+  border-radius: 0.8rem;
+}
+
+
+
+.mosaic-feature figcaption {
+  margin-top: 0.9rem;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------------------
+   06 VIDEO — the plate grows into the frame
+   -------------------------------------------------------------------------- */
+
+
+
+
+/* The quarter-scale thumbnail pulled above its own section. The JS takes the
+   same value from its breakpoint table on the first frame, so a wide screen
+   never jumps. Below the gate the plate is an ordinary block in flow. */
+@media (min-width: 900px) {
+  
+}
+
+/* Sized off the plate it sits behind, not off the whole container — the caption
+   below should not glow. */
+.grow-backlight {
+  position: absolute;
+  top: -6%;
+  left: -4%;
+  right: -4%;
+  z-index: 0;
+  aspect-ratio: 16 / 9;
+  pointer-events: none;
+}
+
+.grow-backlight svg {
+  position: absolute;
+}
+
+.grow-backlight > div:last-child {
+  height: 100%;
+  width: 100%;
+}
+
+.grow-backlight__plate {
+  height: 100%;
+  width: 100%;
+  border-radius: 2.5rem;
+  background: radial-gradient(
+    58% 54% at 50% 46%,
+    rgba(201, 168, 76, 0.34),
+    rgba(42, 28, 17, 0.16) 62%,
+    transparent 78%
+  );
+}
+
+
+
+/* .master-media is laid out for a 12-column grid elsewhere; inside the plate it
+   is simply the full frame. */
+
+
+
+
+
+
+.grow-title p:last-child {
+  color: var(--muted);
+  text-align: right;
+}
+
+.grow-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  max-width: 68ch;
+  margin-top: clamp(2rem, 4vw, 4rem);
+}
+
+.grow-context > p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   07 COMPLEXES — sticky deck
+   -------------------------------------------------------------------------- */
+
+
+.deck-intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.deck-intro > div:first-child {
+  grid-column: 1 / span 7;
+}
+
+.deck-intro > p {
+  grid-column: 9 / -1;
+  max-width: 30rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.deck-intro h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(3rem, 5vw, 5.6rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+
+
+/* The clip is what hides the card waiting one container-height below. */
+
+
+
+
+
+
+
+
+.deck-tag {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  z-index: 1;
+  border-radius: 0.25em;
+  padding: 0.5em 0.7em;
+  background: rgba(13, 7, 4, 0.86);
+}
+
+.deck-tag p {
+  margin: 0;
+  color: var(--bronze-soft);
+}
+
+.deck-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: grid;
+  gap: 0.6rem;
+  padding: clamp(1.25rem, 2vw, 2rem);
+}
+
+.deck-detail {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--ivory);
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
+  line-height: 1.4;
+}
+
+.deck-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+}
+
+.deck-price > span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.deck-price strong {
+  color: var(--bronze-soft);
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.deck-price small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.deck-outro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 2rem;
+  padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
+}
+
+/* --------------------------------------------------------------------------
+   08 REVIEWS — the pause. Only the two counts changed.
+   -------------------------------------------------------------------------- */
+.rating-counts__value {
+  color: var(--bronze-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   09 BOOKING — the closing panel
+   -------------------------------------------------------------------------- */
+.wipe-booking {
+  position: relative;
+  min-height: 150vh;
+  width: 100%;
+  padding: clamp(5rem, 8vw, 9rem) var(--page-gutter) clamp(4rem, 6vw, 7rem);
+  background: var(--ivory);
+  color: var(--warm-black);
+}
+
+.wipe-booking__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  row-gap: clamp(3rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.wipe-booking__lead {
+  grid-column: 1 / span 7;
+}
+
+.wipe-eyebrow {
+  margin: 0 0 1rem;
+  color: var(--bronze-ink);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.wipe-booking h2 {
+  max-width: 15ch;
+  margin: 0 0 2.5rem;
+  color: var(--warm-black);
+  font-size: clamp(2.6rem, 5vw, 5.4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.wipe-magnet {
+  display: inline-block;
+}
+
+/* The beam is `absolute inset-0 rounded-[inherit]`, so the frame owns the
+   radius and the positioning context. */
+.wipe-cta-frame {
+  position: relative;
+  display: inline-block;
+  border-radius: 0.4rem;
+}
+
+.wipe-facts {
+  grid-column: 9 / -1;
+  display: grid;
+  gap: 1.6rem;
+  margin: 0;
+}
+
+.wipe-facts dt {
+  color: var(--bronze-ink);
+}
+
+.wipe-facts dd {
+  margin: 0.4rem 0 0;
+  color: rgba(42, 28, 17, 0.88);
+  line-height: 1.5;
+}
+
+.wipe-facts a {
+  border-bottom: 1px solid rgba(42, 28, 17, 0.32);
+  color: var(--warm-black);
+}
+
+.wipe-facts a:hover {
+  border-color: var(--bronze-ink);
+  color: var(--bronze-ink);
+}
+
+.wipe-map {
+  grid-column: 1 / -1;
+  height: clamp(19rem, 32vw, 30rem);
+  overflow: hidden;
+  border: 1px solid var(--hairline-ink);
+  border-radius: 0.75rem;
+}
+
+.wipe-map iframe {
+  display: block;
+  border: 0;
+  filter: saturate(0.82);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive composition
+
+   Mobile is a different composition, not a smaller desktop — with one hard
+   exception. The capsule columns stay at 50%: the phase tweens move a column by
+   100% of its own width, so any other width lands the two middle columns off
+   the edge at one of their two stops. Widen the content, never the column.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  
+
+  
+}
+
+@media (max-width: 1000px) {
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1.25rem;
+  }
+
+  .cap-plate--text h2,
+  .cap-plate--text h3,
+  .cap-lead,
+  .cap-points {
+    max-width: 100%;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.85rem;
+  }
+
+  .cap-plate--text,
+  .cap-text--b {
+    padding: 2rem;
+  }
+
+  
+
+  
+
+  /* At this size the dim/active distinction stops earning its keep. */
+  
+
+  
+}
+
+@media (max-width: 899px) {
+  .deck-intro > div:first-child,
+  .deck-intro > p {
+    grid-column: 1 / span 12;
+  }
+
+  .deck-intro > p {
+    margin-top: 1.5rem;
+    max-width: none;
+  }
+
+  /* No script below 900px, so this is the size the caption actually ships at. */
+  
+
+  
+
+  .grow-title p:last-child {
+    text-align: left;
+  }
+
+  
+
+  
+
+  
+
+  .wipe-booking__lead,
+  .wipe-facts {
+    grid-column: 1 / span 12;
+  }
+
+  .wipe-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* Give the fixed header its own band instead of letting the wordmark sit on
+     the capsule's own eyebrow. Costs ~54px of plate height. */
+  .cap-scene {
+    padding-top: 3.4rem;
+  }
+
+  .cap-plate {
+    border-radius: 0.8rem;
+  }
+
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.8125rem;
+  }
+
+  /* The desktop split — heading at the top, copy at the bottom — leaves a dead
+     middle two thirds of a plate this narrow, and parks the copy below the fold
+     while the section is still settling into the pin. */
+  .cap-plate--text,
+  .cap-text--b {
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 1.15rem;
+  }
+
+  .cap-points {
+    gap: 0.5rem;
+  }
+
+  /* Type plus class, matching the base rule — a bare `.cap-tag` override loses
+     the specificity contest and the tag silently keeps nowrap and truncates. */
+  p.cap-tag {
+    left: 0.6rem;
+    bottom: 0.6rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.55rem;
+    white-space: normal;
+  }
+
+  /* The plates are roughly 1:4 here, so `cover` crops the width, not the
+     height: the vertical half of object-position has nothing to do. */
+  .cap-plate img {
+    object-position: 40% 50%;
+  }
+
+  .cap-actions {
+    gap: 0.5rem;
+  }
+
+  .cap-actions .viart-cta {
+    flex: 1 1 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 640px) {
+  
+
+  /* Four 4:5 cells across a phone is a 20%-wide sliver; two rows of two read. */
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  .wipe-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The mosaic cell is a background image, so it has no intrinsic ratio to keep
+   the row honest below 1000px — the source relaxes the whole grid instead. */
+@media (max-width: 1000px) {
+  
+
+  .deck-intro h2 {
+    font-size: clamp(2.4rem, 8vw, 4rem);
+  }
+}
+
+/* Pointer-only embellishments. The lens and the magnet are also gated in JS —
+   this is the belt to that pair of braces. */
+@media (hover: none) {
+  .mosaic-feature > div {
+    pointer-events: none;
+  }
+
+  .wipe-magnet > div {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   Visual Scale & Rhythm Correction (v14)
+
+   Not a restyle: the palette, the fonts, the copy, the media and every scene
+   mechanism above stay exactly as they are. What this block does is put the
+   page on one scale and one vertical rhythm — the chapters were each sized in
+   isolation, so a decorative statement outranked the page's own H1 and two
+   headings of the same rank differed by half a step.
+
+   It sits *before* the reduced-motion block on purpose: that block collapses
+   the scroll scaffolding and must keep the last word. It sits *after* the
+   responsive composition block for the same reason the Global Correction layer
+   sits where it does — an unconditional rule here beats the media-query rules
+   above it, which is how one scale reaches both breakpoints. Anything that has
+   to differ per breakpoint carries its own query below.
+   ========================================================================== */
+
+:root {
+  /* One display ladder, ~1.08 between neighbouring ranks. Hero first, then the
+     full-screen statements, then chapter headings, then the display stat. */
+  --display-hero: clamp(2.75rem, 5.3vw, 4.8rem);
+  --display-statement: clamp(2.6rem, 4.9vw, 4.4rem);
+  --display-chapter: clamp(2.3rem, 4.1vw, 3.7rem);
+  --display-stat: clamp(2.8rem, 3.8vw, 3.4rem);
+
+  /* The vertical rhythm every chapter joint is measured in. */
+  --chapter-space: clamp(4.5rem, 6.4vw, 7rem);
+  --chapter-space-tight: clamp(2.25rem, 3.4vw, 3.5rem);
+
+  /* The fixed header is 4rem tall and covers the top of every pinned scene. */
+  --header-h: 4rem;
+}
+
+/* --- viewport fit ---------------------------------------------------------
+   A pinned scene is exactly one viewport tall, and the header is painted over
+   its first 4rem. Each of these reserves that band so no plate, heading or
+   scrubbed line is read through the header. The spotlight's travel is derived
+   from its own `padding-top`, so reserving the band there also shortens the
+   travel by the same amount — the first stage name now stops below the header
+   instead of sliding under it. */
+.cap-scene {
+  padding-top: calc(var(--header-h) + 0.5rem);
+}
+
+
+
+/* --- type scale ----------------------------------------------------------- */
+.hb-intro__copy h1 {
+  /* One rank down and one line wider: the same headline in four lines instead
+     of five, which is what lets the subtitle, the offer and the CTA sit in the
+     lower third instead of being pushed against the bottom edge. */
+  max-width: 15ch;
+  font-size: var(--display-hero);
+}
+
+.chapter-heading h2,
+.gallery-topline h2,
+.deck-intro h2,
+.spot-intro__copy h2,
+.wipe-booking h2 {
+  font-size: var(--display-chapter);
+}
+
+.rating-anchor > strong {
+  font-size: var(--display-stat);
+}
+
+/* Sub-display: the two voices that answer a chapter heading. */
+.active-review blockquote {
+  font-size: clamp(1.45rem, 2.05vw, 2.1rem);
+}
+
+/* 9.9px was below the floor for a readable label; every tag, eyebrow and
+   caption on the site is this one class. */
+.tech-label {
+  font-size: 0.72rem;
+}
+
+/* --- chapter rhythm -------------------------------------------------------
+   Six different chapter shells were each carrying their own top and bottom
+   padding. They are the same joint and now measure the same. */
+.chapter,
+.grow-scene {
+  padding-top: var(--chapter-space);
+  padding-bottom: var(--chapter-space);
+}
+
+.spot-intro,
+.deck-intro {
+  padding-top: var(--chapter-space);
+  padding-bottom: var(--chapter-space-tight);
+}
+
+.spot-outro,
+.deck-outro {
+  padding-top: var(--chapter-space-tight);
+  padding-bottom: var(--chapter-space);
+}
+
+.chapter-heading,
+.gallery-topline {
+  padding-bottom: var(--chapter-space-tight);
+}
+
+/* Reviews used to be followed by a full-screen statement, which is what carried
+   the chapter's own bottom space. The next thing after it is now the ivory
+   closing panel, and its top padding is nearly the same figure again — the two
+   stacked into a band of empty dark ground at a hard colour change. The joint
+   measures the tight rhythm instead; the panel is unchanged. */
+
+
+/* --- section proportions -------------------------------------------------- */
+
+/* The mosaic's closing frame was the tallest single image on the page. */
+
+
+/* The closing panel reserved a screen and a half and its content never filled
+   it; the content is taller than a viewport on its own. */
+.wipe-booking {
+  min-height: 100vh;
+}
+
+/* --- local defects that blocked the correction ---------------------------- */
+
+/* The CTA shell is an inline element that only ever laid out correctly because
+   its parents happened to be flex containers. Inside the closing panel's magnet
+   frame it collapsed to a 40px sliver — the page's primary conversion control,
+   unreadable and barely clickable. It now carries its own box. */
+.viart-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  /* The video plate floats a quarter-scale above its own section — by design —
+     but the gallery ends directly above it, so the thumbnail and its caption
+     were rendered on top of the mosaic's closing frame. This reserves the ground
+     the plate actually occupies.
+
+     How much that is: the plate rises `translateY` of its own height and then
+     shrinks about its centre, so its top sits `(translateY - 0.375) × height`
+     above where it would otherwise start, less the gallery's bottom padding.
+     `translateY` is the scene's breakpoint table (-1.35 at 900px easing to -1.05
+     from 1300px up) and the height follows the 16:9 plate, so the two move
+     against each other and the requirement stays between 460px and 505px across
+     every width from 900 up. One flat 36rem clears all of them with room to spare. */
+  
+}
+
+/* The deck card was half the stage in both axes, which read as a thumbnail on a
+   wide screen and left its own price line cramped against the bottom edge. The
+   narrower breakpoints already have their own container sizes above. */
+@media (min-width: 1001px) {
+  
+}
+
+/* The phone width sets `width: 100%` above, but the `max-width: 1000px` block
+   that follows it declares `width: 95%` at the same specificity and matches at
+   the same time — so the full-width card never applied on a phone. Restated
+   here, where nothing outranks it. */
+@media (max-width: 640px) {
+  
+}
+
+/* Mobile keeps a tighter rhythm than a scaled-down desktop one. */
+@media (max-width: 899px) {
+  :root {
+    --chapter-space: clamp(2.75rem, 9vw, 4.5rem);
+    --chapter-space-tight: clamp(1.75rem, 5vw, 2.5rem);
+  }
+}
+
+@media (max-width: 1000px) {
+  /* At this width the stage names cross the frames they describe. The plate is
+     the same warm ground the section already uses for the same purpose in the
+     hero — it travels with the line, because each name is
+     transformed on its own. */
+}
+
+@media (max-width: 899px) {
+  /* The Global Correction re-declared these buttons as blocks but left the
+     older three-column grid in place, so the three filters sat in a row with no
+     padding, the last one flush against the screen edge. Restored as a proper
+     row of chips: one tap target each, 44px minimum. */
+  .control-group--categories {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .control-group--categories .control-caption {
+    grid-column: 1 / -1;
+  }
+
+  .control-group--categories > button {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 0.4rem;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .control-group--categories > button:last-child {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .control-group--categories > button.is-active {
+    border-color: var(--hairline-strong);
+    padding-left: 0.7rem;
+    background: rgba(201, 168, 76, 0.16);
+    color: var(--ivory);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Half a plate is 170px wide here, and the copy inside it was two ranks below
+     the rest of the page's body text. */
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1.25rem;
+    line-height: 1.15;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  p.cap-tag {
+    font-size: 0.62rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+
+   No scene is built at all, so every box that exists only to hold scroll has to
+   collapse — a pin that never happens still leaves a viewport of section, and
+   the hero's own spacer is two and a half screens of nothing. Everything
+   readable stays readable, and every control stays reachable.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  /* --- services: four plates in a static two-column grid --- */
+  .cap-scene {
+    display: block;
+    height: auto;
+    padding: clamp(4rem, 6vw, 6rem) var(--page-gutter);
+  }
+
+  .cap-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .cap-col {
+    position: static;
+    height: auto;
+    width: auto;
+    padding: 0;
+    transform: none;
+  }
+
+  .cap-content,
+  .cap-img {
+    height: auto;
+    padding: 0;
+  }
+
+  .cap-img--1,
+  .cap-img--2 {
+    position: relative;
+    clip-path: none;
+  }
+
+  .cap-img--2 {
+    margin-top: var(--grid-gap);
+  }
+
+  .cap-img--2 img {
+    transform: none;
+  }
+
+  .cap-img .cap-plate {
+    height: auto;
+    aspect-ratio: 4 / 5;
+    border-radius: 0.8rem;
+  }
+
+  .cap-plate--text {
+    height: auto;
+    gap: 1.75rem;
+  }
+
+  .cap-text--b {
+    position: static;
+    margin-top: var(--grid-gap);
+    border-radius: 0.8rem;
+    background: var(--cocoa);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+
+  /* --- EVERLAS: the stage list beside a static strip of frames --- */
+  
+
+  
+
+  
+
+  
+
+  
+
+  /* No scrub, so no active state to crossfade — every stage is simply present. */
+  
+
+  /* Nothing overlaps here — the frames are a static grid above the list, so the
+     narrow-screen readability plate has nothing to protect. */
+  
+
+  /* --- video: the plate is already where it belongs --- */
+  
+
+  /* Nothing floats above the section, so the ground reserved for the floating
+     plate is scroll against nothing. */
+  
+
+  
+
+  /* --- complexes: the deck unstacks into a list --- */
+  
+
+  
+
+  
+
+  /* --- the closing panel keeps its content, drops its reserved screen --- */
+  .wipe-booking {
+    min-height: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Good Place — a standalone trust marker between Reviews and the map. Not a
+   card: no border, no fill, generous space around it, the badge as the
+   dominant object and one line of sourced copy under it. A thin cue line
+   below is the only directional nod toward the map that follows.
+   -------------------------------------------------------------------------- */
+.good-place-marker {
+  display: flex;
+  justify-content: center;
+  padding: clamp(4rem, 9vw, 7.5rem) var(--page-gutter) clamp(2.5rem, 5vw, 4rem);
+  background: var(--warm-black);
+}
+
+.good-place-marker__inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  /* The spec's ~560–760px semantic width, at rem so it still tracks a user
+     zoom/base-size change. */
+  max-width: 42rem;
+  text-align: center;
+}
+
+.good-place-marker__badge {
+  position: relative;
+  height: 6.5rem;
+  width: 6.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.good-place-marker__eyebrow {
+  color: var(--bronze-soft);
+}
+
+.good-place-marker__copy {
+  margin: 0;
+  max-width: 38ch;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.good-place-marker__cue {
+  width: 1px;
+  height: 2.75rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(to bottom, var(--hairline-strong), transparent);
+}
+
+@media (min-width: 641px) {
+  .good-place-marker__badge {
+    height: 8.5rem;
+    width: 8.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   First Visit rebuild — one portrait video instead of a four-card deck. The
+   plate keeps the video's own 9:16 ratio (it is genuinely vertical, not
+   forced), and reuses the deck's proven tag/body/gradient combination for
+   legible-without-sound text over footage instead of a new overlay recipe.
+   -------------------------------------------------------------------------- */
+.first-visit-scene {
+  background: var(--ink);
+}
+
+.first-visit-layout {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.first-visit-plate {
+  position: relative;
+  width: min(100%, 26rem);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  margin: 0;
+  background: var(--cocoa);
+}
+
+.first-visit-plate::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(13, 7, 4, 0.3) 0%, rgba(13, 7, 4, 0.88) 64%);
+  pointer-events: none;
+}
+
+.first-visit-video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.82) sepia(0.08) contrast(1.04) brightness(0.92);
+}
+
+@media (max-width: 640px) {
+  /* Near-fullscreen, and still crop-free: the source is native 9:16, so a
+     full-bleed width just runs the same ratio at full scale. */
+  .first-visit-layout {
+    padding: 0;
+  }
+
+  .first-visit-plate {
+    width: 100%;
+    border-radius: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Short-viewport fix — capsules text plate (#services)
+
+   `.cap-scene` is a fixed `100svh`, so its text plate's height is whatever is
+   left after the header band, the outer padding and the CTA row — a budget
+   that shrinks with viewport height while the copy inside it does not. Below
+   roughly 750px tall (an iPhone SE, small Android phones in the wild) the
+   768px-wide mobile sizing above still leaves the heading-plus-three-points
+   copy taller than that budget, and `.cap-plate` clips it with its own
+   `overflow: hidden` — both the top of the incoming heading and the tail of
+   the last point disappear.
+
+   This only tightens the two text plates that swap inside the capsule scene,
+   at the same breakpoint's font ranks (heading still outranks body copy) —
+   composition, images and the scene mechanics are untouched. It has to be
+   the last occurrence of these selectors in the file to win the cascade
+   described at the top of this stylesheet. */
+@media (max-width: 768px) and (max-height: 750px) {
+  .cap-plate--text h2,
+  .cap-plate--text h3 {
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .cap-lead,
+  .cap-points p {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .cap-plate--text,
+  .cap-text--b {
+    gap: 0.6rem;
+    padding: 1rem 0.9rem;
+  }
+
+  .cap-points {
+    gap: 0.35rem;
+  }
+}
+
+/* ==========================================================================
+   JOURNEY — Procedure's square cards and Studio's portrait line, rebuilt as
+   one continuous horizontal track (`#everlas`). One pin, one transform: the
+   square Procedure cards and the taller Studio frames share the same row, so
+   scrolling from one into the other never fully removes one chapter's media
+   before showing the other's.
+   ========================================================================== */
+.journey-chapter {
+  background: var(--espresso);
+}
+
+.journey-intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: end;
+  padding: clamp(5rem, 7vw, 8rem) var(--page-gutter) clamp(2.5rem, 4vw, 4rem);
+}
+
+.journey-intro__copy {
+  grid-column: 1 / span 7;
+}
+
+.journey-intro__copy h2 {
+  max-width: 13ch;
+  margin: 0 0 1.25rem;
+  color: var(--ivory);
+  font-size: clamp(2.8rem, 4.2vw, 4.7rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.journey-intro__lead {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* The beam's SVG is absolutely positioned against this box. */
+.journey-beam {
+  position: relative;
+  grid-column: 9 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 7.5rem;
+}
+
+.journey-node {
+  display: inline-grid;
+  min-width: 5.5rem;
+  place-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 0.3rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--cocoa);
+  color: var(--bronze-soft);
+}
+
+.journey-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  /* The JS reads this padding to derive the counter/caption travel. The pin
+     sticks this scene's own top to the viewport top, so the fixed header
+     sits over it for the scene's whole runway — top padding has to clear
+     the header band or the counter/studio-label band renders under it. */
+  padding: calc(var(--header-h) + 0.5rem) 2rem 2rem;
+}
+
+/* A grid, not two absolutely-positioned siblings: `grid-area: 1 / 1` stacks
+   the counter and the studio label in the same cell so the crossfade between
+   them never has to reconcile two independent box models. */
+.journey-index {
+  position: relative;
+  z-index: 2;
+  display: grid;
+}
+
+.journey-counter,
+.journey-studio-label {
+  grid-area: 1 / 1;
+}
+
+.journey-counter {
+  display: inline-block;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 5vw, 7rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sits in the same cell as the counter and crossfades against it — the same
+   band that reads "01/04" during Procedure reads "Студия · ViART" once the
+   track has carried the row into Studio's frames. */
+.journey-studio-label {
+  align-self: start;
+  color: var(--bronze-soft);
+  opacity: 0;
+}
+
+/* Half a viewport of padding left and right is what puts the first and last
+   card near mid-screen at the two ends of the scrub. One horizontal line —
+   the active procedure card is the visual centre early on; later, Studio's
+   frames take over the same line without the row ever resetting. */
+.journey-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 50vw;
+  transform: translateY(-50%);
+  will-change: transform;
+}
+
+.journey-card {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0.5rem;
+  background: var(--cocoa);
+}
+
+/* Square — the Procedure system's own unit. */
+.journey-card--procedure {
+  width: min(30vw, 22rem);
+  aspect-ratio: 1 / 1;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+/* Portrait — visibly taller than a Procedure square at the same width, which
+   is what reads as "Studio's frames" arriving rather than more of the same
+   card. `transform-origin` keeps the dominant frame's growth centred on the
+   row instead of pushing its neighbours off the shared vertical centre. */
+.journey-card--studio {
+  width: min(26vw, 20rem);
+  aspect-ratio: 3 / 4;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.journey-card--dominant {
+  width: min(30vw, 24rem);
+  aspect-ratio: 3 / 4;
+}
+
+/* One box in the band below the row, not a travelling list — a full-width
+   card row leaves no side margin for captions to slide down without landing
+   on the cards they describe. All four stack in the same spot and crossfade;
+   only the active one is ever opaque. Fades out as a whole once Studio takes
+   over the index band. */
+.journey-captions {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 2;
+  height: 5.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  max-width: 26rem;
+  margin-left: auto;
+  justify-items: end;
+  gap: 0.2rem;
+  color: var(--muted);
+  text-align: right;
+  opacity: 0;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.journey-caption:first-child {
+  opacity: 1;
+  color: var(--ivory);
+}
+
+.journey-caption__index {
+  color: var(--bronze-soft);
+}
+
+.journey-caption__title {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.journey-caption__copy {
+  max-width: 34ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.journey-outro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(2.5rem, 4vw, 4rem) var(--page-gutter) clamp(5rem, 7vw, 8rem);
+}
+
+.journey-outro > p {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 1100px) {
+  .journey-intro__copy {
+    grid-column: 1 / span 12;
+  }
+
+  .journey-beam {
+    grid-column: 1 / span 12;
+    height: 6rem;
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  .journey-card--procedure {
+    width: min(58vw, 24rem);
+  }
+
+  .journey-card--studio {
+    width: min(50vw, 22rem);
+  }
+
+  .journey-card--dominant {
+    width: min(58vw, 26rem);
+  }
+
+  .journey-track {
+    gap: 1.5rem;
+  }
+
+  .journey-caption__copy {
+    max-width: 40ch;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Mobile keeps the same "one dominant + a peek of the next" rhythm the
+     capsules and studio references share — a single card fills most of the
+     line and the next edges in. */
+  .journey-card--procedure {
+    width: min(82vw, 24rem);
+  }
+
+  .journey-card--studio,
+  .journey-card--dominant {
+    width: min(82vw, 24rem);
+  }
+
+  .journey-track {
+    gap: 1rem;
+    padding: 0 9vw;
+  }
+
+  .journey-captions {
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .journey-caption {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-scene {
+    height: auto;
+    padding: 0 var(--page-gutter) clamp(2rem, 4vw, 3rem);
+  }
+
+  .journey-index {
+    display: none;
+  }
+
+  .journey-track {
+    position: static;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    padding: 0;
+    transform: none;
+  }
+
+  /* Studio's frames read as their own row below Procedure's four, on the
+     same static grid — nothing pinned, nothing scrubbed, but still one
+     uninterrupted composition. */
+  .journey-card--studio,
+  .journey-card--dominant {
+    grid-column: span 1;
+  }
+
+  .journey-card--procedure,
+  .journey-card--studio,
+  .journey-card--dominant {
+    width: 100%;
+    opacity: 1;
+    transform: none;
+  }
+
+  .journey-captions {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    inset: auto;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    gap: 1.1rem;
+  }
+
+  .journey-caption {
+    position: static;
+    max-width: none;
+    justify-items: start;
+    opacity: 1;
+    color: var(--ivory);
+    text-align: left;
+    padding: 0;
+    background: none;
+  }
+}
+
+/* ==========================================================================
+   TRUST — one large editorial testimonial. The award lives separately as
+   `.good-place-marker`, below, between this chapter and the map.
+   ========================================================================== */
+.trust-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 5vw, 4.5rem);
+}
+
+.trust-testimonial__eyebrow {
+  display: block;
+  margin: 0 0 1.25rem;
+  color: var(--bronze-soft);
+}
+
+.trust-testimonial__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  column-gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+}
+
+.trust-testimonial__quote-block {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.trust-testimonial__mark {
+  color: var(--bronze-soft);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  line-height: 1;
+}
+
+/* The one dominant visual object of the chapter — large enough that it reads
+   before the award does, editorial rather than a review card. */
+.trust-testimonial__quote {
+  margin: 0;
+  max-width: 26ch;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.9rem, 3.2vw, 3.1rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+}
+
+.trust-testimonial__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 1.5rem;
+}
+
+.trust-testimonial__footer strong {
+  display: block;
+  color: var(--ivory);
+  font-size: 1rem;
+}
+
+.trust-testimonial__footer span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.trust-testimonial__controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.trust-testimonial__controls button {
+  display: inline-grid;
+  height: 2.6rem;
+  width: 2.6rem;
+  place-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: none;
+  color: var(--ivory);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.trust-testimonial__controls button:hover {
+  border-color: var(--hairline-strong);
+  color: var(--bronze-soft);
+}
+
+.trust-testimonial__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .trust-testimonial__layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .trust-testimonial__media {
+    order: -1;
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 640px) {
+  .trust-testimonial__quote {
+    max-width: none;
+    font-size: clamp(1.6rem, 6vw, 2.1rem);
+  }
+
+  .trust-testimonial__footer {
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Directions — Laser, then Massage (`#services`)
+
+   `motion/scenes/directions.ts` crossfades two absolutely-stacked layers,
+   each one a self-contained media+copy group (`.directions-direction`), so
+   Laser and Massage never reconcile a shared slot. Desktop only — see the
+   `max-width: 899px` block below for the natural mobile stack, and the
+   reduced-motion block near the end of this file.
+   ========================================================================== */
+.directions-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--warm-black);
+}
+
+.directions-stage {
+  position: relative;
+  height: 100%;
+}
+
+.directions-direction {
+  position: absolute;
+  inset: calc(var(--header-h, 4rem) + 1rem) var(--page-gutter) 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+  gap: var(--grid-gap);
+}
+
+.directions-media__frame {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--cocoa);
+}
+
+.directions-media__frame img {
+  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+}
+
+.directions-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.1rem;
+}
+
+.directions-kicker {
+  color: var(--bronze-soft);
+}
+
+.directions-panel h2 {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 3.6vw, 3.8rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+}
+
+.directions-lead {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.directions-points {
+  display: grid;
+  max-width: 34ch;
+  margin: 0;
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.directions-points li {
+  position: relative;
+  padding-left: 1.2rem;
+  color: rgba(244, 236, 216, 0.82);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.directions-points li::before {
+  position: absolute;
+  left: 0;
+  color: var(--bronze);
+  content: "—";
+}
+
+.directions-panel .viart-cta {
+  align-self: flex-start;
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 1099px) {
+  .directions-direction {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
+
+/* Mobile: Directions is never pinned or gesture-gated (§12) — both
+   directions stack in normal document flow, each already a self-contained
+   media+copy group. */
+@media (max-width: 899px) {
+  .directions-scene {
+    height: auto;
+    overflow: visible;
+    padding: clamp(3rem, 8vw, 5rem) 0;
+  }
+
+  .directions-stage {
+    height: auto;
+  }
+
+  .directions-direction {
+    position: static;
+    inset: auto;
+    display: block;
+    padding: 0 var(--page-gutter);
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .directions-direction + .directions-direction {
+    margin-top: clamp(3.5rem, 10vw, 5rem);
+  }
+
+  .directions-media__frame {
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+  .directions-panel {
+    margin-top: 1.5rem;
+    gap: 0.9rem;
+  }
+}
+
+/* ==========================================================================
+   Equipment — EVERLAS, then TURBO G8 (`#everlas`)
+
+   `motion/scenes/equipment.ts` crossfades two independent full-stage layers,
+   each with its own grid order — TURBO G8's is reversed, so the two states
+   read as a rebalanced composition, not the same layout twice. Desktop only.
+   ========================================================================== */
+.equipment-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--espresso);
+}
+
+.equipment-stage {
+  position: relative;
+  height: 100%;
+}
+
+.equipment-layer {
+  position: absolute;
+  inset: calc(var(--header-h, 4rem) + 1rem) var(--page-gutter) 4.5rem;
+  display: flex;
+  gap: var(--grid-gap);
+}
+
+.equipment-layer--turbo {
+  flex-direction: row-reverse;
+}
+
+.equipment-media {
+  position: relative;
+  flex: 0 0 56%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--cocoa);
+}
+
+.equipment-media img {
+  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+}
+
+.equipment-media__note {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 1;
+  margin: 0;
+  border-radius: 0.3rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(13, 7, 4, 0.74);
+  color: var(--bronze-soft);
+}
+
+.equipment-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.equipment-kicker {
+  color: var(--bronze-soft);
+}
+
+.equipment-copy h2 {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(2.2rem, 3.4vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.equipment-lead {
+  max-width: 32ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.equipment-rows {
+  display: grid;
+  max-width: 34rem;
+  margin: 0.3rem 0 0;
+  gap: 0.6rem;
+}
+
+.equipment-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 30%) 1fr;
+  gap: 0.75rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.6rem;
+}
+
+.equipment-row dt {
+  color: var(--bronze-soft);
+  font-family: var(--font-martian), "Courier New", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.equipment-row dd {
+  margin: 0;
+  color: rgba(244, 236, 216, 0.86);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.equipment-effect {
+  max-width: 36ch;
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.stepper-actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1rem;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 1099px) {
+  .equipment-layer,
+  .equipment-layer--turbo {
+    flex-direction: column;
+  }
+
+  .equipment-media {
+    flex: 0 0 44%;
+  }
+}
+
+@media (max-width: 899px) {
+  .equipment-scene {
+    height: auto;
+    overflow: visible;
+    padding: clamp(3rem, 8vw, 5rem) 0 clamp(4rem, 10vw, 6rem);
+  }
+
+  .equipment-stage {
+    height: auto;
+  }
+
+  .equipment-layer {
+    position: static;
+    inset: auto;
+    flex-direction: column;
+    padding: 0 var(--page-gutter);
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .equipment-layer + .equipment-layer {
+    margin-top: clamp(3.5rem, 10vw, 5rem);
+  }
+
+  .equipment-media {
+    flex: none;
+    aspect-ratio: 4 / 3;
+  }
+
+  .equipment-copy {
+    margin-top: 1.5rem;
+  }
+
+  .stepper-actions {
+    position: static;
+    margin-top: clamp(3.5rem, 10vw, 5rem);
+    padding: 0 var(--page-gutter);
+  }
+}
+
+/* ==========================================================================
+   Procedure — stages 01 → 04 (`#procedure`), a horizontal process track
+
+   `motion/scenes/procedure.ts` pans one numbered track so the active node
+   sits in the 35–45vw dominant zone, while a stationary text panel and a
+   stacked media rail crossfade in sync — timeline/track language, not the
+   large-photo-plus-text-block shape Equipment uses, and not four repeated
+   card states. Stepped one gesture per number. Desktop only — `.procedure-
+   mobile`, below, is the tap-driven navigator that replaces this on mobile.
+   ========================================================================== */
+.procedure-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.procedure-stage {
+  position: relative;
+  height: 100%;
+}
+
+.procedure-counter {
+  position: absolute;
+  top: calc(var(--header-h, 4rem) + 1rem);
+  left: var(--page-gutter);
+  z-index: 2;
+  color: var(--bronze-soft);
+}
+
+/* The numbered track. Its own box is just a flex-layout convenience — the
+   track pans freely past either edge (nothing here clips it), so the rail's
+   `left`/`width` do not bound where nodes actually end up on screen; the
+   scene JS is what pins the active node to the dominant zone. */
+.procedure-rail {
+  position: absolute;
+  top: 38%;
+  left: var(--page-gutter);
+  z-index: 2;
+  width: min(50%, 34rem);
+}
+
+.procedure-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 3.5rem;
+}
+
+/* The active step's title + explanation. Anchored to the same viewport
+   fraction the track JS pans the active node to (`PROCEDURE.dominantZone` —
+   0.4 there, 40vw here, the one place that value is duplicated) so the copy
+   always reads as sitting directly under the active number, independent of
+   `.procedure-rail`'s own box.
+   `right` is tied to `.procedure-media-rail`'s own left edge (its `right`
+   offset plus its own width, both duplicated in the calc below) plus a
+   fixed gap — a bare `width: min(30rem, 40vw)` sat here previously and, at
+   every desktop width from 900px to well past 2560px, ran 150–400px past
+   where the media rail actually starts, so the title/explanation rendered
+   on top of the photo instead of beside it. */
+.procedure-active {
+  position: absolute;
+  top: 54%;
+  left: 40vw;
+  right: calc(var(--page-gutter) + min(30rem, 40%) + 2rem);
+  z-index: 2;
+  height: 9.5rem;
+}
+
+.procedure-track__line,
+.procedure-track__fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.procedure-track__line {
+  right: -120vw;
+  background: var(--hairline);
+}
+
+.procedure-track__fill {
+  width: 0;
+  background: var(--bronze-soft);
+}
+
+/* Fixed width regardless of active state — the number's own type scales via
+   `transform`, which does not affect layout, so no node ever shifts a
+   sibling's position when it becomes active. That is what keeps the scene's
+   one-time rect measurement valid for every step. */
+.procedure-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 6rem;
+  justify-content: center;
+}
+
+.procedure-node__index {
+  padding: 0 0.5rem;
+  background: var(--ink);
+  color: var(--muted);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  transition: color 0.4s ease, transform 0.4s ease;
+}
+
+.procedure-node.is-active .procedure-node__index {
+  color: var(--ivory);
+  transform: scale(2.7);
+}
+
+.procedure-active__item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.6rem;
+}
+
+.procedure-active__item h3 {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 2.4vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.procedure-active__item p {
+  max-width: 32ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+/* The right zone: the active step's photo — its own dominant plane, not
+   sharing a slot with the text. Capped at 30rem so it cannot outgrow the
+   gap `.procedure-active` reserves for it on wide viewports. */
+.procedure-media-rail {
+  position: absolute;
+  top: 50%;
+  right: var(--page-gutter);
+  /* Kept in sync with `.procedure-active`'s `right` calc, above — that box's
+     clearance is computed from this width, so the two must change together. */
+  width: min(30rem, 40%);
+  aspect-ratio: 4 / 5;
+  transform: translateY(-50%);
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--cocoa);
+}
+
+.procedure-media {
+  position: absolute;
+  inset: 0;
+}
+
+.procedure-media img {
+  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+}
+
+.procedure-mobile {
+  display: none;
+}
+
+@media (max-width: 1099px) {
+  .procedure-rail {
+    width: min(52%, 26rem);
+  }
+}
+
+@media (max-width: 899px) {
+  .procedure-scene {
+    height: auto;
+    overflow: visible;
+    background: var(--ink);
+    padding: clamp(3rem, 8vw, 5rem) 0 clamp(4rem, 10vw, 6rem);
+  }
+
+  .procedure-stage {
+    display: none;
+  }
+
+  /* Compact step navigator + one active content panel — not the desktop
+     pinned scene copied verbatim, which would either lock touch scroll or
+     cram the diagonal-track geometry into a narrow column. Number, title,
+     explanation and media stay in one visible sequence; 01–04 are explicit
+     tap targets, and the active one is unambiguous without hover. */
+  .procedure-mobile {
+    display: block;
+    padding: 0 var(--page-gutter);
+  }
+
+  .procedure-mobile__chips {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .procedure-mobile__chip {
+    flex: 1 1 0;
+    border: 1px solid var(--hairline);
+    border-radius: 0.4rem;
+    padding: 0.6rem 0;
+    background: none;
+    color: var(--muted);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .procedure-mobile__chip.is-active {
+    border-color: var(--bronze-soft);
+    background: var(--cocoa);
+    color: var(--ivory);
+  }
+
+  .procedure-mobile__media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 0.6rem;
+    background: var(--cocoa);
+  }
+
+  .procedure-mobile__media img {
+    filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+  }
+
+  .procedure-mobile__index {
+    margin: 1.25rem 0 0.5rem;
+    color: var(--bronze-soft);
+  }
+
+  .procedure-mobile__panel h3 {
+    margin: 0 0 0.6rem;
+    color: var(--ivory);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: clamp(1.6rem, 6vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .procedure-mobile__panel p {
+    max-width: 42ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .procedure-mobile__nav {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .procedure-mobile__nav button {
+    display: inline-grid;
+    height: 2.6rem;
+    width: 2.6rem;
+    place-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: none;
+    color: var(--ivory);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .procedure-mobile__nav button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .procedure-mobile__nav button:not(:disabled):hover {
+    border-color: var(--hairline-strong);
+    color: var(--bronze-soft);
+  }
+
+  .procedure-mobile .stepper-actions {
+    position: static;
+    justify-content: flex-start;
+    margin-top: clamp(3rem, 9vw, 4rem);
+    padding: 0;
+  }
+}
+
+/* ==========================================================================
+   Gallery — the studio itself (`#gallery`)
+
+   An ordinary `data-reveal` grid, not a scene: the first/active frame is
+   dominant and fully readable; the rest give it depth without a pin.
+   ========================================================================== */
+.gallery-scene {
+  background: var(--espresso);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(9rem, auto);
+  gap: var(--grid-gap);
+}
+
+.gallery-frame {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--cocoa);
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gallery-frame img {
+  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+}
+
+.gallery-frame--dominant {
+  grid-column: span 2;
+  grid-row: span 2;
+  aspect-ratio: auto;
+}
+
+.gallery-frame:hover {
+  transform: translateY(-0.3rem);
+}
+
+@media (hover: none) {
+  .gallery-frame:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery-frame--dominant {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ==========================================================================
+   Videos — three tiles, then Anna + complex (`#videos`)
+
+   `motion/scenes/videos.ts` crossfades two full-stage layers, the same
+   shape as Equipment. Only the centre tile is a real, interactive video;
+   the other two are explicit placeholders. Desktop only.
+   ========================================================================== */
+.videos-scene {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.videos-stage {
+  position: relative;
+  height: 100%;
+}
+
+.videos-layer {
+  position: absolute;
+  inset: calc(var(--header-h, 4rem) + 1rem) var(--page-gutter) 2rem;
+}
+
+.videos-layer--trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--grid-gap);
+}
+
+.videos-tile {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--cocoa);
+}
+
+.videos-tile--anna {
+  aspect-ratio: 3 / 4.4;
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.videos-tile--placeholder {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+
+.videos-tile img {
+  filter: saturate(0.85) sepia(0.04) contrast(1.02) brightness(0.82);
+}
+
+.videos-tile__note {
+  position: absolute;
+  left: 0.9rem;
+  bottom: 0.9rem;
+  z-index: 1;
+  margin: 0;
+  border-radius: 0.3rem;
+  padding: 0.4rem 0.65rem;
+  background: rgba(13, 7, 4, 0.74);
+  color: var(--bronze-soft);
+}
+
+.videos-layer--anna {
+  display: grid;
+  grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+  align-items: stretch;
+  gap: var(--grid-gap);
+}
+
+.videos-plate {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  background: var(--cocoa);
+}
+
+.videos-video {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.82) sepia(0.08) contrast(1.04) brightness(0.92);
+}
+
+/* --------------------------------------------------------------------------
+   Complex selector — one central active complex, three alternatives along a
+   diagonal axis. `slot-N` is a position *relative to whichever is active*
+   (`page.tsx`: `(index - complexIndex + total) % total`), not tied to a
+   fixed complex — picking an alternative re-ranks everyone in one state
+   update, so name/composition/price/CTA can never land mid-swap. `top`/
+   `left` (not `right`/`bottom`, and never omitted) keep every slot on the
+   same transition-able property pair; `transform` is always the same
+   `translate(-50%,-50%) scale(S)` shape so the browser can interpolate it.
+   -------------------------------------------------------------------------- */
+.complex-selector {
+  position: relative;
+  height: 100%;
+  min-height: 24rem;
+}
+
+.complex-selector__item {
+  position: absolute;
+  /* The active item's rendered width is this, unscaled — the spec's 55–65%
+     of the selector area. The rem cap only guards very wide viewports; at
+     1440–1920 it never binds. */
+  width: min(60%, 34rem);
+  margin: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: top 0.6s cubic-bezier(0.22, 1, 0.36, 1), left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+
+.complex-selector__item.is-active {
+  cursor: default;
+}
+
+.complex-selector__item:not(.is-active):hover .complex-selector__name,
+.complex-selector__item:not(.is-active):focus-visible .complex-selector__name {
+  color: var(--ivory);
+}
+
+.complex-selector__item:focus-visible {
+  outline: 1px solid var(--bronze-soft);
+  outline-offset: 6px;
+}
+
+.complex-selector__item.slot-0 {
+  top: 50%;
+  left: 54%;
+  z-index: 4;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.complex-selector__item.slot-1 {
+  top: 16%;
+  left: 84%;
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(0.42);
+  opacity: 0.66;
+}
+
+.complex-selector__item.slot-2 {
+  top: -4%;
+  left: 96%;
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0.42;
+}
+
+.complex-selector__item.slot-3 {
+  top: 90%;
+  left: 12%;
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(0.42);
+  opacity: 0.66;
+}
+
+.complex-selector__eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--bronze-soft);
+}
+
+.complex-selector__name {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.15rem, 1.6vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.complex-selector__item.is-active .complex-selector__name {
+  font-size: clamp(1.7rem, 2.4vw, 2.3rem);
+}
+
+.complex-selector__detail {
+  max-width: 28ch;
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.complex-selector__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0.6rem 0 0;
+}
+
+.complex-selector__price > span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.complex-selector__price strong {
+  color: var(--bronze-soft);
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.complex-selector__price small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.complex-selector__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Inactive alternatives: name plus one muted price line, never the yellow
+   accent — that stays exclusive to the active complex. */
+.complex-selector__cue {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.complex-selector-mobile {
+  display: none;
+}
+
+@media (max-width: 1099px) {
+  .videos-layer--anna {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 899px) {
+  .videos-scene {
+    height: auto;
+    overflow: visible;
+    padding: clamp(3rem, 8vw, 5rem) 0 clamp(4rem, 10vw, 6rem);
+  }
+
+  .videos-stage {
+    height: auto;
+  }
+
+  .videos-layer {
+    position: static;
+    inset: auto;
+    padding: 0 var(--page-gutter);
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .videos-layer--trio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .videos-layer--anna {
+    margin-top: clamp(3rem, 9vw, 4.5rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .videos-plate {
+    aspect-ratio: 3 / 4;
+  }
+
+  .complex-selector {
+    display: none;
+  }
+
+  /* Active complex stays the main information panel; the rest are a compact
+     tap row of names underneath. */
+  .complex-selector-mobile {
+    display: block;
+    margin-top: 1.5rem;
+  }
+
+  .complex-selector-mobile__active h3 {
+    margin: 0.4rem 0 0;
+    color: var(--ivory);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .complex-selector-mobile__detail {
+    max-width: none;
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .complex-selector-mobile__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin: 0.6rem 0 1.1rem;
+  }
+
+  .complex-selector-mobile__price > span {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .complex-selector-mobile__price strong {
+    color: var(--bronze-soft);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .complex-selector-mobile__price small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .complex-selector-mobile__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .complex-selector-mobile__chip {
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    background: none;
+    color: var(--muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .complex-selector-mobile__chip.is-active {
+    border-color: var(--bronze-soft);
+    background: var(--cocoa);
+    color: var(--ivory);
+  }
+
+  .complex-selector-mobile .text-button {
+    margin-top: 1.25rem;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — Hero → Directions → Equipment → Procedure → Videos
+
+   No scene is built at all under `prefers-reduced-motion: reduce`, so every
+   box that exists only to hold scroll collapses, every crossfade layer
+   becomes simply present, and the traveling hero image never leaves the
+   hero. Content, order and controls are unchanged.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-transfer-spacer {
+    height: 0;
+  }
+
+  .hero-media__frame {
+    position: absolute !important;
+    transform: none !important;
+  }
+
+  .directions-scene,
+  .equipment-scene,
+  .procedure-scene,
+  .videos-scene {
+    height: auto;
+    overflow: visible;
+  }
+
+  .directions-stage,
+  .equipment-stage,
+  .videos-stage {
+    height: auto;
+  }
+
+  .directions-direction,
+  .equipment-layer,
+  .videos-layer {
+    position: static;
+    inset: auto;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Procedure: the pinned/panning track needs the scene JS to be legible at
+     all, so reduced motion shows the same tap-driven navigator mobile uses
+     instead — already a plain, static content swap with nothing to animate. */
+  .procedure-stage {
+    display: none;
+  }
+
+  .procedure-mobile {
+    display: block;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter);
+  }
+
+  .directions-direction {
+    display: block;
+    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter);
+  }
+
+  .directions-media__frame {
+    height: auto;
+    aspect-ratio: 4 / 5;
+    margin-bottom: 1.5rem;
+  }
+
+  .equipment-layer,
+  .equipment-layer--turbo {
+    flex-direction: column;
+    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter);
+  }
+
+  .equipment-media {
+    flex: none;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 1.5rem;
+  }
+
+  .videos-layer--trio {
+    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter) 1.5rem;
+  }
+
+  .videos-layer--anna {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 var(--page-gutter) clamp(3rem, 8vw, 5rem);
+  }
+
+  .videos-plate {
+    aspect-ratio: 3 / 4;
+  }
+
+  .stepper-actions {
+    position: static;
+    padding: 0 var(--page-gutter) clamp(3rem, 8vw, 5rem);
   }
 }
