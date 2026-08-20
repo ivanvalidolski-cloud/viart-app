@@ -11,17 +11,19 @@ scenes/             the hand-built pinned/scrubbed sequences, one file each
 useViartMotion.ts   the driver: Lenis, gsap.ticker, matchMedia, refresh, teardown
 ```
 
-| Scene | Chapter | Adapted from |
+| Scene | Chapter | Notes |
 |---|---|---|
-| `heureBleue` | hero image wall | in-house |
-| `capsules` | `#services` — the two directions | [capsules-animated-columns](https://motionprompts.dev/component/capsules-animated-columns/) |
-| `journey` | `#everlas` — Procedure's square cards into Studio's portrait line, one track | in-house, adapted from the retired `everlasSpotlight`'s pinned-row mechanics |
+| `transfer` | hero → Laser signature image transfer | in-house FLIP-style rect interpolation; behaviour reference only, [codrops/ImageToContent](https://github.com/codrops/ImageToContent) — desktop does the full fixed-position transfer, mobile shortens to a crossfade |
+| `directions` | `#services` — Laser, then Massage | stepped on `steppedScene.ts`, desktop only |
+| `procedure` | `#procedure` — stages 01→04 | stepped on `steppedScene.ts`, desktop only |
+| `equipment` | `#everlas` — EVERLAS, then TURBO G8 | stepped on `steppedScene.ts`, desktop only |
+| `videos` | `#videos` — three tiles, then Anna + complex | stepped on `steppedScene.ts`, desktop only |
 
-An adapted scene's numbers are **transcribed, not chosen**: thresholds, phase
-lengths, clip-path tables, travel formulas and scroll budgets come from the source
-and are part of how it behaves. Content, media, palette, type, the React
-integration and the responsive/reduced-motion composition are ours. If you change
-a threshold, you are no longer running that component.
+`steppedScene.ts` is the one gesture-gate state machine behind Directions,
+Procedure, Equipment and Videos: one wheel/touch gesture is either a complete
+state change or nothing, real scrolling is frozen for as long as the section is
+pinned, and it is desktop-only by design — mobile gets natural vertical scroll
+instead (see `useViartMotion.ts`'s `desktop` matchMedia query).
 
 ## Adding an entrance
 

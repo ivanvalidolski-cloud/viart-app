@@ -21,7 +21,14 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { HEADER_OFFSET } from './tokens';
 import { createEntranceReveals, createMaskReveals, revealInstantly } from './reveal';
-import { createCapsulesScene, createHeureBleueScene, createJourneyScene } from './scenes';
+import {
+  createTransferScene,
+  createDirectionsScene,
+  createProcedureScene,
+  createEquipmentScene,
+  createVideosScene,
+} from './scenes';
+import { SCENE } from './tokens';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -71,8 +78,12 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
     const QUERIES = {
       motionOk: '(prefers-reduced-motion: no-preference)',
       motionReduced: '(prefers-reduced-motion: reduce)',
+      // The stepped scenes (Directions, Procedure, Equipment, Videos) pin the
+      // page and take over wheel/touch input — desktop-only by design (§12):
+      // mobile keeps natural vertical scroll, never a desktop-style lock.
+      desktop: `(min-width: ${SCENE.mobileBreakpoint}px)`,
     };
-    type Conditions = { motionOk: boolean; motionReduced: boolean };
+    type Conditions = { motionOk: boolean; motionReduced: boolean; desktop: boolean };
 
     // --- phase 1: entrances, before the first paint ------------------------
     // Hiding a reveal target has to happen in the same frame its markup lands.
@@ -96,20 +107,24 @@ export function useViartMotion({ sequence, page }: MotionRefs) {
       if (cancelled) return;
 
       media.add(QUERIES, (context) => {
-        const { motionReduced } = context.conditions as Conditions;
+        const { motionReduced, desktop } = context.conditions as Conditions;
         if (motionReduced) return;
 
-        createHeureBleueScene(sequenceRoot);
         createMaskReveals(pageRoot);
 
         // The chapter scenes, in document order. Each is scoped to the page
         // root and returns a teardown for whatever this context cannot revert
         // by itself — a rAF loop, injected DOM, a SplitText, a plain listener.
         // Everything they build with GSAP is recorded here, so the pins and
-        // their spacers go away with the context.
+        // their spacers go away with the context. The signature transfer runs
+        // at every width (shortened on mobile); the pinned/gesture-gated
+        // steppers are desktop-only.
         const teardowns = [
-          createCapsulesScene(pageRoot, lenis),
-          createJourneyScene(pageRoot),
+          createTransferScene(pageRoot, desktop),
+          desktop ? createDirectionsScene(pageRoot, lenis) : undefined,
+          desktop ? createProcedureScene(pageRoot, lenis) : undefined,
+          desktop ? createEquipmentScene(pageRoot, lenis) : undefined,
+          desktop ? createVideosScene(pageRoot, lenis) : undefined,
         ].filter((teardown): teardown is () => void => typeof teardown === 'function');
 
         return () => teardowns.forEach((teardown) => teardown());

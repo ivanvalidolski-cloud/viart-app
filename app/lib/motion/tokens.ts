@@ -34,45 +34,25 @@ export const REVEAL = {
 export const SCENE = {
   /** Scroll budget of the pinned voyeur scene, in viewport heights. */
   voyeurViewports: 3,
-  /** Scroll budget of the heurebleue zoom, in viewport heights. */
-  heureBleueViewports: 2.5,
   /** ScrollTrigger scrub smoothing, in seconds. */
   scrub: 1,
-  /** Gallery zoom ceiling — mobile needs more travel to fill a narrow frame. */
-  zoomDesktop: 2.65,
-  zoomMobile: 4,
-  /** Viewport width under which the mobile zoom ceiling applies. */
+  /** Viewport width under which the mobile composition applies. */
   mobileBreakpoint: 900,
 } as const;
 
 /**
- * Budgets and constants of the adapted external scenes.
- *
- * The clip-paths, tween duration and text delay below are transcribed from
- * the scene's own source (the MotionPrompts prompt named in the scene
- * module) and are part of that scene's animation, not a taste value to tune.
- * The gesture constants are this site's own addition — the source scrubs the
- * swap against scroll position, this site steps it one wheel/touch gesture
- * at a time instead — and live here for the same reason: so the whole page's
- * scroll cost can be read in one place.
+ * Gesture-gate constants shared by every stepped scene (`steppedScene.ts`):
+ * Hero→Directions, Procedure, Equipment, Videos. One wheel/touch gesture is
+ * either a complete state change or nothing — real scrolling is frozen for
+ * as long as the section is pinned, so these are this site's own addition,
+ * not transcribed from an external source.
  */
-export const CAPSULES = {
-  /** Pin length of the capsule section, in viewport heights. Kept to one
-   *  screen: nothing scrubs against this distance any more, it only has to
-   *  be enough for the pin/unpin machinery to have room to work in. */
-  pinViewports: 1,
-  /** Every phase tween in the source runs at this length, default ease. */
-  duration: 0.75,
-  /** The incoming text block waits this long before dropping in. */
-  textDelay: 0.5,
-  /** Collapsed and open clip-paths of the second image capsule. */
-  clipClosed: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
-  clipOpen: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+export const STEPPED = {
   /**
    * Silence, in ms, after the last wheel/touch input before a gesture counts
    * as finished. One gesture may fire at most one state change; the next one
-   * waits for this much quiet, and for the current tween to finish, before it
-   * will fire again.
+   * waits for this much quiet, and for the current transition to finish,
+   * before it will fire again.
    */
   gestureIdleMs: 140,
   /** Vertical drag, in px, a touch swipe needs before it counts as a gesture. */
@@ -83,30 +63,48 @@ export const CAPSULES = {
 } as const;
 
 /**
- * Scene 03 — the journey track (`#everlas`): Procedure's square cards and
- * Studio's portrait frames on one continuous horizontal track, pinned and
- * scrubbed over a single scroll budget so the hand-off between them is one
- * transform, never a separate section starting over.
+ * Scene 01 — the hero → Laser signature transfer. One continuous scroll
+ * budget: the dominant hero image travels via GSAP Flip into Laser's media
+ * slot while the hero copy leaves and Laser's copy settles in.
  */
-export const JOURNEY = {
-  /** Pinned/scrubbed runway of the whole track, in viewport heights. */
-  viewports: 8,
-  scrub: 1,
-  /** Opacity of a procedure card whose stage is not the active one. */
-  dimOpacity: 0.5,
-  /**
-   * Fraction of the track's progress spent inside the four procedure cards
-   * before the studio frames take over the counter/caption band. Kept
-   * proportional to the card counts (4 procedure : 5 studio) so neither half
-   * is rushed relative to how much track it actually occupies.
-   */
-  procedureFraction: 4 / 9,
-  /** How much wider the dominant last studio frame grows as the track ends,
-   *  so the multi-image line resolves onto one frame instead of stopping
-   *  mid-row. */
-  finalCardGrowth: 1.35,
-  /** Fraction of progress (from the end) over which that growth happens. */
-  resolveSpan: 0.14,
+export const TRANSFER = {
+  /** Scroll budget of the transfer, in viewport heights (desktop). Longer
+   *  than an ordinary chapter transition — this is the signature move. */
+  viewports: 1.3,
+  viewportsMobile: 0.85,
+  scrub: 0.7,
+  /** Slight diagonal/asymmetric travel, in px at 1x progress, added on top
+   *  of the Flip-computed path so the move reads as authored, not mechanical. */
+  driftX: -24,
+  driftY: 18,
+} as const;
+
+/** Scene 02 — Directions (`#services`): Laser, then Massage. Two states,
+ *  stepped one gesture at a time. Short and calm — never a repeat of the
+ *  hero's deep transfer. */
+export const DIRECTIONS = {
+  pinViewports: 1,
+  /** Seconds. Within the spec's 550–900ms chapter-transition budget. */
+  duration: 0.7,
+} as const;
+
+/** Scene 03 — Procedure (`#everlas`), stages 01→04. Stepped, one gesture per
+ *  number. */
+export const PROCEDURE = {
+  pinViewports: 1,
+  duration: 0.6,
+} as const;
+
+/** Scene 04 — Equipment: EVERLAS → TURBO G8. Two states, stepped. */
+export const EQUIPMENT = {
+  pinViewports: 1,
+  duration: 0.6,
+} as const;
+
+/** Scene 05 — Videos: three tiles → Anna + complex. Two states, stepped. */
+export const VIDEOS = {
+  pinViewports: 1,
+  duration: 0.6,
 } as const;
 
 /** Fixed header height in px — anchor scrolling must clear it. */

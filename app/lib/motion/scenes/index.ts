@@ -16,10 +16,12 @@
  *    injected, SplitText instances, plain listeners, and inline styles written
  *    from a trigger callback rather than from setup.
  *
- * Every scene below the hero is an adaptation of a named external source; the
- * URL and what was and was not adapted are at the top of each module.
+ * The stepped scenes (Directions, Procedure, Equipment, Videos) all share one
+ * gesture-gate state machine — see `../steppedScene.ts`.
  */
 
-export { createHeureBleueScene } from './heureBleue';
-export { createCapsulesScene } from './capsules';
-export { createJourneyScene } from './journey';
+export { createTransferScene } from './transfer';
+export { createDirectionsScene } from './directions';
+export { createProcedureScene } from './procedure';
+export { createEquipmentScene } from './equipment';
+export { createVideosScene } from './videos';

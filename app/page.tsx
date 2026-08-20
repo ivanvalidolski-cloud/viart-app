@@ -4,11 +4,9 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useViartMotion } from './lib/motion/useViartMotion';
 import { usePointerFine } from './lib/usePointerFine';
-import { AnimatedBeam } from './components/ui/animated-beam';
 import { BorderBeam } from './components/ui/border-beam';
 import { InteractiveHoverButton, InteractiveHoverLink } from './components/ui/interactive-hover-button';
 import Magnet from './components/ui/magnet';
-import { TextAnimate } from './components/ui/text-animate';
 
 const bookingUrl = 'https://n1177049.yclients.com';
 const priceTabs = ['Лазерная эпиляция', 'Комплексы эпиляции', 'Аппаратный массаж'];
@@ -157,7 +155,8 @@ const reviews: Review[] = [
   },
 ];
 
-/** The four states of an EVERLAS course, one image and one line each. */
+/** The four states of an EVERLAS course, one image and one line each. Also
+ *  Procedure's own card content — reused verbatim, not duplicated data. */
 const everlasStages = [
   {
     index: '01',
@@ -189,17 +188,49 @@ const everlasStages = [
   },
 ];
 
-/** The studio gallery's line inside the journey track — context after the
- *  four Procedure stages: equipment, materials, space. The last frame is the
- *  dominant one the track resolves onto, so it closes on the room itself
- *  rather than another piece of equipment. None of these repeat a Procedure
- *  card's photograph — `gallery/8.jpg` is Procedure's own "Курс" stage. */
+/** The studio gallery — context after Procedure: equipment, materials,
+ *  space. Not the same photographs Procedure or Directions use. */
 const studioGalleryImages = [
   { src: '/images/gallery/2.jpg', alt: 'Роликовая манипула аппарата TURBO G8 в студии ViART' },
-  { src: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg', alt: 'Процедура аппаратного массажа на TURBO G8' },
   { src: '/images/gallery/3.jpg', alt: 'Гель, деревянные шпатели и защитные очки на столике в кабинете ViART' },
   { src: '/images/gallery/4.jpg', alt: 'Процедура лазерной эпиляции ног в кабинете ViART' },
   { src: '/images/gallery/5.jpg', alt: 'Сухоцветы и полки с декором в интерьере студии ViART' },
+  { src: '/images/gallery/7.jpg', alt: 'Манипула аппарата EVERLAS на подготовленной коже руки' },
+];
+
+/** EVERLAS → TURBO G8. Every row restates a fact already confirmed
+ *  elsewhere on the page — nothing here is an invented spec. Media is an
+ *  explicitly-labelled placeholder until the studio supplies production
+ *  photography/video. */
+const equipmentStages = [
+  {
+    id: 'everlas',
+    kicker: 'EVERLAS · оборудование 01',
+    title: 'EVERLAS',
+    lead: 'Аппарат для лазерной эпиляции, на котором проходит курс.',
+    rows: [
+      { label: 'Защита', value: 'Процедура проходит в защитных очках' },
+      { label: 'Подготовка', value: 'Параметры подбираются под зону, тип кожи и волос' },
+      { label: 'Курс', value: 'Интервал между процедурами — 4–6 недель' },
+    ],
+    effect: 'Как это проявляется во время процедуры: ощущения мастер регулирует по вашей чувствительности.',
+    media: '/images/equipment/everlas/everlas-procedure-mirrored.png',
+    alt: 'Процедура на аппарате EVERLAS в студии ViART',
+  },
+  {
+    id: 'turbo',
+    kicker: 'TURBO G8 · оборудование 02',
+    title: 'TURBO G8',
+    lead: 'Аппарат для вибромассажа, на котором проходит «Коррекция фигуры» и комплексы.',
+    rows: [
+      { label: 'Манипула', value: 'Роликовая манипула прорабатывает выбранные зоны' },
+      { label: 'Интенсивность', value: 'Мастер регулирует по вашим ощущениям во время процедуры' },
+      { label: 'Первое посещение', value: '1500 ₽ вместо 2500 ₽ на «Коррекцию фигуры»' },
+    ],
+    effect: 'Как это проявляется во время процедуры: интенсивность настраивается индивидуально.',
+    media: '/images/equipment/turbo-g8/turbo-g8-procedure.jpg',
+    alt: 'Процедура на аппарате TURBO G8 в студии ViART',
+  },
 ];
 
 export default function Home() {
@@ -215,11 +246,6 @@ export default function Home() {
   const masterVideoRef = useRef<HTMLVideoElement | null>(null);
   const motionSequenceRef = useRef<HTMLDivElement | null>(null);
   const pageContentRef = useRef<HTMLElement | null>(null);
-
-  // The Animated Beam measures between two nodes inside one container.
-  const beamFieldRef = useRef<HTMLDivElement | null>(null);
-  const beamSourceRef = useRef<HTMLSpanElement | null>(null);
-  const beamTargetRef = useRef<HTMLSpanElement | null>(null);
 
   const pointerFine = usePointerFine();
 
@@ -334,174 +360,110 @@ export default function Home() {
 
       <main ref={pageContentRef}>
         <div className="viart-motion-sequence" ref={motionSequenceRef}>
-          <div className="hb-scene">
-            <div className="hb-stage">
-              <div className="hb-gallery" aria-hidden="true">
-                {[
-                  ['/images/gallery/1.jpg', '/images/gallery/5.jpg', '/images/gallery/3.jpg'],
-                  ['/images/gallery/4.jpg', '/images/gallery/7.jpg', '/images/gallery/1.jpg'],
-                  ['/images/gallery/6.jpg', '/images/gallery/2.jpg', '/images/gallery/8.jpg'],
-                  ['/images/gallery/3.jpg', '/images/gallery/7.jpg', '/images/gallery/5.jpg'],
-                  ['/images/gallery/6.jpg', '/images/gallery/4.jpg', '/images/gallery/8.jpg'],
-                ].map((column, columnIndex) => (
-                  <div className={`hb-col ${columnIndex === 2 ? 'hb-col--main' : ''}`} key={`hb-col-${columnIndex}`}>
-                    {column.map((src, imageIndex) => {
-                      const isFocal = columnIndex === 2 && imageIndex === 1;
-                      return (
-                        <figure className={`hb-img ${isFocal ? 'hb-img--main' : ''}`} key={`${columnIndex}-${src}`}>
-                          <Image
-                            src={src}
-                            alt=""
-                            fill
-                            priority={columnIndex < 3}
-                            sizes="32vw"
-                          />
-                        </figure>
-                      );
-                    })}
-                  </div>
-                ))}
+          {/* ------------------------------------------------------------ */}
+          {/* HERO — one dominant image, the source-object for the         */}
+          {/* signature hero → Laser transfer (see `motion/scenes/transfer.ts`). */}
+          {/* ------------------------------------------------------------ */}
+          <div id="top" className="hero-scene">
+            <div className="hero-stage">
+              <figure className="hero-media__frame" aria-hidden="true">
+                <Image
+                  src="/images/equipment/everlas/everlas-procedure-mirrored.png"
+                  alt=""
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="cover-image"
+                />
+              </figure>
+              <div className="hero-media__shade" aria-hidden="true" />
+
+              <div className="hero-copy">
+                <p className="hero-kicker">ViART · Коммунарка</p>
+                <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
+                <p className="hero-offer">Скидка 30% на любой комплекс при первом посещении</p>
+                <div className="hero-actions">
+                  <InteractiveHoverLink
+                    className="viart-cta viart-cta--ivory"
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Выбрать услугу и записаться
+                  </InteractiveHoverLink>
+                </div>
               </div>
             </div>
-
-            <div className="hb-flow">
-              <section id="top" className="hb-intro">
-                <div className="hb-intro__shade" />
-                <div className="hb-intro__copy">
-                  <p className="hb-intro__kicker">ViART · Коммунарка</p>
-                  <h1>Лазерная эпиляция и аппаратный массаж в Коммунарке</h1>
-                  <p className="hb-intro__subtitle">Процедуры на аппаратах EVERLAS и TURBO G8</p>
-                  <p className="hb-intro__offer">Скидка 30% на любой комплекс при первом посещении</p>
-                  <div className="hb-intro__actions">
-                    <InteractiveHoverLink
-                      className="viart-cta viart-cta--ivory"
-                      href={bookingUrl}
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Выбрать услугу и записаться
-                    </InteractiveHoverLink>
-                    <a className="text-link" href="#pricing">Услуги и цены <span>↘</span></a>
-                  </div>
-                </div>
-              </section>
-              <div className="hb-ws" aria-hidden="true" />
-            </div>
+            <div className="hero-transfer-spacer" aria-hidden="true" />
           </div>
+
+          {/* ------------------------------------------------------------ */}
+          {/* DIRECTIONS — Laser, then Massage. Two fullscreen states,      */}
+          {/* stepped one gesture at a time (`motion/scenes/directions.ts`). */}
+          {/* Laser's media frame is the transfer's landing target.         */}
+          {/* ------------------------------------------------------------ */}
+          <section id="services" className="directions-scene">
+            <div className="directions-stage">
+              <div className="directions-direction directions-direction--laser">
+                <figure className="directions-media__frame directions-media__frame--laser">
+                  <Image
+                    src="/images/equipment/everlas/everlas-procedure-mirrored.png"
+                    alt="Процедура лазерной эпиляции на аппарате EVERLAS в студии ViART"
+                    fill
+                    sizes="(max-width: 899px) 100vw, 58vw"
+                    className="cover-image"
+                  />
+                </figure>
+                <div className="directions-panel directions-panel--laser">
+                  <p className="tech-label directions-kicker">EVERLAS · направление 01</p>
+                  <h2>Лазерная эпиляция</h2>
+                  <p className="directions-lead">Курс процедур вместо ежедневной бритвы.</p>
+                  <ul className="directions-points">
+                    <li>Интервал между процедурами — 4–6 недель, число зависит от зоны.</li>
+                    <li>Параметры мастер подбирает под зону и тип кожи, во время процедуры — защитные очки.</li>
+                  </ul>
+                  <InteractiveHoverButton
+                    type="button"
+                    className="viart-cta viart-cta--outline"
+                    onClick={() => openPriceTab(0)}
+                  >
+                    Зоны и цены
+                  </InteractiveHoverButton>
+                </div>
+              </div>
+
+              <div className="directions-direction directions-direction--massage">
+                <figure className="directions-media__frame directions-media__frame--massage">
+                  <Image
+                    src="/images/equipment/turbo-g8/turbo-g8-procedure.jpg"
+                    alt="Процедура аппаратного массажа на TURBO G8 в студии ViART"
+                    fill
+                    sizes="(max-width: 899px) 100vw, 58vw"
+                    className="cover-image"
+                  />
+                </figure>
+                <div className="directions-panel directions-panel--massage">
+                  <p className="tech-label directions-kicker">TURBO G8 · направление 02</p>
+                  <h2>Аппаратный массаж</h2>
+                  <p className="directions-lead">Роликовая манипула прорабатывает выбранные зоны.</p>
+                  <ul className="directions-points">
+                    <li>Живот, ягодицы или две зоны на выбор — интенсивность мастер регулирует по ощущениям.</li>
+                    <li>Первое посещение «Коррекции фигуры» — 1500 ₽ вместо 2500 ₽.</li>
+                  </ul>
+                  <InteractiveHoverButton
+                    type="button"
+                    className="viart-cta viart-cta--outline"
+                    onClick={() => openPriceTab(2)}
+                  >
+                    Программы и цены
+                  </InteractiveHoverButton>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* SERVICES — the two directions, as a phased capsule swap.         */}
-        {/* Mechanics: motionprompts.dev/component/capsules-animated-columns */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="services" className="cap-scene">
-          <div className="cap-wrapper">
-            <div className="cap-col cap-col--1">
-              <div className="cap-content">
-                <div className="cap-plate cap-plate--text">
-                  <div>
-                    <p className="tech-label cap-kicker">EVERLAS · направление 01</p>
-                    <h2>Лазерная эпиляция</h2>
-                  </div>
-                  <p className="cap-lead">Курс процедур вместо ежедневной бритвы.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--2">
-              <div className="cap-img cap-img--1">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/6.jpg"
-                    alt="Аппарат для лазерной эпиляции EVERLAS в студии ViART"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">EVERLAS · аппарат</p>
-                </div>
-              </div>
-              <div className="cap-img cap-img--2">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/7.jpg"
-                    alt="Манипула аппарата EVERLAS на подготовленной коже руки"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">Процедура по зоне</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--3">
-              <div className="cap-plate cap-plate--text cap-text--a">
-                <div>
-                  <h3 className="cap-split">Курс, а не разовая процедура</h3>
-                </div>
-                <div className="cap-points">
-                  <p className="cap-split">Процедуры идут с интервалом 4–6 недель — сколько их нужно, зависит от зоны.</p>
-                  <p className="cap-split">Отрастающий волос со временем становится тоньше и светлее, а самого волоса — меньше.</p>
-                  <p className="cap-split">Параметры мастер подбирает под зону и тип кожи, во время процедуры — защитные очки.</p>
-                </div>
-              </div>
-
-              {/* Every text node in this column is split, as in the source:
-                  an unmasked line here would sit visibly on top of the first
-                  block from the very first frame. */}
-              <div className="cap-plate--text cap-text--b">
-                <div>
-                  <p className="tech-label cap-kicker cap-split">TURBO G8 · направление 02</p>
-                  <h3 className="cap-split">Аппаратный массаж</h3>
-                </div>
-                <div className="cap-points">
-                  <p className="cap-split">Роликовая манипула прорабатывает выбранные зоны — живот, ягодицы или две зоны на выбор.</p>
-                  <p className="cap-split">Интенсивность мастер регулирует по вашим ощущениям прямо во время процедуры.</p>
-                  <p className="cap-split">Первое посещение «Коррекции фигуры» — 1500 ₽ вместо 2500 ₽.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="cap-col cap-col--4">
-              <div className="cap-img">
-                <div className="cap-plate">
-                  <Image
-                    src="/images/gallery/2.jpg"
-                    alt="Роликовая манипула аппарата TURBO G8 в студии ViART"
-                    fill
-                    sizes="(max-width: 899px) 50vw, 46vw"
-                    className="cover-image"
-                  />
-                  <p className="tech-label cap-tag">TURBO G8 · манипула</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Outside the four columns on purpose: both routes into the price
-              list stay visible and keyboard-reachable through every phase. */}
-          <div className="cap-actions">
-            <InteractiveHoverButton
-              type="button"
-              className="viart-cta viart-cta--outline"
-              onClick={() => openPriceTab(0)}
-            >
-              Зоны и цены
-            </InteractiveHoverButton>
-            <InteractiveHoverButton
-              type="button"
-              className="viart-cta viart-cta--outline"
-              onClick={() => openPriceTab(2)}
-            >
-              Программы и цены
-            </InteractiveHoverButton>
-          </div>
-        </section>
-
-        {/* PRICES — an ordinary interface. Never pinned, never scrubbed.
-            No intro screen: the last capsule state hands off straight into
-            the filters and the price list. */}
+        {/* PRICES — an ordinary interface. Never pinned, never scrubbed. */}
         <section id="pricing" className="chapter pricing-chapter">
           <div className="pricing-layout">
             <aside className="price-controls" aria-label="Фильтры прайс-листа" data-reveal="" data-reveal-delay="0.08">
@@ -582,220 +544,228 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* JOURNEY — Procedure's four square states and Studio's portrait    */}
-        {/* line on one continuous horizontal track: one pin, one transform,  */}
-        {/* so Studio's taller frames arrive while Procedure's cards are      */}
-        {/* still moving rather than after a hard cut into a new section.     */}
+        {/* EQUIPMENT — EVERLAS, then TURBO G8. Two states, stepped           */}
+        {/* (`motion/scenes/equipment.ts`). Facts restate what the rest of    */}
+        {/* the page already confirms; media is an explicit placeholder.      */}
         {/* ---------------------------------------------------------------- */}
-        <section id="everlas" className="journey-chapter">
-          <div className="journey-intro">
-            <div className="journey-intro__copy" data-reveal="">
-              <p className="eyebrow">Оборудование</p>
-              <h2>Лазерная эпиляция<br />на EVERLAS</h2>
-              <p className="journey-intro__lead">
-                Процедура помогает сократить рост нежелательных волос и реже пользоваться бритвой.
-                Четыре состояния одного курса — от подготовки до интервалов между процедурами.
-              </p>
-            </div>
-
-            {/* Animated Beam: a light accent between the machine and the zone,
-                not a section of its own. */}
-            <div className="journey-beam" ref={beamFieldRef} aria-hidden="true">
-              <span className="journey-node tech-label" ref={beamSourceRef}>EVERLAS</span>
-              <span className="journey-node tech-label" ref={beamTargetRef}>Зона</span>
-              <AnimatedBeam
-                containerRef={beamFieldRef}
-                fromRef={beamSourceRef}
-                toRef={beamTargetRef}
-                curvature={38}
-                pathColor="rgba(201, 168, 76, 0.24)"
-                pathWidth={1}
-                pathOpacity={1}
-                gradientStartColor="#c9a84c"
-                gradientStopColor="#d3b561"
-                duration={6}
-              />
-            </div>
-          </div>
-
-          <div className="journey-scene">
-            <div className="journey-index">
-              <span className="journey-counter">01/04</span>
-              <span className="journey-studio-label tech-label">Студия · ViART</span>
-            </div>
-
-            <div className="journey-track">
-              {everlasStages.map((stage) => (
-                <figure className="journey-card journey-card--procedure" key={`procedure-${stage.index}`}>
+        <section id="everlas" className="equipment-scene">
+          <div className="equipment-stage">
+            {equipmentStages.map((stage) => (
+              <div className={`equipment-layer equipment-layer--${stage.id}`} key={stage.id}>
+                <figure className="equipment-media">
                   <Image
-                    src={stage.src}
+                    src={stage.media}
                     alt={stage.alt}
                     fill
-                    sizes="(max-width: 1000px) 70vw, 30vw"
+                    sizes="(max-width: 899px) 100vw, 56vw"
                     className="cover-image"
                   />
+                  <p className="tech-label equipment-media__note">Демонстрационное фото · заменяется</p>
                 </figure>
-              ))}
-              {studioGalleryImages.map((image, index) => (
-                <figure
-                  className={`journey-card journey-card--studio ${index === studioGalleryImages.length - 1 ? 'journey-card--dominant' : ''}`}
-                  key={`studio-${image.src}`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    sizes="(max-width: 1000px) 80vw, 28vw"
-                    className="cover-image"
-                  />
-                </figure>
-              ))}
+                <div className="equipment-copy">
+                  <p className="tech-label equipment-kicker">{stage.kicker}</p>
+                  <h2>{stage.title}</h2>
+                  <p className="equipment-lead">{stage.lead}</p>
+                  <dl className="equipment-rows">
+                    {stage.rows.map((row) => (
+                      <div className="equipment-row" key={row.label}>
+                        <dt>{row.label}</dt>
+                        <dd>{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="equipment-effect">{stage.effect}</p>
+                </div>
+              </div>
+            ))}
+            <div className="stepper-actions">
+              <button type="button" className="text-button" onClick={() => openPriceTab(0)}>Зоны и цены <span>↗</span></button>
             </div>
-
-            <ol className="journey-captions">
-              {everlasStages.map((stage) => (
-                <li className="journey-caption" key={stage.index}>
-                  <span className="journey-caption__index tech-label">{stage.index}</span>
-                  <span className="journey-caption__title">{stage.title}</span>
-                  <span className="journey-caption__copy">{stage.copy}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="journey-outro" data-reveal="">
-            <p>Число процедур зависит от зоны, кожи и волос — мастер называет ориентир на первой консультации.</p>
-            <InteractiveHoverButton
-              type="button"
-              className="viart-cta viart-cta--outline"
-              onClick={() => openPriceTab(0)}
-            >
-              Выбрать зону или комплекс
-            </InteractiveHoverButton>
           </div>
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* FIRST VISIT — one vertical video carries the offer. The full      */}
-        {/* complex list lives in the price table; this shows one, not four. */}
-        {/* Placeholder media: no vertical clip of a specific master exists   */}
-        {/* yet, so the existing prep footage (native 1080×1920, genuinely    */}
-        {/* portrait) stands in until it is replaced.                        */}
+        {/* PROCEDURE — 01 → 04. Four states, stepped, one gesture per number */}
+        {/* (`motion/scenes/procedure.ts`). Number, photo and explanation      */}
+        {/* stay in one card, one attention zone, per state.                  */}
         {/* ---------------------------------------------------------------- */}
-        <section id="promo" className="chapter first-visit-scene">
-          <div className="deck-intro">
-            <div>
-              {/* No data-reveal on the wrapper: the heading already has an
-                  animation of its own, and stacking a fade on top of it is two
-                  systems moving one headline. */}
-              <p className="eyebrow" data-reveal="">Первое посещение</p>
-              <TextAnimate as="h2" by="line" animation="slideUp" once duration={0.5}>
-                {'Скидка 30%\nна комплекс'}
-              </TextAnimate>
+        <section id="procedure" className="procedure-scene">
+          <div className="procedure-stage">
+            <p className="procedure-counter tech-label">01/04</p>
+            {everlasStages.map((stage) => (
+              <article className="procedure-card" key={stage.index}>
+                <figure className="procedure-card__media">
+                  <Image
+                    src={stage.src}
+                    alt={stage.alt}
+                    fill
+                    sizes="(max-width: 899px) 100vw, 58vw"
+                    className="cover-image"
+                  />
+                </figure>
+                <div className="procedure-card__copy">
+                  <span className="tech-label procedure-card__index">{stage.index}/04</span>
+                  <h3>{stage.title}</h3>
+                  <p>{stage.copy}</p>
+                </div>
+              </article>
+            ))}
+            <div className="stepper-actions">
+              <button type="button" className="text-button" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс <span>↗</span></button>
             </div>
-            <p data-reveal="" data-reveal-delay="0.08">
-              Скидка действует на любой комплекс при первом посещении. Состав и цена — как в прайсе.
-            </p>
           </div>
+        </section>
 
-          <div className="first-visit-layout">
-            <figure className="first-visit-plate" data-reveal="media">
-              <video
-                ref={masterVideoRef}
-                className="first-visit-video"
-                src="/videos/viart-procedure-prep.mp4"
-                poster="/images/gallery/1.jpg"
-                playsInline
-                muted={!isAudioEnabled}
-                // The file is ~19MB and its `moov` atom sits at the very end,
-                // so `metadata` costs a fetch of nearly the whole thing before
-                // anything is playable — paid by every visitor, most of whom
-                // never press play, and competing for bandwidth with the
-                // images the scenes are measured against. The poster is what
-                // the section shows until the play button is pressed.
-                preload="none"
-                controls={videoState === 'playing'}
-                onPlay={() => {
-                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onPlaying={() => {
-                  const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onWaiting={() => {
-                  if (!intentionalAudioRef.current) return;
-                  videoStateRef.current = 'loading';
-                  setVideoState('loading');
-                }}
-                onPause={(event) => {
-                  if (event.currentTarget.ended) return;
-                  const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
-                    ? 'paused'
-                    : 'poster';
-                  videoStateRef.current = nextState;
-                  setVideoState(nextState);
-                }}
-                onEnded={() => {
-                  intentionalAudioRef.current = false;
-                  setIsAudioEnabled(false);
-                  videoStateRef.current = 'ended';
-                  setVideoState('ended');
-                }}
-                onError={() => {
-                  intentionalAudioRef.current = false;
-                  setIsAudioEnabled(false);
-                  videoStateRef.current = 'error';
-                  setVideoState('error');
-                }}
-              />
+        {/* ---------------------------------------------------------------- */}
+        {/* GALLERY — the studio itself. An ordinary reveal, not a scene:     */}
+        {/* the active/first frame is dominant and fully readable, the rest   */}
+        {/* give it depth without competing for attention.                   */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="gallery" className="chapter gallery-scene">
+          <div className="gallery-topline" data-reveal="">
+            <div>
+              <p className="eyebrow">Студия</p>
+              <h2>Пространство ViART</h2>
+            </div>
+            <p>Кабинет, оборудование и материалы, которыми пользуются мастера.</p>
+          </div>
+          <div className="gallery-grid" data-reveal="group">
+            {studioGalleryImages.map((image, index) => (
+              <figure
+                className={`gallery-frame ${index === 0 ? 'gallery-frame--dominant' : ''}`}
+                data-reveal-item=""
+                key={image.src}
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes={index === 0 ? '(max-width: 899px) 100vw, 42vw' : '(max-width: 899px) 46vw, 22vw'}
+                  className="cover-image"
+                />
+              </figure>
+            ))}
+          </div>
+        </section>
 
-              {/* The offer reads on its own — no audio, no interaction needed. */}
-              <div className="deck-tag"><p className="tech-label">−30% первое посещение</p></div>
-              <div className="deck-body">
-                <p className="tech-label">{firstVisitComplex.name}</p>
-                <p className="deck-detail">{firstVisitComplex.detail}</p>
-                <p className="deck-price">
+        {/* ---------------------------------------------------------------- */}
+        {/* VIDEOS — three tiles, then Anna + complex. Two states, stepped    */}
+        {/* (`motion/scenes/videos.ts`). Only the centre tile is a real,      */}
+        {/* interactive video; the other two are explicitly-labelled         */}
+        {/* placeholders, never presented as footage that exists yet.        */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="videos" className="videos-scene">
+          <div className="videos-stage">
+            <div className="videos-layer videos-layer--trio">
+              <figure className="videos-tile videos-tile--placeholder">
+                <Image src="/images/gallery/4.jpg" alt="" fill sizes="28vw" className="cover-image" />
+                <p className="tech-label videos-tile__note">Видео скоро</p>
+              </figure>
+              <figure className="videos-tile videos-tile--anna">
+                <Image src="/images/gallery/1.jpg" alt="Видео мастера ViART" fill sizes="34vw" className="cover-image" />
+                <p className="tech-label videos-tile__note">Видео мастера</p>
+              </figure>
+              <figure className="videos-tile videos-tile--placeholder">
+                <Image src="/images/gallery/7.jpg" alt="" fill sizes="28vw" className="cover-image" />
+                <p className="tech-label videos-tile__note">Видео скоро</p>
+              </figure>
+            </div>
+
+            <div className="videos-layer videos-layer--anna">
+              <figure className="videos-plate">
+                <video
+                  ref={masterVideoRef}
+                  className="videos-video"
+                  src="/videos/viart-procedure-prep.mp4"
+                  poster="/images/gallery/1.jpg"
+                  playsInline
+                  muted={!isAudioEnabled}
+                  // The file is ~19MB and its `moov` atom sits at the very end,
+                  // so `metadata` costs a fetch of nearly the whole thing before
+                  // anything is playable. The poster is what the section shows
+                  // until the play button is pressed.
+                  preload="none"
+                  controls={videoState === 'playing'}
+                  onPlay={() => {
+                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                    videoStateRef.current = nextState;
+                    setVideoState(nextState);
+                  }}
+                  onPlaying={() => {
+                    const nextState = intentionalAudioRef.current ? 'playing' : 'preview';
+                    videoStateRef.current = nextState;
+                    setVideoState(nextState);
+                  }}
+                  onWaiting={() => {
+                    if (!intentionalAudioRef.current) return;
+                    videoStateRef.current = 'loading';
+                    setVideoState('loading');
+                  }}
+                  onPause={(event) => {
+                    if (event.currentTarget.ended) return;
+                    const nextState = intentionalAudioRef.current || videoStateRef.current === 'playing' || videoStateRef.current === 'paused'
+                      ? 'paused'
+                      : 'poster';
+                    videoStateRef.current = nextState;
+                    setVideoState(nextState);
+                  }}
+                  onEnded={() => {
+                    intentionalAudioRef.current = false;
+                    setIsAudioEnabled(false);
+                    videoStateRef.current = 'ended';
+                    setVideoState('ended');
+                  }}
+                  onError={() => {
+                    intentionalAudioRef.current = false;
+                    setIsAudioEnabled(false);
+                    videoStateRef.current = 'error';
+                    setVideoState('error');
+                  }}
+                />
+
+                {videoState !== 'playing' && videoState !== 'error' && (
+                  <button
+                    type="button"
+                    className="master-play"
+                    onClick={playMasterVideo}
+                    aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
+                    disabled={videoState === 'loading'}
+                  >
+                    <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
+                  </button>
+                )}
+                {videoState === 'error' && (
+                  <div className="master-error" role="alert">
+                    <p>Видео временно недоступно.</p>
+                    <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
+                  </div>
+                )}
+              </figure>
+
+              <div className="videos-complex">
+                <p className="tech-label videos-complex__tag">−30% первое посещение</p>
+                <p className="tech-label videos-complex__name">{firstVisitComplex.name}</p>
+                <p className="videos-complex__detail">{firstVisitComplex.detail}</p>
+                <p className="videos-complex__price">
                   <span>{firstVisitComplex.price}</span>
                   <strong>{firstVisitComplex.firstVisitPrice}</strong>
                   <small>при первом посещении</small>
                 </p>
-              </div>
-
-              {videoState !== 'playing' && videoState !== 'error' && (
-                <button
-                  type="button"
-                  className="master-play"
-                  onClick={playMasterVideo}
-                  aria-label={videoState === 'paused' ? 'Продолжить видео' : videoState === 'ended' ? 'Посмотреть видео снова' : 'Воспроизвести видео'}
-                  disabled={videoState === 'loading'}
-                >
-                  <span>{videoState === 'loading' ? '···' : videoState === 'ended' ? '↻' : '▶'}</span>
-                </button>
-              )}
-              {videoState === 'error' && (
-                <div className="master-error" role="alert">
-                  <p>Видео временно недоступно.</p>
-                  <button type="button" className="text-button" onClick={playMasterVideo}>Попробовать снова <span>↻</span></button>
+                <div className="videos-complex__actions">
+                  <InteractiveHoverLink
+                    className="viart-cta viart-cta--ivory"
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Записаться со скидкой
+                  </InteractiveHoverLink>
+                  <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
+                    Все комплексы и составы <span>↗</span>
+                  </button>
                 </div>
-              )}
-            </figure>
-          </div>
-
-          <div className="deck-outro" data-reveal="">
-            <InteractiveHoverLink
-              className="viart-cta viart-cta--ivory"
-              href={bookingUrl}
-              target="_blank"
-              rel="noopener"
-            >
-              Записаться со скидкой
-            </InteractiveHoverLink>
-            <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
-              Все комплексы и составы <span>↗</span>
-            </button>
+              </div>
+            </div>
           </div>
         </section>
 
