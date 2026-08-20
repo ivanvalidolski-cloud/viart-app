@@ -88,11 +88,17 @@ export const DIRECTIONS = {
   duration: 0.7,
 } as const;
 
-/** Scene 03 — Procedure (`#everlas`), stages 01→04. Stepped, one gesture per
- *  number. */
+/** Scene 03 — Procedure (`#procedure`), stages 01→04: a horizontal process
+ *  track, not four fullscreen cards. Stepped, one gesture per number — the
+ *  numbered track pans and the active media/text crossfade in sync. Desktop
+ *  only; mobile gets a compact tap-driven step navigator (`page.tsx` state),
+ *  not this scene. */
 export const PROCEDURE = {
   pinViewports: 1,
   duration: 0.6,
+  /** Where the active node's centre sits, as a fraction of viewport width —
+   *  the spec's "35–45% from the left edge" dominant reading zone. */
+  dominantZone: 0.4,
 } as const;
 
 /** Scene 04 — Equipment: EVERLAS → TURBO G8. Two states, stepped. */

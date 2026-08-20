@@ -90,10 +90,6 @@ const epilationComplexes: Record<PriceGender, Array<{ name: string; detail: stri
   ],
 };
 
-/** The one complex First Visit features — "Популярный" is the closest thing
- *  to a default without inventing a promotional pick. */
-const firstVisitComplex = epilationComplexes.women[2];
-
 const massagePrices = [
   { name: 'Вибромассаж TURBO G8 „Коррекция фигуры“', price: 'Первое посещение — 1500 ₽ / далее — 2500 ₽' },
   { name: 'Комплекс „Упругие ягодицы“', price: '2 500 ₽' },
@@ -239,6 +235,9 @@ export default function Home() {
   const [activePriceTab, setActivePriceTab] = useState(0);
   const [priceGender, setPriceGender] = useState<PriceGender>('women');
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [procedureStep, setProcedureStep] = useState(0);
+  // Same default complex First Visit always featured — "Популярный".
+  const [complexIndex, setComplexIndex] = useState(2);
   const [videoState, setVideoState] = useState<VideoState>('poster');
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const videoStateRef = useRef<VideoState>('poster');
@@ -318,6 +317,12 @@ export default function Home() {
   };
 
   const activeReview = reviews[reviewIndex];
+  // First Visit's selector always features the women's complexes — the same
+  // set already priced on the `#pricing` tab; no gender toggle here, that's
+  // its own control elsewhere and out of this scope.
+  const firstVisitComplexes = epilationComplexes.women;
+  const firstVisitTotal = firstVisitComplexes.length;
+  const activeComplex = firstVisitComplexes[complexIndex];
 
   return (
     <div className="viart-site">
@@ -585,31 +590,114 @@ export default function Home() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* PROCEDURE — 01 → 04. Four states, stepped, one gesture per number */}
-        {/* (`motion/scenes/procedure.ts`). Number, photo and explanation      */}
-        {/* stay in one card, one attention zone, per state.                  */}
+        {/* PROCEDURE — 01 → 04, a horizontal process track. Not four fullscreen */}
+        {/* card states: one numbered track pans so the active step stays in   */}
+        {/* the dominant reading zone while the rest of 01–04 stay visible,     */}
+        {/* stepped one gesture per number (`motion/scenes/procedure.ts`).      */}
+        {/* Mobile swaps this for a tap-driven step navigator, below — desktop  */}
+        {/* pin/gesture-lock is not appropriate to natural touch scroll.        */}
         {/* ---------------------------------------------------------------- */}
         <section id="procedure" className="procedure-scene">
           <div className="procedure-stage">
             <p className="procedure-counter tech-label">01/04</p>
-            {everlasStages.map((stage) => (
-              <article className="procedure-card" key={stage.index}>
-                <figure className="procedure-card__media">
+
+            <div className="procedure-rail">
+              <div className="procedure-track">
+                <span className="procedure-track__line" aria-hidden="true" />
+                <span className="procedure-track__fill" aria-hidden="true" />
+                {everlasStages.map((stage) => (
+                  <div className="procedure-node" key={stage.index}>
+                    <span className="procedure-node__index">{stage.index}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Anchored to the same viewport-relative dominant zone the track's
+                active node pans to (`PROCEDURE.dominantZone`), independent of
+                the rail's own box — so the title/explanation always read as
+                directly under the active number, not wherever the rail happens
+                to sit. */}
+            <div className="procedure-active">
+              {everlasStages.map((stage) => (
+                <div className="procedure-active__item" key={stage.index}>
+                  <h3>{stage.title}</h3>
+                  <p>{stage.copy}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="procedure-media-rail">
+              {everlasStages.map((stage) => (
+                <figure className="procedure-media" key={stage.index}>
                   <Image
                     src={stage.src}
                     alt={stage.alt}
                     fill
-                    sizes="(max-width: 899px) 100vw, 58vw"
+                    sizes="(max-width: 899px) 100vw, 46vw"
                     className="cover-image"
                   />
                 </figure>
-                <div className="procedure-card__copy">
-                  <span className="tech-label procedure-card__index">{stage.index}/04</span>
-                  <h3>{stage.title}</h3>
-                  <p>{stage.copy}</p>
-                </div>
-              </article>
-            ))}
+              ))}
+            </div>
+
+            <div className="stepper-actions">
+              <button type="button" className="text-button" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс <span>↗</span></button>
+            </div>
+          </div>
+
+          {/* Mobile — compact step navigator + one active content panel, per
+              §12: 01–04 are explicit tap targets, the active step is unambiguous
+              without hover, and number/title/explanation/media stay together. */}
+          <div className="procedure-mobile">
+            <div className="procedure-mobile__chips" role="tablist" aria-label="Этапы процедуры">
+              {everlasStages.map((stage, index) => (
+                <button
+                  type="button"
+                  key={stage.index}
+                  role="tab"
+                  aria-selected={procedureStep === index}
+                  className={`procedure-mobile__chip ${procedureStep === index ? 'is-active' : ''}`}
+                  onClick={() => setProcedureStep(index)}
+                >
+                  {stage.index}
+                </button>
+              ))}
+            </div>
+
+            <div className="procedure-mobile__panel">
+              <figure className="procedure-mobile__media">
+                <Image
+                  src={everlasStages[procedureStep].src}
+                  alt={everlasStages[procedureStep].alt}
+                  fill
+                  sizes="100vw"
+                  className="cover-image"
+                />
+              </figure>
+              <p className="tech-label procedure-mobile__index">{everlasStages[procedureStep].index}/04</p>
+              <h3>{everlasStages[procedureStep].title}</h3>
+              <p>{everlasStages[procedureStep].copy}</p>
+              <div className="procedure-mobile__nav">
+                <button
+                  type="button"
+                  onClick={() => setProcedureStep((step) => Math.max(0, step - 1))}
+                  disabled={procedureStep === 0}
+                  aria-label="Предыдущий этап"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProcedureStep((step) => Math.min(everlasStages.length - 1, step + 1))}
+                  disabled={procedureStep === everlasStages.length - 1}
+                  aria-label="Следующий этап"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+
             <div className="stepper-actions">
               <button type="button" className="text-button" onClick={() => openPriceTab(0)}>Выбрать зону или комплекс <span>↗</span></button>
             </div>
@@ -742,16 +830,77 @@ export default function Home() {
                 )}
               </figure>
 
-              <div className="videos-complex">
-                <p className="tech-label videos-complex__tag">−30% первое посещение</p>
-                <p className="tech-label videos-complex__name">{firstVisitComplex.name}</p>
-                <p className="videos-complex__detail">{firstVisitComplex.detail}</p>
-                <p className="videos-complex__price">
-                  <span>{firstVisitComplex.price}</span>
-                  <strong>{firstVisitComplex.firstVisitPrice}</strong>
-                  <small>при первом посещении</small>
-                </p>
-                <div className="videos-complex__actions">
+              {/* Desktop — diagonal selector: one central active complex, the
+                  other three arrayed along the same diagonal axis, each a
+                  plain click/tap target. `slot-N` is the item's position
+                  *relative* to whichever is active, recomputed every time
+                  `complexIndex` changes — so picking an alternative moves it
+                  to slot-0 and redistributes everyone else in one state
+                  update, name/composition/price/CTA always in sync. */}
+              <div className="complex-selector">
+                {firstVisitComplexes.map((item, index) => {
+                  const relative = (index - complexIndex + firstVisitTotal) % firstVisitTotal;
+                  const isActive = relative === 0;
+                  return (
+                    <article
+                      key={item.name}
+                      className={`complex-selector__item slot-${relative} ${isActive ? 'is-active' : ''}`}
+                      role={isActive ? undefined : 'button'}
+                      tabIndex={isActive ? undefined : 0}
+                      onClick={isActive ? undefined : () => setComplexIndex(index)}
+                      onKeyDown={isActive ? undefined : (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setComplexIndex(index);
+                        }
+                      }}
+                      aria-label={isActive ? undefined : `Выбрать комплекс ${item.name}`}
+                    >
+                      {isActive && <p className="tech-label complex-selector__eyebrow">−30% первое посещение</p>}
+                      <h3 className="complex-selector__name">{item.name}</h3>
+                      {isActive ? (
+                        <>
+                          <p className="complex-selector__detail">{item.detail}</p>
+                          <p className="complex-selector__price">
+                            <span>{item.price}</span>
+                            <strong>{item.firstVisitPrice}</strong>
+                            <small>при первом посещении</small>
+                          </p>
+                          <div className="complex-selector__actions">
+                            <InteractiveHoverLink
+                              className="viart-cta viart-cta--ivory"
+                              href={bookingUrl}
+                              target="_blank"
+                              rel="noopener"
+                            >
+                              Записаться со скидкой
+                            </InteractiveHoverLink>
+                            <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
+                              Все комплексы и составы <span>↗</span>
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <span className="complex-selector__cue">{item.firstVisitPrice}</span>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+
+              {/* Mobile — active complex stays the main information panel;
+                  the rest are a compact tap row of names underneath, not the
+                  desktop diagonal squeezed into a narrow column (§12). */}
+              <div className="complex-selector-mobile">
+                <div className="complex-selector-mobile__active">
+                  <p className="tech-label">−30% первое посещение</p>
+                  <h3>{activeComplex.name}</h3>
+                  <p className="complex-selector-mobile__detail">{activeComplex.detail}</p>
+                  <p className="complex-selector-mobile__price">
+                    <span>{activeComplex.price}</span>
+                    <strong>{activeComplex.firstVisitPrice}</strong>
+                    <small>при первом посещении</small>
+                  </p>
                   <InteractiveHoverLink
                     className="viart-cta viart-cta--ivory"
                     href={bookingUrl}
@@ -760,46 +909,34 @@ export default function Home() {
                   >
                     Записаться со скидкой
                   </InteractiveHoverLink>
-                  <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
-                    Все комплексы и составы <span>↗</span>
-                  </button>
                 </div>
+                <div className="complex-selector-mobile__chips" role="tablist" aria-label="Комплексы">
+                  {firstVisitComplexes.map((item, index) => (
+                    <button
+                      type="button"
+                      key={item.name}
+                      role="tab"
+                      aria-selected={complexIndex === index}
+                      className={`complex-selector-mobile__chip ${complexIndex === index ? 'is-active' : ''}`}
+                      onClick={() => setComplexIndex(index)}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="text-button" onClick={() => openPriceTab(1)}>
+                  Все комплексы и составы <span>↗</span>
+                </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* TRUST — two separate claims, kept visually apart on purpose: the
-            award is a sourced, dated fact; the testimonial is one client's
-            words. Neither is a number to skim — the award is its own object
-            with its own copy, and the testimonial is one large quote, not a
-            rating anchored to counts nobody here has confirmed. */}
+        {/* TRUST — the testimonial is one client's words, an ordinary chapter.
+            The award is a separate, sourced fact and lives below as its own
+            trust marker between Reviews and the map, not bundled into a
+            rating block or shown as a card. */}
         <section id="reviews" className="chapter trust-chapter">
-          <div className="trust-award" data-reveal="">
-            <div className="trust-award__media">
-              {/* `cover`, not `contain`: the source frame is a wide 1200×630
-                  canvas with the badge itself sitting in a narrow vertical
-                  band at its centre, surrounded by confetti margin. A
-                  portrait box with `cover` crops that margin away instead of
-                  rendering the badge small in the middle of empty space. */}
-              <Image
-                src="/images/awards/good-place-2026-source.png"
-                alt="Значок награды Яндекс Карт «Хорошее место — 2026»"
-                fill
-                sizes="(max-width: 640px) 6rem, 7.5rem"
-                className="cover-image"
-              />
-            </div>
-            <div className="trust-award__copy">
-              <p className="tech-label trust-award__eyebrow">Хорошее место · 2026</p>
-              <p>
-                Награда Яндекс Карт для мест, которые пользователи особенно любят: высоко оценивают
-                и рекомендуют в отзывах. В 2026 году её получили организации, чей рейтинг и отзывы
-                на карте держатся стабильно высокими весь год.
-              </p>
-            </div>
-          </div>
-
           <div className="trust-testimonial" key={reviewIndex}>
             <p className="tech-label trust-testimonial__eyebrow">Отзывы</p>
             <div className="trust-testimonial__layout">
@@ -827,6 +964,34 @@ export default function Home() {
                 />
               </figure>
             </div>
+          </div>
+        </section>
+
+        {/* GOOD PLACE — a standalone trust marker between Reviews and the map,
+            not a card: a sourced, dated award with one confirmed line of
+            explanation. No rating, review count or years-running claim —
+            none of that is confirmed evidence for this studio. */}
+        <section className="good-place-marker" data-reveal="">
+          <div className="good-place-marker__inner">
+            <div className="good-place-marker__badge">
+              {/* `cover`, not `contain`: the source frame is a wide 1200×630
+                  canvas with the badge itself sitting in a narrow vertical
+                  band at its centre, surrounded by confetti margin. A
+                  portrait box with `cover` crops that margin away instead of
+                  rendering the badge small in the middle of empty space. */}
+              <Image
+                src="/images/awards/good-place-2026-source.png"
+                alt="Значок награды Яндекс Карт «Хорошее место — 2026»"
+                fill
+                sizes="(max-width: 640px) 6.5rem, 8.5rem"
+                className="cover-image"
+              />
+            </div>
+            <p className="tech-label good-place-marker__eyebrow">Хорошее место · 2026</p>
+            <p className="good-place-marker__copy">
+              Награда Яндекс Карт для мест, которые пользователи высоко оценивают, хвалят в отзывах и рекомендуют.
+            </p>
+            <span className="good-place-marker__cue" aria-hidden="true" />
           </div>
         </section>
 

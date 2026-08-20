@@ -3028,7 +3028,14 @@ h3,
 
 .hero-media__frame img {
   object-fit: cover;
-  object-position: center 38%;
+  /* Vertical only: at hero's landscape desktop aspect, `cover` crops top/
+     bottom and never the sides, so this is the sole crop control. It clears
+     the applicator (EVERLAS handpiece, roughly the image's 42–78% band) into
+     the frame instead of cutting through its body, while the arm/gel stays
+     the dominant read above it. At mobile's narrow/tall aspect `cover` crops
+     left/right instead — the full vertical range is already visible there,
+     so this value has no effect on that crop. */
+  object-position: center 60%;
   filter: saturate(0.86) sepia(0.05) contrast(1.04) brightness(0.86);
 }
 
@@ -4487,71 +4494,58 @@ p.cap-tag {
 }
 
 /* --------------------------------------------------------------------------
-   Trust rebuild — the award and the testimonial are two different claims
-   (a sourced, dated fact vs. one client's words) and now live in two visibly
-   separate objects instead of one combined rating block. `.reviews-chapter`
-   becomes a plain vertical stack; `.trust-body` carries the 12-column split
-   the old `.reviews-chapter` used to, so `.rating-anchor` / `.active-review`
-   keep the column spans already declared above.
+   Good Place — a standalone trust marker between Reviews and the map. Not a
+   card: no border, no fill, generous space around it, the badge as the
+   dominant object and one line of sourced copy under it. A thin cue line
+   below is the only directional nod toward the map that follows.
    -------------------------------------------------------------------------- */
-
-
-.trust-award {
+.good-place-marker {
   display: flex;
-  align-items: center;
-  gap: 1.75rem;
-  max-width: 42rem;
-  border: 1px solid var(--hairline);
-  border-radius: 0.6rem;
-  padding: clamp(1.5rem, 3vw, 2.25rem);
-  background: var(--cocoa);
+  justify-content: center;
+  padding: clamp(4rem, 9vw, 7.5rem) var(--page-gutter) clamp(2.5rem, 5vw, 4rem);
+  background: var(--warm-black);
 }
 
-.trust-award__media {
-  position: relative;
-  flex: none;
-  height: 4.8rem;
-  width: 4.8rem;
-}
-
-.trust-award__copy {
+.good-place-marker__inner {
   display: grid;
-  gap: 0.5rem;
+  justify-items: center;
+  gap: 1.1rem;
+  /* The spec's ~560–760px semantic width, at rem so it still tracks a user
+     zoom/base-size change. */
+  max-width: 42rem;
+  text-align: center;
 }
 
-.trust-award__eyebrow {
+.good-place-marker__badge {
+  position: relative;
+  height: 6.5rem;
+  width: 6.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.good-place-marker__eyebrow {
   color: var(--bronze-soft);
 }
 
-.trust-award__copy > p:not(.trust-award__eyebrow) {
+.good-place-marker__copy {
   margin: 0;
-  max-width: 42ch;
+  max-width: 38ch;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   line-height: 1.6;
 }
 
-
-
-@media (max-width: 899px) {
-  .trust-award {
-    max-width: none;
-  }
-
-  
-
-  
+.good-place-marker__cue {
+  width: 1px;
+  height: 2.75rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(to bottom, var(--hairline-strong), transparent);
 }
 
-@media (max-width: 640px) {
-  .trust-award {
-    align-items: flex-start;
-    gap: 1.25rem;
-  }
-
-  .trust-award__media {
-    height: 3.6rem;
-    width: 3.6rem;
+@media (min-width: 641px) {
+  .good-place-marker__badge {
+    height: 8.5rem;
+    width: 8.5rem;
   }
 }
 
@@ -5009,25 +5003,13 @@ p.cap-tag {
 }
 
 /* ==========================================================================
-   TRUST — the award as its own object, and one large editorial testimonial
-   instead of a rating anchored to counts nobody has confirmed here.
+   TRUST — one large editorial testimonial. The award lives separately as
+   `.good-place-marker`, below, between this chapter and the map.
    ========================================================================== */
 .trust-chapter {
   display: flex;
   flex-direction: column;
   gap: clamp(3rem, 5vw, 4.5rem);
-}
-
-.trust-award__media {
-  height: 6rem;
-  width: 4.5rem;
-}
-
-@media (min-width: 641px) {
-  .trust-award__media {
-    height: 7.5rem;
-    width: 5.6rem;
-  }
 }
 
 .trust-testimonial__eyebrow {
@@ -5478,11 +5460,14 @@ p.cap-tag {
 }
 
 /* ==========================================================================
-   Procedure — stages 01 → 04 (`#procedure`)
+   Procedure — stages 01 → 04 (`#procedure`), a horizontal process track
 
-   `motion/scenes/procedure.ts` crossfades one card per stage, each holding
-   its number, photo and explanation together — one attention zone, stepped
-   one gesture per number. Desktop only.
+   `motion/scenes/procedure.ts` pans one numbered track so the active node
+   sits in the 35–45vw dominant zone, while a stationary text panel and a
+   stacked media rail crossfade in sync — timeline/track language, not the
+   large-photo-plus-text-block shape Equipment uses, and not four repeated
+   card states. Stepped one gesture per number. Desktop only — `.procedure-
+   mobile`, below, is the tap-driven navigator that replaces this on mobile.
    ========================================================================== */
 .procedure-scene {
   position: relative;
@@ -5505,49 +5490,107 @@ p.cap-tag {
   color: var(--bronze-soft);
 }
 
-.procedure-card {
+/* The numbered track. Its own box is just a flex-layout convenience — the
+   track pans freely past either edge (nothing here clips it), so the rail's
+   `left`/`width` do not bound where nodes actually end up on screen; the
+   scene JS is what pins the active node to the dominant zone. */
+.procedure-rail {
   position: absolute;
-  inset: calc(var(--header-h, 4rem) + 3.5rem) var(--page-gutter) 4.5rem;
-  display: flex;
-  gap: var(--grid-gap);
+  top: 38%;
+  left: var(--page-gutter);
+  z-index: 2;
+  width: min(50%, 34rem);
 }
 
-.procedure-card__media {
+.procedure-track {
   position: relative;
-  flex: 0 0 58%;
-  min-width: 0;
-  overflow: hidden;
-  border-radius: 0.6rem;
-  background: var(--cocoa);
-}
-
-.procedure-card__media img {
-  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
-}
-
-.procedure-card__copy {
   display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  height: 3.5rem;
+}
+
+/* The active step's title + explanation. Anchored to the same viewport
+   fraction the track JS pans the active node to (`PROCEDURE.dominantZone` —
+   0.4 there, 40vw here, the one place that value is duplicated) so the copy
+   always reads as sitting directly under the active number, independent of
+   `.procedure-rail`'s own box. */
+.procedure-active {
+  position: absolute;
+  top: 54%;
+  left: 40vw;
+  z-index: 2;
+  width: min(30rem, 40vw);
+  height: 9.5rem;
+}
+
+.procedure-track__line,
+.procedure-track__fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.procedure-track__line {
+  right: -120vw;
+  background: var(--hairline);
+}
+
+.procedure-track__fill {
+  width: 0;
+  background: var(--bronze-soft);
+}
+
+/* Fixed width regardless of active state — the number's own type scales via
+   `transform`, which does not affect layout, so no node ever shifts a
+   sibling's position when it becomes active. That is what keeps the scene's
+   one-time rect measurement valid for every step. */
+.procedure-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 6rem;
   justify-content: center;
-  gap: 0.75rem;
 }
 
-.procedure-card__index {
-  color: var(--bronze-soft);
+.procedure-node__index {
+  padding: 0 0.5rem;
+  background: var(--ink);
+  color: var(--muted);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  transition: color 0.4s ease, transform 0.4s ease;
 }
 
-.procedure-card__copy h3 {
+.procedure-node.is-active .procedure-node__index {
+  color: var(--ivory);
+  transform: scale(2.7);
+}
+
+.procedure-active__item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.6rem;
+}
+
+.procedure-active__item h3 {
   margin: 0;
   color: var(--ivory);
   font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(2.1rem, 3.2vw, 3.4rem);
+  font-size: clamp(1.7rem, 2.4vw, 2.4rem);
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 
-.procedure-card__copy p {
+.procedure-active__item p {
   max-width: 32ch;
   margin: 0;
   color: var(--muted);
@@ -5555,13 +5598,40 @@ p.cap-tag {
   line-height: 1.6;
 }
 
+/* The right zone: the active step's photo, ~46% of the stage — its own
+   dominant plane, not sharing a slot with the text. */
+.procedure-media-rail {
+  position: absolute;
+  top: 50%;
+  right: var(--page-gutter);
+  width: 46%;
+  aspect-ratio: 4 / 5;
+  transform: translateY(-50%);
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--cocoa);
+}
+
+.procedure-media {
+  position: absolute;
+  inset: 0;
+}
+
+.procedure-media img {
+  filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
+}
+
+.procedure-mobile {
+  display: none;
+}
+
 @media (max-width: 1099px) {
-  .procedure-card {
-    flex-direction: column;
+  .procedure-rail {
+    width: min(52%, 26rem);
   }
 
-  .procedure-card__media {
-    flex: 0 0 46%;
+  .procedure-media-rail {
+    width: 42%;
   }
 }
 
@@ -5569,43 +5639,118 @@ p.cap-tag {
   .procedure-scene {
     height: auto;
     overflow: visible;
+    background: var(--ink);
     padding: clamp(3rem, 8vw, 5rem) 0 clamp(4rem, 10vw, 6rem);
   }
 
   .procedure-stage {
-    height: auto;
-  }
-
-  .procedure-counter {
     display: none;
   }
 
-  .procedure-card {
-    position: static;
-    inset: auto;
-    flex-direction: column;
+  /* Compact step navigator + one active content panel — not the desktop
+     pinned scene copied verbatim, which would either lock touch scroll or
+     cram the diagonal-track geometry into a narrow column. Number, title,
+     explanation and media stay in one visible sequence; 01–04 are explicit
+     tap targets, and the active one is unambiguous without hover. */
+  .procedure-mobile {
+    display: block;
     padding: 0 var(--page-gutter);
-    opacity: 1 !important;
-    transform: none !important;
   }
 
-  .procedure-card + .procedure-card {
-    margin-top: clamp(3rem, 9vw, 4.5rem);
+  .procedure-mobile__chips {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
   }
 
-  .procedure-card__media {
-    flex: none;
+  .procedure-mobile__chip {
+    flex: 1 1 0;
+    border: 1px solid var(--hairline);
+    border-radius: 0.4rem;
+    padding: 0.6rem 0;
+    background: none;
+    color: var(--muted);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .procedure-mobile__chip.is-active {
+    border-color: var(--bronze-soft);
+    background: var(--cocoa);
+    color: var(--ivory);
+  }
+
+  .procedure-mobile__media {
+    position: relative;
     aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 0.6rem;
+    background: var(--cocoa);
   }
 
-  .procedure-card__copy {
-    margin-top: 1.25rem;
+  .procedure-mobile__media img {
+    filter: saturate(0.9) sepia(0.03) contrast(1.02) brightness(0.94);
   }
 
-  .stepper-actions {
+  .procedure-mobile__index {
+    margin: 1.25rem 0 0.5rem;
+    color: var(--bronze-soft);
+  }
+
+  .procedure-mobile__panel h3 {
+    margin: 0 0 0.6rem;
+    color: var(--ivory);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: clamp(1.6rem, 6vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .procedure-mobile__panel p {
+    max-width: 42ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .procedure-mobile__nav {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .procedure-mobile__nav button {
+    display: inline-grid;
+    height: 2.6rem;
+    width: 2.6rem;
+    place-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: none;
+    color: var(--ivory);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .procedure-mobile__nav button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .procedure-mobile__nav button:not(:disabled):hover {
+    border-color: var(--hairline-strong);
+    color: var(--bronze-soft);
+  }
+
+  .procedure-mobile .stepper-actions {
     position: static;
-    margin-top: clamp(3rem, 9vw, 4.5rem);
-    padding: 0 var(--page-gutter);
+    justify-content: flex-start;
+    margin-top: clamp(3rem, 9vw, 4rem);
+    padding: 0;
   }
 }
 
@@ -5760,62 +5905,159 @@ p.cap-tag {
   filter: saturate(0.82) sepia(0.08) contrast(1.04) brightness(0.92);
 }
 
-.videos-complex {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.7rem;
+/* --------------------------------------------------------------------------
+   Complex selector — one central active complex, three alternatives along a
+   diagonal axis. `slot-N` is a position *relative to whichever is active*
+   (`page.tsx`: `(index - complexIndex + total) % total`), not tied to a
+   fixed complex — picking an alternative re-ranks everyone in one state
+   update, so name/composition/price/CTA can never land mid-swap. `top`/
+   `left` (not `right`/`bottom`, and never omitted) keep every slot on the
+   same transition-able property pair; `transform` is always the same
+   `translate(-50%,-50%) scale(S)` shape so the browser can interpolate it.
+   -------------------------------------------------------------------------- */
+.complex-selector {
+  position: relative;
+  height: 100%;
+  min-height: 24rem;
 }
 
-.videos-complex__tag {
-  color: var(--bronze-soft);
+.complex-selector__item {
+  position: absolute;
+  /* The active item's rendered width is this, unscaled — the spec's 55–65%
+     of the selector area. The rem cap only guards very wide viewports; at
+     1440–1920 it never binds. */
+  width: min(60%, 34rem);
+  margin: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: top 0.6s cubic-bezier(0.22, 1, 0.36, 1), left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
 }
 
-.videos-complex__name {
+.complex-selector__item.is-active {
+  cursor: default;
+}
+
+.complex-selector__item:not(.is-active):hover .complex-selector__name,
+.complex-selector__item:not(.is-active):focus-visible .complex-selector__name {
   color: var(--ivory);
 }
 
-.videos-complex__detail {
-  max-width: 30ch;
+.complex-selector__item:focus-visible {
+  outline: 1px solid var(--bronze-soft);
+  outline-offset: 6px;
+}
+
+.complex-selector__item.slot-0 {
+  top: 50%;
+  left: 54%;
+  z-index: 4;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.complex-selector__item.slot-1 {
+  top: 16%;
+  left: 84%;
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(0.42);
+  opacity: 0.66;
+}
+
+.complex-selector__item.slot-2 {
+  top: -4%;
+  left: 96%;
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0.42;
+}
+
+.complex-selector__item.slot-3 {
+  top: 90%;
+  left: 12%;
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(0.42);
+  opacity: 0.66;
+}
+
+.complex-selector__eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--bronze-soft);
+}
+
+.complex-selector__name {
   margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-size: clamp(1.15rem, 1.6vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.complex-selector__item.is-active .complex-selector__name {
+  font-size: clamp(1.7rem, 2.4vw, 2.3rem);
+}
+
+.complex-selector__detail {
+  max-width: 28ch;
+  margin: 0.6rem 0 0;
   color: var(--muted);
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   line-height: 1.55;
 }
 
-.videos-complex__price {
+.complex-selector__price {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem 0.75rem;
-  margin: 0.3rem 0 0;
+  margin: 0.6rem 0 0;
 }
 
-.videos-complex__price > span {
+.complex-selector__price > span {
   color: var(--muted);
   text-decoration: line-through;
 }
 
-.videos-complex__price strong {
+.complex-selector__price strong {
   color: var(--bronze-soft);
   font-size: clamp(1.3rem, 2vw, 1.9rem);
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 
-.videos-complex__price small {
+.complex-selector__price small {
   color: var(--muted);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.videos-complex__actions {
+.complex-selector__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.5rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Inactive alternatives: name plus one muted price line, never the yellow
+   accent — that stays exclusive to the active complex. */
+.complex-selector__cue {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.complex-selector-mobile {
+  display: none;
 }
 
 @media (max-width: 1099px) {
@@ -5858,8 +6100,86 @@ p.cap-tag {
     aspect-ratio: 3 / 4;
   }
 
-  .videos-complex {
+  .complex-selector {
+    display: none;
+  }
+
+  /* Active complex stays the main information panel; the rest are a compact
+     tap row of names underneath. */
+  .complex-selector-mobile {
+    display: block;
     margin-top: 1.5rem;
+  }
+
+  .complex-selector-mobile__active h3 {
+    margin: 0.4rem 0 0;
+    color: var(--ivory);
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .complex-selector-mobile__detail {
+    max-width: none;
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .complex-selector-mobile__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin: 0.6rem 0 1.1rem;
+  }
+
+  .complex-selector-mobile__price > span {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .complex-selector-mobile__price strong {
+    color: var(--bronze-soft);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .complex-selector-mobile__price small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .complex-selector-mobile__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .complex-selector-mobile__chip {
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    background: none;
+    color: var(--muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .complex-selector-mobile__chip.is-active {
+    border-color: var(--bronze-soft);
+    background: var(--cocoa);
+    color: var(--ivory);
+  }
+
+  .complex-selector-mobile .text-button {
+    margin-top: 1.25rem;
   }
 }
 
@@ -5891,19 +6211,31 @@ p.cap-tag {
 
   .directions-stage,
   .equipment-stage,
-  .procedure-stage,
   .videos-stage {
     height: auto;
   }
 
   .directions-direction,
   .equipment-layer,
-  .procedure-card,
   .videos-layer {
     position: static;
     inset: auto;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* Procedure: the pinned/panning track needs the scene JS to be legible at
+     all, so reduced motion shows the same tap-driven navigator mobile uses
+     instead — already a plain, static content swap with nothing to animate. */
+  .procedure-stage {
+    display: none;
+  }
+
+  .procedure-mobile {
+    display: block;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter);
   }
 
   .directions-direction {
@@ -5927,25 +6259,6 @@ p.cap-tag {
     flex: none;
     aspect-ratio: 4 / 3;
     margin-bottom: 1.5rem;
-  }
-
-  .procedure-card {
-    flex-direction: column;
-    padding: clamp(3rem, 8vw, 5rem) var(--page-gutter);
-  }
-
-  .procedure-card + .procedure-card {
-    border-top: 1px solid var(--hairline);
-  }
-
-  .procedure-card__media {
-    flex: none;
-    aspect-ratio: 1 / 1;
-    margin-bottom: 1.25rem;
-  }
-
-  .procedure-counter {
-    display: none;
   }
 
   .videos-layer--trio {
