@@ -7,9 +7,23 @@ that work until you resize, navigate or return to the tab.
 ```
 tokens.ts           easing, duration, distance, scroll budgets — the shared vocabulary
 reveal.ts           declarative entrances driven by data-* attributes
-scenes.ts           the two hand-built pinned/scrubbed hero sequences
+scenes/             the hand-built pinned/scrubbed sequences, one file each
 useViartMotion.ts   the driver: Lenis, gsap.ticker, matchMedia, refresh, teardown
 ```
+
+| Scene | Chapter | Notes |
+|---|---|---|
+| `transfer` | hero → Laser signature image transfer | in-house FLIP-style rect interpolation; behaviour reference only, [codrops/ImageToContent](https://github.com/codrops/ImageToContent) — desktop does the full fixed-position transfer, mobile shortens to a crossfade |
+| `directions` | `#services` — Laser, then Massage | stepped on `steppedScene.ts`, desktop only |
+| `procedure` | `#procedure` — stages 01→04 | stepped on `steppedScene.ts`, desktop only |
+| `equipment` | `#everlas` — EVERLAS, then TURBO G8 | stepped on `steppedScene.ts`, desktop only |
+| `videos` | `#videos` — three tiles, then Anna + complex | stepped on `steppedScene.ts`, desktop only |
+
+`steppedScene.ts` is the one gesture-gate state machine behind Directions,
+Procedure, Equipment and Videos: one wheel/touch gesture is either a complete
+state change or nothing, real scrolling is frozen for as long as the section is
+pinned, and it is desktop-only by design — mobile gets natural vertical scroll
+instead (see `useViartMotion.ts`'s `desktop` matchMedia query).
 
 ## Adding an entrance
 
@@ -41,7 +55,9 @@ adds `padding-bottom: 0.14em` so Cyrillic descenders are not clipped by the mask
 Scenes are rare and expensive. Before writing one, check it is not a reveal in
 disguise. If it really is a scene:
 
-1. Write it as a function in `scenes.ts` that takes its root element.
+1. Write it as a function in `scenes/<name>.ts` that takes the page root, scopes
+   every lookup to it, and returns early if its markup is absent. Export it from
+   `scenes/index.ts`.
 2. Take every number from `tokens.ts`; a literal in a callback is how distances go
    stale.
 3. Declare `invalidateOnRefresh: true`, and make any viewport-dependent `end` a
@@ -50,8 +66,20 @@ disguise. If it really is a scene:
 5. Call it from the phase-2 block in `useViartMotion.ts`, inside the matchMedia branch.
 6. Reserve its scroll space in CSS, and collapse that space in the
    `prefers-reduced-motion` block.
+7. Return a teardown for anything `gsap.context` cannot see. It records tweens
+   and triggers made while the factory runs — and nothing else. Not a `rAF` loop,
+   not a `WebGLRenderer`, not DOM you injected, not a `SplitText`, not a plain
+   `addEventListener`, and not the inline styles a trigger's `onUpdate` writes
+   later, from a callback the context was never inside.
 
 A scene owns its DOM: no `data-reveal` inside it.
+
+Adapting an external scene adds two habits. Its selectors assume it owns the
+document, so scope every one of them. And its entry point assumes it runs once and
+never unwinds: under StrictMode the effect mounts twice, and setup without teardown
+leaves two pins on one section, two phase counters disagreeing about which phase
+the columns are in, or a second WebGL context the browser will eventually refuse
+to grant.
 
 ## Rules the driver enforces
 
