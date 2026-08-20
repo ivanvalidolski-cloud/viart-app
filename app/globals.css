@@ -5514,13 +5514,19 @@ p.cap-tag {
    fraction the track JS pans the active node to (`PROCEDURE.dominantZone` —
    0.4 there, 40vw here, the one place that value is duplicated) so the copy
    always reads as sitting directly under the active number, independent of
-   `.procedure-rail`'s own box. */
+   `.procedure-rail`'s own box.
+   `right` is tied to `.procedure-media-rail`'s own left edge (its `right`
+   offset plus its own width, both duplicated in the calc below) plus a
+   fixed gap — a bare `width: min(30rem, 40vw)` sat here previously and, at
+   every desktop width from 900px to well past 2560px, ran 150–400px past
+   where the media rail actually starts, so the title/explanation rendered
+   on top of the photo instead of beside it. */
 .procedure-active {
   position: absolute;
   top: 54%;
   left: 40vw;
+  right: calc(var(--page-gutter) + min(30rem, 40%) + 2rem);
   z-index: 2;
-  width: min(30rem, 40vw);
   height: 9.5rem;
 }
 
@@ -5598,13 +5604,16 @@ p.cap-tag {
   line-height: 1.6;
 }
 
-/* The right zone: the active step's photo, ~46% of the stage — its own
-   dominant plane, not sharing a slot with the text. */
+/* The right zone: the active step's photo — its own dominant plane, not
+   sharing a slot with the text. Capped at 30rem so it cannot outgrow the
+   gap `.procedure-active` reserves for it on wide viewports. */
 .procedure-media-rail {
   position: absolute;
   top: 50%;
   right: var(--page-gutter);
-  width: 46%;
+  /* Kept in sync with `.procedure-active`'s `right` calc, above — that box's
+     clearance is computed from this width, so the two must change together. */
+  width: min(30rem, 40%);
   aspect-ratio: 4 / 5;
   transform: translateY(-50%);
   overflow: hidden;
@@ -5628,10 +5637,6 @@ p.cap-tag {
 @media (max-width: 1099px) {
   .procedure-rail {
     width: min(52%, 26rem);
-  }
-
-  .procedure-media-rail {
-    width: 42%;
   }
 }
 
